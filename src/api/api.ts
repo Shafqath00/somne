@@ -3,103 +3,8 @@ import axios from "axios";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../lib/firebase";
 
+// Environment variable handling would go here, falling back for now  https://bedshowroom2-3duyqbp4qa-uc.a.run.app
 const API_BASE_URL = "https://bedshowroom2-3duyqbp4qa-uc.a.run.app";
-//http://127.0.0.1:5001/somne-f5b59/us-central1/bedshowroom2
-// --- Session Storage Caching Utilities ---
-const CACHE_VERSION = 'v2'; // Increment this to invalidate all caches on deploy
-
-interface CacheEntry<T> {
-    data: T;
-    expiry: number;
-    version: string;
-}
-
-const getCache = <T>(key: string): T | null => {
-    try {
-        const cached = sessionStorage.getItem(key);
-        if (!cached) return null;
-        const entry: CacheEntry<T> = JSON.parse(cached);
-        // Check version and expiry
-        if (entry.version !== CACHE_VERSION || Date.now() > entry.expiry) {
-            sessionStorage.removeItem(key);
-            return null;
-        }
-        return entry.data;
-    } catch {
-        // If parsing fails, remove corrupted cache
-        try { sessionStorage.removeItem(key); } catch { console.log("Error clearing cache"); }
-        return null;
-    }
-};
-
-const setCache = <T>(key: string, data: T, ttlMinutes: number = 5): void => {
-    try {
-        const entry: CacheEntry<T> = {
-            data,
-            expiry: Date.now() + ttlMinutes * 60 * 1000,
-            version: CACHE_VERSION
-        };
-        sessionStorage.setItem(key, JSON.stringify(entry));
-    } catch (e) {
-        // Session storage full - clear old entries and retry
-        console.warn("Session storage issue, clearing old entries:", e);
-        clearExpiredCache();
-        try {
-            const entry: CacheEntry<T> = {
-                data,
-                expiry: Date.now() + ttlMinutes * 60 * 1000,
-                version: CACHE_VERSION
-            };
-            sessionStorage.setItem(key, JSON.stringify(entry));
-        } catch {
-            // If still fails, just skip caching - intentionally empty
-        }
-    }
-};
-
-const clearCache = (keyPrefix?: string): void => {
-    try {
-        if (keyPrefix) {
-            Object.keys(sessionStorage).forEach(key => {
-                if (key.startsWith(keyPrefix)) {
-                    sessionStorage.removeItem(key);
-                }
-            });
-        } else {
-            // Only clear our cache keys, not other session data
-            Object.keys(sessionStorage).forEach(key => {
-                if (key.startsWith('cache_')) {
-                    sessionStorage.removeItem(key);
-                }
-            });
-        }
-    } catch { console.log("Error clearing cache"); }
-};
-
-const clearExpiredCache = (): void => {
-    try {
-        Object.keys(sessionStorage).forEach(key => {
-            if (key.startsWith('cache_')) {
-                try {
-                    const cached = sessionStorage.getItem(key);
-                    if (cached) {
-                        const entry = JSON.parse(cached);
-                        if (entry.version !== CACHE_VERSION || Date.now() > entry.expiry) {
-                            sessionStorage.removeItem(key);
-                        }
-                    }
-                } catch {
-                    // Parse failed, remove corrupted entry
-                    sessionStorage.removeItem(key);
-                }
-            }
-        });
-    } catch { console.log("Error clearing cache"); }
-};
-
-// Clear expired cache on module load
-clearExpiredCache();
-// --- End Caching Utilities ---
 
 export async function resizeImageFile(file: File, maxWidth = 1200, outputType = 'image/webp', quality = 0.8): Promise<Blob> {
     const img = await createImageBitmap(file);
@@ -138,11 +43,6 @@ export const uploadImage = async (file: File, folder: string = 'products'): Prom
 export const postProduct = async (productData: any) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/products`, productData);
-        // Invalidate relevant caches after adding new product
-        clearCache('cache_product');
-        clearCache('cache_all_products');
-        clearCache('cache_category');
-        clearCache('cache_mattress');
         return response.data;
     } catch (error) {
         console.error("Error adding product:", error);
@@ -151,14 +51,8 @@ export const postProduct = async (productData: any) => {
 };
 
 export const BedCategory = async (categoryId: string, type: string) => {
-    // Include both categoryId AND type in cache key to prevent wrong data
-    const cacheKey = `cache_category_${type}_${categoryId}`;
-    const cached = getCache<any>(cacheKey);
-    if (cached) return cached;
-
     try {
         const response = await axios.get(`${API_BASE_URL}/collection/${type}/${categoryId}`);
-        setCache(cacheKey, response.data, 5); // Cache for 5 minutes
         return response.data;
     } catch (error) {
         console.error("Error fetching categories:", error);
@@ -172,13 +66,8 @@ export const getProductByName = async (name: string) => {
 };
 
 export const getProductBySlug = async (slug: string) => {
-    const cacheKey = `cache_product_${slug}`;
-    const cached = getCache<any>(cacheKey);
-    if (cached) return cached;
-
     try {
         const response = await axios.get(`${API_BASE_URL}/products/name/${encodeURIComponent(slug)}`);
-        setCache(cacheKey, response.data, 10); // Cache for 10 minutes
         return response.data;
     } catch (error) {
         console.error("Error fetching product:", error);
@@ -186,14 +75,13 @@ export const getProductBySlug = async (slug: string) => {
     }
 };
 
-export const getAllProducts = async () => {
-    const cacheKey = 'cache_all_products';
-    const cached = getCache<any>(cacheKey);
-    if (cached) return cached;
-
+export const getAllProducts = async (filters?: { category?: string; subcategory?: string }) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/products/admin`);
-        setCache(cacheKey, response.data, 5); // Cache for 5 minutes
+        const params = new URLSearchParams();
+        if (filters?.category) params.append('category', filters.category);
+        if (filters?.subcategory) params.append('subcategory', filters.subcategory);
+
+        const response = await axios.get(`${API_BASE_URL}/products/admin`, { params });
         return response.data;
     } catch (error) {
         console.error("Error fetching products:", error);
@@ -204,9 +92,6 @@ export const getAllProducts = async () => {
 export const updateProduct = async (productData: any) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/products/update/${productData.id}`, productData);
-        clearCache('cache_product'); // Invalidate product caches
-        clearCache('cache_all_products');
-        clearCache('cache_category');
         return response.data;
     } catch (error) {
         console.error("Error updating product:", error);
@@ -237,27 +122,15 @@ export const createOrder = async (orderData: any) => {
 };
 
 export const getAllOrders = async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     forceRefresh: boolean = false,
     limit: number = 10,
     lastCreatedAt?: string
 ) => {
-    // Only use cache if no pagination is requested (fetching default first page)
-    const canCache = !lastCreatedAt && limit === 10;
-    const cacheKey = 'cache_all_orders_page1';
-
-    if (canCache && !forceRefresh) {
-        const cached = getCache<any>(cacheKey);
-        if (cached) return cached;
-    }
-
     try {
         const response = await axios.get(`${API_BASE_URL}/orders`, {
             params: { limit, lastCreatedAt }
         });
-
-        if (canCache) {
-            setCache(cacheKey, response.data, 1); // Cache for 1 minute
-        }
 
         return response.data;
     } catch (error) {
@@ -269,7 +142,6 @@ export const getAllOrders = async (
 export const updateOrderStatus = async (id: string, status: string) => {
     try {
         const response = await axios.put(`${API_BASE_URL}/orders/${id}/status`, { status });
-        clearCache('cache_all_orders'); // Invalidate orders cache
         return response.data;
     } catch (error) {
         console.error("Error updating order status:", error);
@@ -387,13 +259,8 @@ export const createCheckoutSession = async (
 };
 
 export const getMattresses = async () => {
-    const cacheKey = 'cache_mattresses_all';
-    const cached = getCache<any>(cacheKey);
-    if (cached) return cached;
-
     try {
         const response = await axios.get(`${API_BASE_URL}/collection/mattresses`);
-        setCache(cacheKey, response.data, 5); // Cache for 5 minutes
         return response.data;
     } catch (error) {
         console.error("Error fetching mattresses:", error);
