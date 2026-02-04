@@ -1,0 +1,318 @@
+/* Inter (clean, bold) - include common weights */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Luxury Color Palette */
+    --background: 40 33% 96%;
+    --foreground: 220 30% 15%;
+
+    --card: 40 30% 98%;
+    --card-foreground: 220 30% 15%;
+
+    --popover: 40 30% 98%;
+    --popover-foreground: 220 30% 15%;
+
+    /* Deep Navy Primary */
+    --primary: 225 35% 18%;
+    --primary-foreground: 40 30% 96%;
+
+    /* Warm Cream Secondary */
+    --secondary: 35 30% 92%;
+    --secondary-foreground: 220 30% 15%;
+
+    /* Muted Tones */
+    --muted: 35 20% 90%;
+    --muted-foreground: 220 15% 45%;
+
+    /* Gold Accent */
+    --accent: 42 55% 58%;
+    --accent-foreground: 220 30% 15%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 40 30% 96%;
+
+    --border: 35 20% 85%;
+    --input: 35 20% 85%;
+    --ring: 42 55% 58%;
+
+    --radius: 0.25rem;
+
+    /* Custom Luxury Colors */
+    --navy: 225 35% 18%;
+    --navy-light: 225 30% 25%;
+    --cream: 40 33% 96%;
+    --cream-dark: 35 25% 90%;
+    --gold: 42 55% 58%;
+    --gold-light: 42 60% 70%;
+    --gold-dark: 42 50% 45%;
+    --charcoal: 220 20% 25%;
+    --warm-white: 40 40% 98%;
+
+    /* Gradients */
+    --gradient-hero: linear-gradient(180deg, hsl(var(--navy)) 0%, hsl(225 30% 22%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+    --gradient-cream: linear-gradient(180deg, hsl(var(--cream)) 0%, hsl(var(--cream-dark)) 100%);
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px -2px hsl(220 30% 15% / 0.08);
+    --shadow-medium: 0 8px 30px -4px hsl(220 30% 15% / 0.12);
+    --shadow-gold: 0 4px 20px -2px hsl(42 55% 58% / 0.3);
+
+    /* Sidebar */
+    --sidebar-background: 40 30% 98%;
+    --sidebar-foreground: 220 30% 15%;
+    --sidebar-primary: 225 35% 18%;
+    --sidebar-primary-foreground: 40 30% 96%;
+    --sidebar-accent: 35 30% 92%;
+    --sidebar-accent-foreground: 220 30% 15%;
+    --sidebar-border: 35 20% 85%;
+    --sidebar-ring: 42 55% 58%;
+  }
+
+  .dark {
+    --background: 225 35% 12%;
+    --foreground: 40 30% 96%;
+
+    --card: 225 30% 15%;
+    --card-foreground: 40 30% 96%;
+
+    --popover: 225 30% 15%;
+    --popover-foreground: 40 30% 96%;
+
+    --primary: 40 30% 96%;
+    --primary-foreground: 225 35% 18%;
+
+    --secondary: 225 25% 20%;
+    --secondary-foreground: 40 30% 96%;
+
+    --muted: 225 25% 20%;
+    --muted-foreground: 35 20% 65%;
+
+    --accent: 42 55% 58%;
+    --accent-foreground: 225 35% 12%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 40 30% 96%;
+
+    --border: 225 25% 22%;
+    --input: 225 25% 22%;
+    --ring: 42 55% 58%;
+
+    --sidebar-background: 225 30% 15%;
+    --sidebar-foreground: 40 30% 96%;
+    --sidebar-primary: 42 55% 58%;
+    --sidebar-primary-foreground: 225 35% 12%;
+    --sidebar-accent: 225 25% 20%;
+    --sidebar-accent-foreground: 40 30% 96%;
+    --sidebar-border: 225 25% 22%;
+    --sidebar-ring: 42 55% 58%;
+  }
+}
+
+@layer base {
+
+  /* ensure border color utility still applies */
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* make Inter the default on the root as well */
+    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  }
+
+  body {
+    /* explicit Inter usage (replaces font-sans apply) */
+    font-family: inherit;
+    @apply bg-background text-foreground antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* headings: inherit Inter, but use heavier weights for bold, clean look */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: inherit;
+    font-weight: 800;
+    /* very bold headings */
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+  }
+
+  /* strong text & buttons */
+  strong,
+  b {
+    font-weight: 700;
+  }
+
+  /* links keep default weight but inherit font */
+  a {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  .luxury-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-padding {
+    @apply py-16 md:py-20;
+  }
+
+  /* use Inter with bold / medium weights depending on role */
+  .luxury-heading {
+    font-family: inherit;
+    font-weight: 800;
+    /* big & bold */
+    font-size: 2.25rem;
+    /* 36px */
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+  }
+
+  .luxury-subheading {
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 1.5rem;
+    /* 24px */
+    letter-spacing: -0.01em;
+  }
+
+  .luxury-body {
+    font-family: inherit;
+    font-weight: 400;
+    font-size: 1rem;
+    /* 16px */
+    line-height: 1.6;
+    color: black;
+  }
+
+  .gold-underline {
+    @apply relative inline-block;
+  }
+
+  .gold-underline::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-accent;
+  }
+
+  /* Buttons: uppercase, medium weight, slightly tighter */
+  .btn-strong {
+    font-family: inherit;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in-delay {
+    animation: fadeIn 0.6s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.5s ease-out forwards;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slideDownLogo {
+    from {
+      opacity: 0;
+      transform: translateY(-100%);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-down-logo {
+    animation: slideDownLogo 0.5s ease-out forwards;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-1;
+    box-shadow: var(--shadow-medium);
+  }
+
+  .image-zoom {
+    @apply overflow-hidden;
+  }
+
+  .image-zoom img {
+    @apply transition-transform duration-700 ease-out;
+  }
+
+  .image-zoom:hover img {
+    @apply scale-105;
+  }
+
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
