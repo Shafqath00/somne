@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
@@ -7,6 +7,7 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BedCategory } from '@/api/api';
+import { useQuery } from '@tanstack/react-query';
 
 // Valid category slugs that are allowed
 const validCategories = [
@@ -94,9 +95,6 @@ const CategoryPage = () => {
   };
 
   const [sortBy, setSortBy] = useState('featured');
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   // Validate category - if not valid, redirect to NotFound
   const isValidCategory = category && validCategories.includes(category);
@@ -105,10 +103,19 @@ const CategoryPage = () => {
   const currentCategory = subcategory || category || 'beds';
   const info = categoryInfo[currentCategory] || categoryInfo.beds;
 
+  // React Query Fetch Data
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: products = [], isLoading: loading } = useQuery<any[]>({
+    queryKey: ['category', category, subcategory],
+    queryFn: () => BedCategory(subcategory || 'all', category || 'beds'),
+    enabled: !!isValidCategory && !!isValidSubcategory,
+    staleTime: 1000 * 60 * 5, // 5 minutes fresh
+  });
+
   // Extract unique colors from all products
   const availableColors = useMemo(() => {
     const colorMap = new Map<string, { name: string; hex: string }>();
-    products.forEach((product) => {
+    products.forEach((product: any) => {
       if (product.colors && Array.isArray(product.colors)) {
         product.colors.forEach((color: { name: string; hex: string }) => {
           if (color.name && color.hex) {
@@ -120,26 +127,8 @@ const CategoryPage = () => {
     return Array.from(colorMap.values());
   }, [products]);
 
-  useEffect(() => {
-    // Don't fetch if category is invalid
-    if (!isValidCategory || !isValidSubcategory) return;
-
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await BedCategory(subcategory || 'all', category || 'beds');
-        setProducts(response);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [currentCategory, isValidCategory, isValidSubcategory, category, subcategory]);
-
   const filteredProducts = useMemo(() => {
-    let result = products.filter((p) => {
+    let result = products.filter((p: any) => {
       if (category === 'beds') {
         if (subcategory) {
           return p.category === 'beds' && p.subcategory === subcategory;
@@ -160,7 +149,7 @@ const CategoryPage = () => {
 
     // Color filter
     if (selectedColor) {
-      result = result.filter((p) => {
+      result = result.filter((p: any) => {
         if (p.colors && Array.isArray(p.colors)) {
           return p.colors.some(
             (c: { name: string }) => c.name.toLowerCase() === selectedColor.toLowerCase()
@@ -172,7 +161,7 @@ const CategoryPage = () => {
 
     // Size filter
     if (selectedSize) {
-      result = result.filter((p) => {
+      result = result.filter((p: any) => {
         if (p.sizes && Array.isArray(p.sizes)) {
           return p.sizes.some((s: { name: string }) => s.name === selectedSize);
         }
@@ -182,7 +171,7 @@ const CategoryPage = () => {
 
     // Price filter
     if (selectedPrice) {
-      result = result.filter((p) => {
+      result = result.filter((p: any) => {
         const price = p.basePrice || p.price || 0;
         return price >= selectedPrice.min && price <= selectedPrice.max;
       });
@@ -190,22 +179,22 @@ const CategoryPage = () => {
 
     // Firmness filter (for mattresses)
     if (selectedFirmness) {
-      result = result.filter((p) => p.firmness === selectedFirmness);
+      result = result.filter((p: any) => p.firmness === selectedFirmness);
     }
 
     // Sorting
     switch (sortBy) {
       case 'price-low':
-        result.sort((a, b) => (a.basePrice || a.price || 0) - (b.basePrice || b.price || 0));
+        result.sort((a: any, b: any) => (a.basePrice || a.price || 0) - (b.basePrice || b.price || 0));
         break;
       case 'price-high':
-        result.sort((a, b) => (b.basePrice || b.price || 0) - (a.basePrice || a.price || 0));
+        result.sort((a: any, b: any) => (b.basePrice || b.price || 0) - (a.basePrice || a.price || 0));
         break;
       case 'rating':
-        result.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        result.sort((a: any, b: any) => (b.rating || 0) - (a.rating || 0));
         break;
       default:
-        result.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+        result.sort((a: any, b: any) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     }
 
     return result;
@@ -361,52 +350,6 @@ const CategoryPage = () => {
                     </button>
                   )}
 
-                  {/* Size filter */}
-                  {/* <div className="mb-8">
-                    <h3 className="font-serif text-lg font-medium text-foreground mb-4">Size</h3>
-                    <div className="space-y-2">
-                      {sizeFilters.map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedSize(selectedSize === size ? null : size)}
-                          className={cn(
-                            'block w-full text-left px-3 py-2 font-sans text-sm transition-colors',
-                            selectedSize === size
-                              ? 'bg-accent text-foreground'
-                              : 'text-muted-foreground hover:bg-secondary'
-                          )}
-                        >
-                          {size}
-                        </button>
-                      ))}
-                    </div>
-                  </div> */}
-
-                  {/* Price filter */}
-                  {/* <div className="mb-8">
-                    <h3 className="font-serif text-lg font-medium text-foreground mb-4">Price</h3>
-                    <div className="space-y-2">
-                      {priceFilters.map((price) => (
-                        <button
-                          key={price.label}
-                          onClick={() =>
-                            setSelectedPrice(
-                              selectedPrice?.min === price.min && selectedPrice?.max === price.max ? null : { min: price.min, max: price.max }
-                            )
-                          }
-                          className={cn(
-                            'block w-full text-left px-3 py-2 font-sans text-sm transition-colors',
-                            selectedPrice?.min === price.min && selectedPrice?.max === price.max
-                              ? 'bg-accent text-foreground'
-                              : 'text-muted-foreground hover:bg-secondary'
-                          )}
-                        >
-                          {price.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div> */}
-
                   {/* Mattress Type filter (for mattresses) */}
                   {category === 'mattresses' && (
                     <div className="mb-8">
@@ -440,29 +383,6 @@ const CategoryPage = () => {
                       </div>
                     </div>
                   )}
-
-                  {/* Firmness filter (for mattresses) */}
-                  {/* {category === 'mattresses' && (
-                    <div className="mb-8">
-                      <h3 className="font-serif text-lg font-medium text-foreground mb-4">Firmness</h3>
-                      <div className="space-y-2">
-                        {firmnessFilters.map((firmness) => (
-                          <button
-                            key={firmness}
-                            onClick={() => setSelectedFirmness(selectedFirmness === firmness ? null : firmness)}
-                            className={cn(
-                              'block w-full text-left px-3 py-2 font-sans text-sm transition-colors',
-                              selectedFirmness === firmness
-                                ? 'bg-accent text-foreground'
-                                : 'text-muted-foreground hover:bg-secondary'
-                            )}
-                          >
-                            {firmness}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )} */}
                 </div>
               </aside>
               {/* Products Grid */}
@@ -473,7 +393,7 @@ const CategoryPage = () => {
                   </div>
                 ) : products.length > 0 ? (
                   <div className="grid grid-cols-2 xl:grid-cols-3 md:gap-6 gap-3">
-                    {filteredProducts.map((product) => (
+                    {filteredProducts.map((product: any) => (
                       <ProductCard key={product.id} product={product} selectedColor={selectedColor} />
                     ))}
                   </div>

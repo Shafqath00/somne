@@ -13,7 +13,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 const TABS = [
     { id: 'divan-beds', label: 'Divan Beds', icon: BedDouble, filter: { category: 'beds', subcategory: 'divan-beds' } },
-    { id: 'ottoman-beds', label: 'Ottoman Beds', icon: Archive, filter: { category: 'beds', subcategory: 'ottoman-beds' } }, // Assuming 'Archive' as a proxy for storage/ottoman
+    { id: 'upholstered-beds', label: 'Upholstered Beds', icon: BedDouble, filter: { category: 'beds', subcategory: 'upholstered-beds' } },
+    { id: 'ottoman-divan-beds', label: 'Ottoman Divan', icon: Archive, filter: { category: 'beds', subcategory: 'ottoman-divan-beds' } },
+    { id: 'ottoman-upholstered-beds', label: 'Ottoman Upholstered', icon: Archive, filter: { category: 'beds', subcategory: 'upholstered-ottoman-bed' } },
     { id: 'mattresses', label: 'Mattresses', icon: Layers, filter: { category: 'mattresses' } },
     { id: 'headboards', label: 'Headboards', icon: Box, filter: { category: 'headboards' } },
     { id: 'all', label: 'All Products', icon: Box, filter: {} }
