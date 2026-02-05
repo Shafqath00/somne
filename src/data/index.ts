@@ -48,7 +48,8 @@ export const navigationItems2: NavItem[] = [
   {
     label: 'Panels', href: '/product/bathroom-pvc-wall-panels-pack-of-4', children: [
       { label: 'Bathroom Panels', href: '/product/bathroom-pvc-wall-panels-pack-of-4' },
-      { label: 'Wall Panels', href: '/product/acoustic-wall-panel-pack-of-4' }
+      { label: 'Wall Panels', href: '/product/acoustic-wall-panel-pack-of-4' },
+      { label: 'Outdoor Panels', href: '/product/outdoor-panels-pack-of-4' },
     ],
   },
   { label: 'Contact', href: '/contact' },

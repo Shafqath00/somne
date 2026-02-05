@@ -530,6 +530,7 @@ export default function ProductAdd() {
                                         <option value="headboards">Headboards</option>
                                         <option value="bathroom-panels">Bathroom Panels</option>
                                         <option value="wall-panels">Wall Panels</option>
+                                        <option value="outdoor-panels">Outdoor Panels</option>
                                     </SelectField>
                                 </div>
 
