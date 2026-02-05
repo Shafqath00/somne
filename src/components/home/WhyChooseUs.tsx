@@ -32,7 +32,7 @@ export function WhyChooseUs() {
             Our Promise
           </span>
           <h2 className="luxury-heading text-foreground mb-4">
-            Why Choose Bed Showroom
+            Why Choose Somne
           </h2>
           <p className="md:luxury-body text-sm max-w-2xl mx-auto">
             We believe that exceptional sleep starts with exceptional craftsmanship.

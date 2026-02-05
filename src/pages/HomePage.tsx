@@ -9,6 +9,7 @@ import { WhyChooseUs } from '@/components/home/WhyChooseUs';
 import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { ProcessSection } from '@/components/home/ProcessSection';
 import { InstagramGallery } from '@/components/home/InstagramGallery';
+import { TrendingProducts } from '@/components/home/trending';
 
 const HomePage = () => {
   return (
@@ -26,6 +27,7 @@ const HomePage = () => {
         <HeroSection />
         <USPStrip />
         <CategoryGrid />
+        <TrendingProducts />
         {/* <FeaturedProducts /> */}
         {/* <CustomizeBanner /> */}
         <WhyChooseUs />

@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Star, ShoppingBag, Eye,SquarePen  } from 'lucide-react';
+import { Star, ShoppingBag, Eye, SquarePen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
+import { updateProduct } from '@/api/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface ProductCardProps {
     product: Product;
@@ -14,19 +16,35 @@ interface ProductCardProps {
 export function AdminProductCard({ product }: ProductCardProps) {
     const { addItem } = useCart();
     const navigate = useNavigate();
-    // const [activeImage, setActiveImage] = useState(product.images[0]);
+    const queryClient = useQueryClient();
+    const [loading, setLoading] = useState(false);
 
-    // const handleAddToCart = () => {
-    //     if (product.sizes.length > 0) {
-    //         addItem(product, 1, product.sizes[0], product.colors?.[0], product.storageOptions?.[0]);
-    //         toast.success(`${product.name} added to bag`);
-    //     }
-    // };
+    const updateMutation = useMutation({
+        mutationFn: updateProduct,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin-products'] });
+            queryClient.invalidateQueries({ queryKey: ['trending-products'] });
+            toast.success("Product updated successfully");
+            setLoading(false);
+        },
+        onError: () => {
+            toast.error("Failed to update product");
+            setLoading(false);
+        }
+    });
+
+    const updateProductStatus = (field: 'bestseller' | 'featured', value: boolean) => {
+        setLoading(true);
+        updateMutation.mutate({
+            id: product.id,
+            [field]: value
+        });
+    };
 
     const formatPrice = (price: number) => `£${price}`;
 
     return (
-        <div className="group bg-card border border-border hover-lift">
+        <div className="group bg-card border border-border hover-lift transition-all duration-300">
             {/* Image */}
             <Link to={`/product/${product.name}`} className="block relative overflow-hidden image-zoom">
                 <div className="aspect-[4/3]">
@@ -60,12 +78,35 @@ export function AdminProductCard({ product }: ProductCardProps) {
 
 
                 {/* Price */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-4">
                     <div>
                         <span className="font-sans text-lg font-medium text-foreground">
                             From {formatPrice(product.price)}
                         </span>
                     </div>
+                </div>
+
+                {/* Quick Toggles */}
+                <div className="flex items-center gap-2 mb-4">
+                    <Button
+                        variant={product.bestseller ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => updateProductStatus('bestseller', !product.bestseller)}
+                        className={`flex-1 text-xs h-8 ${product.bestseller ? 'bg-amber-500 hover:bg-amber-600' : ''}`}
+                        disabled={loading}
+                    >
+                        <Star className={`w-3 h-3 mr-1 ${product.bestseller ? 'fill-current' : ''}`} />
+                        {product.bestseller ? 'Trending' : 'Promote'}
+                    </Button>
+                    <Button
+                        variant={product.featured ? "secondary" : "outline"}
+                        size="sm"
+                        onClick={() => updateProductStatus('featured', !product.featured)}
+                        className="flex-1 text-xs h-8"
+                        disabled={loading}
+                    >
+                        {product.featured ? 'Featured' : 'Feature'}
+                    </Button>
                 </div>
 
                 <div className='flex gap-2'>
@@ -76,11 +117,9 @@ export function AdminProductCard({ product }: ProductCardProps) {
                         </Link>
                     </Button>
                     <Button variant="hero" size="sm" onClick={() => { navigate(`/admin/edit/${product.name}`) }} className='w-full'>
-
                         <SquarePen className="w-4 h-4 mr-1" />
                         Edit
                     </Button>
-
                 </div>
 
             </div>

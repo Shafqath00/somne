@@ -25,9 +25,9 @@ export interface Product {
   materials: string[];
   warranty: string;
   deliveryTime: string;
-  inStock: boolean;
-  featured?: boolean;
   bestseller?: boolean;
+  featured?: boolean;
+  image?: string; // For admin/listing views where a single image is pre-resolved
   rating: number;
   reviewCount: number;
 }
