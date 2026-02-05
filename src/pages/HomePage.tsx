@@ -10,6 +10,7 @@ import { TestimonialsSection } from '@/components/home/TestimonialsSection';
 import { ProcessSection } from '@/components/home/ProcessSection';
 import { InstagramGallery } from '@/components/home/InstagramGallery';
 import { TrendingProducts } from '@/components/home/trending';
+import { FAQSection } from '@/components/home/faq';
 
 const HomePage = () => {
   return (
@@ -33,6 +34,7 @@ const HomePage = () => {
         <WhyChooseUs />
         <TestimonialsSection />
         <ProcessSection />
+        <FAQSection />
         {/* <InstagramGallery /> */}
       </Layout>
     </>

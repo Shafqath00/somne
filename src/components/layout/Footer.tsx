@@ -9,9 +9,9 @@ const footerLinks = {
   ],
   help: [
     {label: 'Order Tracking', href: '/track-order'},
-    { label: 'Delivery & Returns', href: '/delivery' },
-    { label: 'FAQ', href: '/faq' },
-    { label: 'Contact Us', href: '/contact' },
+    { label: 'Returns & Refunds', href: '/returns' },
+    // { label: 'FAQ', href: '/faq' },
+    // { label: 'Contact Us', href: '/contact' },
     // { label: 'Blog', href: '/blog' },
   ],
   company: [
@@ -121,7 +121,7 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="h-4 w-4 mt-1 text-accent" />
                 <span className="font-sans text-sm text-primary-foreground/80">
-                  bedshowroom<br />
+                  Somne<br />
                   123 Craftsman Way<br />
                   London, SW1 2AB
                 </span>
@@ -135,9 +135,9 @@ export function Footer() {
       <div className="border-t border-primary-foreground/20">
         <div className="luxury-container py-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="font-sans text-xs text-primary-foreground/60">
-            © {new Date().getFullYear()} bedshowroom. All rights reserved. Handmade in the United Kingdom.
+            © {new Date().getFullYear()} Somne. All rights reserved. Handmade in the United Kingdom.
           </p>
-          <div className="flex gap-6">
+          {/* <div className="flex gap-6">
             <Link
               to="/privacy"
               className="font-sans text-xs text-primary-foreground/60 hover:text-accent transition-colors"
@@ -150,7 +150,7 @@ export function Footer() {
             >
               Terms & Conditions
             </Link>
-          </div>
+          </div> */}
         </div>
       </div>
     </footer>
