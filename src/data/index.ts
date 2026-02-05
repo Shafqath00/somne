@@ -56,7 +56,7 @@ export const navigationItems2: NavItem[] = [
 ];
 
 // Category Data
-export const categories = [
+export const categories = [  
   {
     id: 'divan',
     name: 'Divan Beds',

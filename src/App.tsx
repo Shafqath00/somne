@@ -61,7 +61,7 @@ const App = () => (
                 <Route path="/customize" element={<CustomizePage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="/delivery" element={<DeliveryPage />} />
+                <Route path="/returns" element={<DeliveryPage />} />
                 <Route path="/faq" element={<FAQPage />} />
 
                 {/* Admin Routes */}
