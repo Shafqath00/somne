@@ -27,8 +27,8 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
       }
     }
     // Default: show the product's main image or default color's image
-    return product.image || "";
-  }, [selectedColor, product.colors, product.image]);
+    return product.image || product.images?.[0] || "";
+  }, [selectedColor, product.colors, product.image, product.images]);
 
   // Get the display color name (for showing which variant is displayed)
   const displayColorName = useMemo(() => {
@@ -50,7 +50,10 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
     }
   };
 
-  const formatPrice = (price: number) => `£${price.toLocaleString()}`;
+  const formatPrice = (price?: number) => {
+    if (price === undefined || price === null) return '£0';
+    return `£${price.toLocaleString()}`;
+  };
 
   return (
     <div className="group flex flex-col h-full bg-white border border-border/50 hover:border-accent/40 rounded-xl sm:rounded-2xl overflow-hidden transition-all shadow-md duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1">

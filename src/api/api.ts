@@ -268,6 +268,17 @@ export const getMattresses = async () => {
     }
 };
 
+// Smart fetch: Try slug first, then fallback to name
+export const getTrendingProducts = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/products/trending`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching trending products:", error);
+        throw error;
+    }
+};
+
 // Fetch order by Stripe session ID (for success page)
 export interface OrderBySession {
     orderId: string;

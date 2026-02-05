@@ -1,25 +1,52 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { categories } from '@/data';
+import categoryMattress from '@/assets/category-mattress.jpg';
 
 export function CategoryGrid() {
   return (
-    <section className="section-padding bg-background">
+    <section className="section-padding bg-white">
       <div className="luxury-container">
         <div className="text-center mb-12 md:mb-16">
-          <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
+          {/* <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
             Our Collection
-          </span>
-          <h2 className="luxury-heading text-foreground mb-4">
-            Shop by Category
+          </span> */}
+          <h2 className="luxury-heading text-foreground ">
+            Top Categories
           </h2>
-          <p className="md:luxury-body text-sm max-w-2xl mx-auto">
+          {/* <p className="md:luxury-body text-sm max-w-2xl mx-auto">
             Explore our handcrafted range of luxury beds, mattresses, and headboards.
             Each piece is made to order in our UK workshop.
-          </p>
+          </p> */}
+        </div>
+        <div className='grid grid-cols-2 md:grid-cols-4 gap-6'>
+          <Link to="/beds/divan-beds">
+            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all'>
+              <img src="/img/beds/green.png" alt="bed" />
+            </div>
+            <h2 className='text-center mt-4'>Divan Beds</h2>
+          </Link>
+          <Link to="/beds/upholstered-beds">
+            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all'>
+              <img src="/img/beds/black.png" alt="bed" />
+            </div>
+            <h2 className='text-center mt-4'>Upholstered Beds</h2>
+          </Link>
+          <Link to="/beds/ottoman-divan-beds">
+            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all'>
+              <img src="/img/beds/pink.png" alt="bed" />
+            </div>
+            <h2 className='text-center mt-4'>Ottoman Beds</h2>
+          </Link>
+          <Link to="/mattresses">
+            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all'>
+              <img src={categoryMattress} alt="bed" />
+            </div>
+            <h2 className='text-center mt-4'>Mattresses</h2>
+          </Link>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-6">
+        {/* <div className="flex flex-wrap justify-center gap-6">
           {categories.map((category, index) => (
             <Link
               key={category.id}
@@ -44,7 +71,7 @@ export function CategoryGrid() {
               </div>
             </Link>
           ))}
-        </div>
+        </div> */}
       </div>
     </section>
   );
