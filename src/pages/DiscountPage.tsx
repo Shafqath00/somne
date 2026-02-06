@@ -25,9 +25,17 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { createDiscount, getAllDiscounts } from "@/api/api";
-import { Loader2, Trash2, Tag, Percent, PoundSterling, Calendar } from "lucide-react";
+import { createDiscount, getAllDiscounts, deleteDiscount } from "@/api/api";
+import { Loader2, Trash2, Tag, Percent, PoundSterling, Calendar, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 
 const discountSchema = z.object({
     code: z.string().min(3, "Code must be at least 3 characters").toUpperCase(),
@@ -55,6 +63,9 @@ export default function DiscountPage() {
     const [discounts, setDiscounts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+    const [discountToDelete, setDiscountToDelete] = useState<{ id: string; code: string } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const form = useForm<DiscountFormValues>({
         resolver: zodResolver(discountSchema),
@@ -96,6 +107,27 @@ export default function DiscountPage() {
             toast.error(error.error || "Failed to create discount code");
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteClick = (id: string, code: string) => {
+        setDiscountToDelete({ id, code });
+        setDeleteDialogOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!discountToDelete) return;
+        setIsDeleting(true);
+        try {
+            await deleteDiscount(discountToDelete.id);
+            toast.success(`Discount code "${discountToDelete.code}" deleted`);
+            fetchDiscounts();
+        } catch (error) {
+            toast.error("Failed to delete discount code");
+        } finally {
+            setIsDeleting(false);
+            setDeleteDialogOpen(false);
+            setDiscountToDelete(null);
         }
     };
 
@@ -303,9 +335,16 @@ export default function DiscountPage() {
                                                         {discount.expiresAt && <span className="flex items-center gap-1 text-orange-600"><Calendar className="w-3 h-3" /> Exp: {formatDate(discount.expiresAt)}</span>}
                                                     </div>
                                                 </div>
-                                                {/* Actions or Status */}
+                                                {/* Actions */}
                                                 <div className="flex items-center gap-2">
-                                                    {/* Future: Add Delete/Edit functionality */}
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                                        onClick={() => handleDeleteClick(discount.id, discount.code)}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
                                                 </div>
                                             </div>
                                         ))}
@@ -315,6 +354,31 @@ export default function DiscountPage() {
                         </div>
                     </div>
                 </div>
+
+                {/* Delete Confirmation Dialog */}
+                <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+                    <DialogContent className="sm:max-w-[400px]">
+                        <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2 text-red-600">
+                                <AlertCircle className="w-5 h-5" />
+                                Delete Discount Code
+                            </DialogTitle>
+                            <DialogDescription className="pt-2">
+                                Are you sure you want to delete the discount code <strong>{discountToDelete?.code}</strong>?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="bg-red-50 p-4 rounded-md border border-red-100 text-sm text-red-800 mt-2">
+                            This action cannot be undone. The discount code will be permanently deleted.
+                        </div>
+                        <DialogFooter className="mt-4 gap-2">
+                            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={isDeleting}>Cancel</Button>
+                            <Button variant="destructive" onClick={confirmDelete} disabled={isDeleting}>
+                                {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
+                                Delete
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </Layout>
         </>
     );

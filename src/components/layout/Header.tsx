@@ -160,7 +160,7 @@ export function Header() {
                     '#C0C0C0',             // 1
                     '#0466c8',                    // 2 (Handled above)
                     '#F5E7C6',             // 3
-                    '#857c78'              // 4
+                    '#005F02'              // 4
                   ][currentLogoIndex] || 'hsl(var(--primary))'
                 }
               }
@@ -173,7 +173,7 @@ export function Header() {
                 'bg-[#C0C0C0]', // 1
                 'bg-[#0466c8]', // 2
                 'bg-[#F5E7C6]', // 3
-                'bg-[#857c78]'  // 4
+                'bg-[#005F02]'  // 4
               ].map((colorClass, index) => (
                 <div
                   key={index}

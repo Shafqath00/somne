@@ -45,6 +45,20 @@ export function CategoryGrid() {
             <h2 className='text-center mt-4'>Mattresses</h2>
           </Link>
         </div>
+        <div className='flex justify-center gap-6 mt-6'>
+          <Link to="/headboards" className='w-[calc(50%-0.75rem)] md:w-[calc(25%-1.125rem)]'>
+            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all'>
+              <img src="/img/beds/headboard.jpeg" alt="bed" />
+            </div>
+            <h2 className='text-center mt-4'>Headboards</h2>
+          </Link>
+          <Link to="/product/acoustic-wall-panel-pack-of-4" className='w-[calc(50%-0.75rem)] md:w-[calc(25%-1.125rem)]'>
+            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all'>
+              <img src="/img/beds/panels.webp" alt="bed" />
+            </div>
+            <h2 className='text-center mt-4'>Panels</h2>
+          </Link>
+        </div>
 
         {/* <div className="flex flex-wrap justify-center gap-6">
           {categories.map((category, index) => (

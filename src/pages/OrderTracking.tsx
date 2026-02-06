@@ -3,7 +3,7 @@ import { Layout } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Helmet } from "react-helmet-async";
-import { Search, Package, Truck, Check, Clock, Loader2, ArrowRight, Mail, Hash } from "lucide-react";
+import { Package, Truck, Check, Clock, Loader2, ArrowRight, Mail, Hash, Search } from "lucide-react";
 import { trackOrder, TrackedOrder } from "@/api/api";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
@@ -15,8 +15,8 @@ const orderStatusSteps = [
 ];
 
 export default function OrderTracking() {
-    const [searchType, setSearchType] = useState<"reference" | "email">("reference");
-    const [searchValue, setSearchValue] = useState("");
+    const [orderReference, setOrderReference] = useState("");
+    const [email, setEmail] = useState("");
     const [orders, setOrders] = useState<TrackedOrder[]>([]);
     const [loading, setLoading] = useState(false);
     const [searched, setSearched] = useState(false);
@@ -24,20 +24,17 @@ export default function OrderTracking() {
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!searchValue.trim()) return;
+        if (!orderReference.trim() || !email.trim()) return;
 
         setLoading(true);
         setError(null);
         setSearched(true);
 
         try {
-            const results = await trackOrder(
-                searchType === "reference" ? searchValue.trim() : undefined,
-                searchType === "email" ? searchValue.trim() : undefined
-            );
+            const results = await trackOrder(orderReference.trim(), email.trim());
             setOrders(results);
         } catch (err) {
-            setError("Failed to find order. Please try again.");
+            setError("Failed to find order. Please check your details and try again.");
             setOrders([]);
         } finally {
             setLoading(false);
@@ -50,6 +47,8 @@ export default function OrderTracking() {
         const idx = orderStatusSteps.findIndex(s => s.status.toLowerCase() === status?.toLowerCase());
         return idx >= 0 ? idx : 0;
     };
+
+    const isFormValid = orderReference.trim().length > 0 && email.trim().length > 0;
 
     return (
         <>
@@ -66,74 +65,65 @@ export default function OrderTracking() {
                                 Track Your Order
                             </h1>
                             <p className="text-muted-foreground text-lg md:text-xl font-light max-w-xl mx-auto leading-relaxed animate-fade-in-up animation-delay-200">
-                                Enter your details below to check the real-time status of your delivery.
+                                Enter your order reference and email address to check your delivery status.
                             </p>
                         </div>
 
                         {/* Search Form */}
-                        <div className="bg-white rounded-3xl p-2 shadow-2xl shadow-black/5 mb-12 border border-black/5 animate-fade-in-up animation-delay-300 transform transition-all hover:shadow-3xl duration-500">
-                            <div className="flex flex-col md:flex-row gap-2">
-                                {/* Search Type Toggle */}
-                                <div className="flex bg-secondary/30 rounded-2xl p-1.5 md:w-auto shrink-0">
-                                    <button
-                                        type="button"
-                                        onClick={() => { setSearchType("reference"); setSearchValue(""); }}
-                                        className={cn(
-                                            "flex-1 md:flex-none flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-medium text-sm transition-all duration-300",
-                                            searchType === "reference"
-                                                ? "bg-white text-foreground shadow-sm ring-1 ring-black/5"
-                                                : "text-muted-foreground hover:text-foreground hover:bg-white/50"
-                                        )}
-                                    >
-                                        <Hash className="w-4 h-4" />
-                                        <span className="hidden md:inline">Reference</span>
-                                        <span className="md:hidden">Ref</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => { setSearchType("email"); setSearchValue(""); }}
-                                        className={cn(
-                                            "flex-1 md:flex-none flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-medium text-sm transition-all duration-300",
-                                            searchType === "email"
-                                                ? "bg-white text-foreground shadow-sm ring-1 ring-black/5"
-                                                : "text-muted-foreground hover:text-foreground hover:bg-white/50"
-                                        )}
-                                    >
-                                        <Mail className="w-4 h-4" />
-                                        Email
-                                    </button>
-                                </div>
-
-                                <form onSubmit={handleSearch} className="flex-1 flex flex-col md:flex-row gap-2">
-                                    <div className="relative flex-1">
-                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none">
-                                            {searchType === "reference" ? <Hash className="w-5 h-5" /> : <Mail className="w-5 h-5" />}
-                                        </div>
+                        <div className="bg-white rounded-3xl p-6 md:p-8 shadow-2xl shadow-black/5 mb-12 border border-black/5 animate-fade-in-up animation-delay-300">
+                            <form onSubmit={handleSearch} className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Order Reference Input */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                            <Hash className="w-4 h-4 text-accent" />
+                                            Order Reference
+                                        </label>
                                         <Input
-                                            type={searchType === "email" ? "email" : "text"}
-                                            placeholder={searchType === "reference" ? "Enter Order Reference (e.g. A1B2C3D4)" : "Enter Email Address"}
-                                            value={searchValue}
-                                            onChange={(e) => setSearchValue(searchType === "reference" ? e.target.value.toUpperCase() : e.target.value)}
-                                            className="w-full bg-transparent border-0 ring-1 ring-black/5 focus-visible:ring-accent/50 text-lg h-[54px] rounded-2xl pl-12 placeholder:text-muted-foreground/40 font-light"
-                                            maxLength={searchType === "reference" ? 8 : undefined}
+                                            type="text"
+                                            placeholder="e.g. A1B2C3D4"
+                                            value={orderReference}
+                                            onChange={(e) => setOrderReference(e.target.value.toUpperCase())}
+                                            className="h-14 bg-secondary/20 border-0 ring-1 ring-black/5 focus-visible:ring-accent/50 text-lg rounded-xl pl-4 placeholder:text-muted-foreground/40 font-mono uppercase"
+                                            maxLength={8}
                                         />
                                     </div>
-                                    <Button
-                                        type="submit"
-                                        className="h-[54px] px-8 rounded-2xl bg-foreground text-background hover:bg-accent hover:text-foreground transition-all duration-300 text-base font-medium min-w-[140px]"
-                                        disabled={loading || !searchValue.trim()}
-                                    >
-                                        {loading ? (
-                                            <Loader2 className="w-5 h-5 animate-spin" />
-                                        ) : (
-                                            <>
-                                                Track
-                                                <ArrowRight className="w-5 h-5 ml-2" />
-                                            </>
-                                        )}
-                                    </Button>
-                                </form>
-                            </div>
+
+                                    {/* Email Input */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-foreground flex items-center gap-2">
+                                            <Mail className="w-4 h-4 text-accent" />
+                                            Email Address
+                                        </label>
+                                        <Input
+                                            type="email"
+                                            placeholder="Your order email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            className="h-14 bg-secondary/20 border-0 ring-1 ring-black/5 focus-visible:ring-accent/50 text-lg rounded-xl pl-4 placeholder:text-muted-foreground/40"
+                                        />
+                                    </div>
+                                </div>
+
+                                <Button
+                                    type="submit"
+                                    className="w-full h-14 rounded-2xl bg-foreground text-background hover:bg-accent hover:text-foreground transition-all duration-300 text-base font-medium"
+                                    disabled={loading || !isFormValid}
+                                >
+                                    {loading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            Track Order
+                                            <ArrowRight className="w-5 h-5 ml-2" />
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+
+                            <p className="text-xs text-muted-foreground text-center mt-4">
+                                Your order reference was sent to your email after purchase
+                            </p>
                         </div>
 
                         {/* Results */}
@@ -155,7 +145,7 @@ export default function OrderTracking() {
                                         </div>
                                         <h2 className="font-serif text-2xl font-medium text-foreground mb-3">No Orders Found</h2>
                                         <p className="text-muted-foreground mb-8 max-w-md mx-auto leading-relaxed font-light">
-                                            We couldn't find any orders matching your {searchType === "reference" ? "reference" : "email"}.
+                                            We couldn't find any orders matching your reference and email.
                                             Please double check your details.
                                         </p>
                                         <Button variant="outline" asChild className="rounded-full px-8">

@@ -9,7 +9,7 @@ const DeliveryPage = () => {
         <title>Return & Refunds</title>
         <meta
           name="description"
-          content="Easy returns within 60 days."
+          content="Returns and refunds policy for Somne products."
         />
       </Helmet>
       <Layout>
@@ -128,9 +128,9 @@ const DeliveryPage = () => {
                   <div className="flex items-start gap-4">
                     <Shield className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
                     <div>
-                      <h3 className="font-serif text-xl font-medium text-foreground mb-3">60-Night Risk-Free Trial</h3>
+                      <h3 className="font-serif text-xl font-medium text-foreground mb-3">Returns Policy</h3>
                       <p className="mb-4">
-                        We accept returns and offer refunds up to 60 days after delivery. For stress-free returns and refunds, just contact us before the 60 days are up, and we’ll begin the process.
+                        If you wish to return an item, please contact us to begin the process.
                       </p>
                       <div className="bg-secondary p-4 rounded-md text-sm">
                         <p className="font-medium mb-2">Get in touch via:</p>
@@ -145,7 +145,7 @@ const DeliveryPage = () => {
                   <div>
                     <h3 className="font-serif text-xl font-medium text-foreground mb-3">Important Information About Your Return</h3>
                     <p className="mb-4">
-                      A £75 collection fee applies if you choose to return an item under the 60-night trial. This fee will be deducted from your refund. For example, if your item costs £500, you will receive £425 once it’s returned in reasonable condition.
+                      A £75 collection fee applies if you choose to return an item. This fee will be deducted from your refund. For example, if your item costs £500, you will receive £425 once it's returned in reasonable condition.
                     </p>
                     <p className="mb-4">
                       Alternatively, you are welcome to arrange your own return. Returns must be sent to:
@@ -200,7 +200,7 @@ const DeliveryPage = () => {
                   <div>
                     <h3 className="font-serif text-xl font-medium text-foreground mb-3">Custom & Made-to-Order Items</h3>
                     <p>
-                      For items that are custom-made or built to specific requirements (e.g., non-standard bed or headboard sizes), returns are not accepted. These bespoke items are made especially for you and are non-refundable under all circumstances. The 60-night trial does not apply to these orders.
+                      For items that are custom-made or built to specific requirements (e.g., non-standard bed or headboard sizes), returns are not accepted. These bespoke items are made especially for you and are non-refundable under all circumstances.
                     </p>
                   </div>
 
