@@ -228,6 +228,16 @@ export const getAllDiscounts = async () => {
     }
 };
 
+export const deleteDiscount = async (id: string) => {
+    try {
+        const response = await axios.delete(`${API_BASE_URL}/discounts/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error deleting discount:", error);
+        throw error;
+    }
+};
+
 export const getAutoApplyDiscount = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/discounts/auto`);
@@ -339,7 +349,7 @@ export interface TrackedOrder {
     createdAt?: string;
 }
 
-export const trackOrder = async (orderReference?: string, email?: string): Promise<TrackedOrder[]> => {
+export const trackOrder = async (orderReference: string, email: string): Promise<TrackedOrder[]> => {
     try {
         const response = await axios.post(`${API_BASE_URL}/orders/track`, {
             orderReference,
@@ -351,6 +361,60 @@ export const trackOrder = async (orderReference?: string, email?: string): Promi
         if (error.response?.status === 404) {
             return [];
         }
+        throw error;
+    }
+};
+
+// --- Contact Form API ---
+
+export interface ContactForm {
+    id: string;
+    refNo?: string;
+    name: string;
+    email: string;
+    phone: string;
+    message: string;
+    status: string;
+    isRead?: boolean;
+    createdAt: string | { _seconds: number; _nanoseconds: number };
+}
+
+export const getAllContactForms = async (): Promise<ContactForm[]> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/contact`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching contact forms:", error);
+        throw error;
+    }
+};
+
+export const updateContactFormStatus = async (id: string, status: string) => {
+    try {
+        const response = await axios.put(`${API_BASE_URL}/contact/${id}`, { status });
+        return response.data;
+    } catch (error) {
+        console.error("Error updating contact form status:", error);
+        throw error;
+    }
+};
+
+export const markContactFormAsRead = async (id: string) => {
+    try {
+        const response = await axios.patch(`${API_BASE_URL}/contact/${id}/read`);
+        return response.data;
+    } catch (error) {
+        console.error("Error marking contact form as read:", error);
+        throw error;
+    }
+};
+
+export const submitContactForm = async (data: { name: string; email: string; phone: string; message: string }) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/contact`, data);
+        return response.data;
+    } catch (error) {
+        console.error("Error submitting contact form:", error);
         throw error;
     }
 };
