@@ -20,6 +20,8 @@ import FAQPage from "./pages/FAQPage";
 import NotFound from "./pages/NotFound";
 import AdminPage from "./pages/admin/AdminPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminHome from "./pages/admin/AdminHome";
+import AdminContactForms from "./pages/admin/AdminContactForms";
 import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
 import ProductAdd from "./pages/admin/ProductAdd";
 import AdminProductEdit from "./pages/admin/AdminProductEdit";
@@ -69,6 +71,16 @@ const App = () => (
                 <Route path="/admin" element={
                   <PrivateRoute>
                     <AdminPage />
+                  </PrivateRoute>
+                } />
+                <Route path="/admin/dashboard" element={
+                  <PrivateRoute>
+                    <AdminHome />
+                  </PrivateRoute>
+                } />
+                <Route path="/admin/contact-forms" element={
+                  <PrivateRoute>
+                    <AdminContactForms />
                   </PrivateRoute>
                 } />
                 <Route path="/admin/orders" element={

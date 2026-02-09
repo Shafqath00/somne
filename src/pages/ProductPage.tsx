@@ -589,7 +589,7 @@ const ProductPage = () => {
                         variant={"default"}
                         onClick={() => setAssemblyAdded(!assemblyAdded)}
                       >
-                        {assemblyAdded ? 'Added' : 'Add'}
+                        {assemblyAdded ? 'Remove' : 'Add'}
                         <span className={cn('font-semibold text-center', assemblyAdded ? 'hidden' : '')}>£49</span>
                       </Button>
                       {/* <p className=' font-semibold text-center'>£49</p> */}

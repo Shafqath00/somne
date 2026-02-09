@@ -6,7 +6,7 @@ import { Layout } from '@/components/layout/Layout';
 import { AdminProductCard } from '@/components/products/adminProduct';
 import { Button } from '@/components/ui/button';
 import { getAllProducts } from '@/api/api';
-import { Plus, Loader2, Box, Layers, BedDouble, Archive } from 'lucide-react';
+import { Plus, Loader2, Box, Layers, BedDouble, Archive, LayoutDashboard } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -46,6 +46,12 @@ export default function AdminPage() {
                                 <p className="text-slate-500 mt-1">Manage your inventory, prices, and product details</p>
                             </div>
                             <div className='flex md:flex-row flex-col gap-2'>
+                                {/* <Button asChild variant="outline" size="lg" className="shadow-sm hover:shadow-md transition-all bg-white mr-2">
+                                    <Link to="/admin/dashboard">
+                                        <LayoutDashboard className="w-4 h-4 mr-2" />
+                                        Dashboard
+                                    </Link>
+                                </Button>
                                 <Button asChild variant="outline" size="lg" className="shadow-sm hover:shadow-md transition-all bg-white mr-2">
                                     <Link to="/admin/orders">
                                         <Box className="w-4 h-4 mr-2" />
@@ -57,7 +63,7 @@ export default function AdminPage() {
                                         <Plus className="w-4 h-4 mr-2" />
                                         Add Discount Code
                                     </Link>
-                                </Button>
+                                </Button> */}
                                 <Button asChild variant="luxury" size="lg" className="shadow-lg hover:shadow-xl transition-all">
                                     <Link to="/admin/add">
                                         <Plus className="w-4 h-4 mr-2" />

@@ -107,11 +107,37 @@ export default function PaymentSuccess() {
                                     <h3 className="font-medium text-foreground mb-3 text-center">Order Summary</h3>
                                     <div className="space-y-2 text-sm">
                                         {order.items?.map((item, i) => (
-                                            <div key={i} className="flex justify-between">
-                                                <span className="text-muted-foreground">
-                                                    {item.name} {item.selectedSize && `(${item.selectedSize})`} x{item.quantity}
-                                                </span>
-                                                <span className="font-medium">{formatPrice(item.price * item.quantity)}</span>
+                                            <div key={i} className="flex gap-4 py-4 border-b border-border last:border-0">
+                                                {/* Product Image */}
+                                                <div className="w-16 h-16 bg-white rounded-md overflow-hidden flex-shrink-0 border border-border">
+                                                    {item.image ? (
+                                                        <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                                                    ) : (
+                                                        <div className="w-full h-full bg-secondary flex items-center justify-center text-xs text-muted-foreground">
+                                                            No Img
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Details */}
+                                                <div className="flex-1 text-left">
+                                                    <div className="flex justify-between items-start">
+                                                        <span className="font-medium text-foreground text-base">{item.name}</span>
+                                                        <span className="font-medium text-foreground ml-2">
+                                                            {formatPrice(item.price * item.quantity)}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="text-sm text-muted-foreground mt-1 space-y-0.5">
+                                                        <p>Quantity: {item.quantity}</p>
+                                                        {item.selectedSize?.name && <p>Size: {item.selectedSize.name}</p>}
+                                                        {item.selectedColor?.name && <p>Color: {item.selectedColor.name}</p>}
+                                                        {item.selectedStorage?.name && <p>Storage: {item.selectedStorage.name}</p>}
+                                                        {item.selectedHeadboard?.name && <p>Headboard: {item.selectedHeadboard.name}</p>}
+                                                        {item.selectedBase?.name && <p>Base: {item.selectedBase.name}</p>}
+                                                        {item.selectedFirmness?.name && <p>Firmness: {item.selectedFirmness.name}</p>}
+                                                    </div>
+                                                </div>
                                             </div>
                                         ))}
                                         <div className="border-t border-border pt-2 flex justify-between font-medium">

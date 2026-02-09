@@ -51,8 +51,8 @@ export function TrendingProducts() {
                 </div>
 
                 <div className="text-center">
-                    <Button variant="luxuryOutline" size="xl" asChild>
-                        <Link to="/beds/divan-beds">Shop All Trending</Link>
+                    <Button variant="luxuryOutline" size="lg" asChild>
+                        <Link to="/beds/divan-beds">Shop all</Link>
                     </Button>
                 </div>
             </div>

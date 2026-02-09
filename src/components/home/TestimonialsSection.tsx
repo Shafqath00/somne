@@ -5,7 +5,7 @@ export function TestimonialsSection() {
   const featuredReviews = reviews.slice(0, 3);
 
   return (
-    <section className="section-padding bg-background">
+    <section className="section-padding bg-white">
       <div className="luxury-container">
         <div className="text-center mb-12 md:mb-16">
           <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
@@ -43,7 +43,7 @@ export function TestimonialsSection() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="font-sans text-sm font-medium text-foreground">{review.author}</p>
-                  <p className="font-sans text-xs text-muted-foreground">{review.date}</p>
+                  {/* <p className="font-sans text-xs text-muted-foreground">{review.date}</p> */}
                 </div>
                 {review.verified && (
                   <span className="font-sans text-xs text-accent">Verified Purchase</span>
