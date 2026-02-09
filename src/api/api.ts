@@ -4,7 +4,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../lib/firebase";
 
 // Environment variable handling would go here, falling back for now  https://bedshowroom2-3duyqbp4qa-uc.a.run.app
-const API_BASE_URL = "http://127.0.0.1:5001/somne-f5b59/us-central1/bedshowroom2";
+const API_BASE_URL = "https://bedshowroom2-3duyqbp4qa-uc.a.run.app";
 
 export async function resizeImageFile(file: File, maxWidth = 1200, outputType = 'image/webp', quality = 0.8): Promise<Blob> {
     const img = await createImageBitmap(file);
