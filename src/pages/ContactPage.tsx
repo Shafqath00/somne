@@ -87,8 +87,8 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <h3 className="font-sans text-sm font-medium text-foreground mb-1">Phone</h3>
-                      <p className="font-sans text-muted-foreground">0800 123 4567</p>
-                      <p className="font-sans text-sm text-muted-foreground">Free from UK landlines</p>
+                      <p className="font-sans text-muted-foreground">01924 906335</p>
+                      {/* <p className="font-sans text-sm text-muted-foreground">Free from UK landlines</p> */}
                     </div>
                   </div>
 
@@ -98,12 +98,12 @@ const ContactPage = () => {
                     </div>
                     <div>
                       <h3 className="font-sans text-sm font-medium text-foreground mb-1">Email</h3>
-                      <p className="font-sans text-muted-foreground">hello@somne.co.uk</p>
-                      <p className="font-sans text-sm text-muted-foreground">We reply within 24 hours</p>
+                      <p className="font-sans text-muted-foreground">contact@somne.co.uk</p>
+                      {/* <p className="font-sans text-sm text-muted-foreground">We reply within 24 hours</p> */}
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  {/* <div className="flex gap-4">
                     <div className="w-12 h-12 bg-white border border-border shadow-md rounded-lg flex items-center justify-center flex-shrink-0">
                       <MapPin className="w-5 h-5 text-accent" />
                     </div>
@@ -115,7 +115,7 @@ const ContactPage = () => {
                         London, SW1 2AB
                       </p>
                     </div>
-                  </div>
+                  </div> */}
 
                   <div className="flex gap-4">
                     <div className="w-12 h-12 bg-white border border-border shadow-md rounded-lg flex items-center justify-center flex-shrink-0">

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
@@ -73,6 +73,7 @@ const categoryInfo: Record<string, { title: string; description: string }> = {
 
 const CategoryPage = () => {
   const { category, subcategory } = useParams();
+  console.log("category, subcategory", { category, subcategory });
   const [searchParams, setSearchParams] = useSearchParams();
   // console.log(useParams());
   const [showFilters, setShowFilters] = useState(false);
@@ -94,7 +95,22 @@ const CategoryPage = () => {
     });
   };
 
-  const [sortBy, setSortBy] = useState('featured');
+  // Default to price-low for mattresses (including subcategories), featured for others
+  // Default to price-low for mattresses (including subcategories), featured for others
+  // const isMattress =
+  //   category === 'mattresses' ||
+  //   category?.includes('mattress') ||
+  //   category === 'memory-foam' ||
+  //   subcategory?.includes('mattress') ||
+  //   subcategory === 'memory-foam';
+
+  // Initialize state
+  const [sortBy, setSortBy] = useState(`${category === 'mattresses' ? 'price-low' : 'featured'}`);
+
+  // Reset sorting when category changes
+  useEffect(() => {
+    setSortBy(`${category === 'mattresses' ? 'price-low' : 'featured'}`);
+  }, [category, subcategory]);
 
   // Validate category - if not valid, redirect to NotFound
   const isValidCategory = category && validCategories.includes(category);

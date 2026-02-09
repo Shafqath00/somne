@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
 import { Plus, Trash2, Save, ArrowLeft, BedSingle, BedDouble, Weight, BrickWall, Upload, Package, Palette, Ruler, Archive, Crown, Layers, Sparkles, Images, X, Star, Pencil, ArrowUp } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
@@ -410,7 +410,7 @@ export default function AdminProductEdit() {
             <Helmet>
                 <title>Edit Product | Admin</title>
             </Helmet>
-            <Layout>
+            <AdminLayout>
                 {/* Hero Header */}
                 <div className="relative bg-gradient-to-br from-primary via-primary to-[hsl(225,30%,22%)] overflow-hidden">
                     <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
@@ -1380,7 +1380,7 @@ export default function AdminProductEdit() {
                         )}
                     </div>
                 </div>
-            </Layout>
+            </AdminLayout>
         </>
     );
 }

@@ -1,17 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { getAllOrders, getAllProducts, getAllContactForms, getAllDiscounts, ContactForm } from '@/api/api';
 import {
     Loader2, Package, ShoppingBag, MessageSquare, Ticket,
     Clock, CheckCircle, Truck, XCircle,
-    ArrowRight, Plus
+    ArrowRight, Plus, TrendingUp, DollarSign, Activity
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Helmet } from 'react-helmet-async';
+import {
+    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+    BarChart, Bar, Cell, PieChart, Pie, Legend
+} from 'recharts';
 
 interface DashboardStats {
     totalOrders: number;
@@ -24,7 +28,7 @@ interface DashboardStats {
 interface Order {
     id: string;
     orderNumber?: number;
-    createdAt: string;
+    createdAt: string | { _seconds: number; _nanoseconds: number };
     total: number;
     status: string;
     shippingDetails: {
@@ -47,6 +51,11 @@ export default function AdminHome() {
     const [recentOrders, setRecentOrders] = useState<Order[]>([]);
     const [recentInquiries, setRecentInquiries] = useState<ContactForm[]>([]);
     const [loading, setLoading] = useState(true);
+
+    // Chart Data States
+    const [revenueData, setRevenueData] = useState<any[]>([]);
+    const [topProducts, setTopProducts] = useState<any[]>([]);
+    const [categoryData, setCategoryData] = useState<any[]>([]);
 
     useEffect(() => {
         fetchDashboardData();
@@ -74,11 +83,72 @@ export default function AdminHome() {
             setRecentOrders(orders.slice(0, 5));
             // Get 5 most recent inquiries
             setRecentInquiries(forms.slice(0, 5));
+
+            processChartData(orders, products);
+
         } catch (error) {
+            console.error(error);
             toast.error("Failed to load dashboard data");
         } finally {
             setLoading(false);
         }
+    };
+
+    const processChartData = (orders: Order[], products: any[]) => {
+        // 1. Revenue Over Time (Last 30 Days)
+        const last30Days = [...Array(30)].map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d.toISOString().split('T')[0];
+        }).reverse();
+
+        const revenueMap: { [key: string]: number } = {};
+        last30Days.forEach(date => revenueMap[date] = 0);
+
+        orders.forEach(order => {
+            const orderDate = new Date(
+                typeof order.createdAt === 'object' && '_seconds' in order.createdAt
+                    ? order.createdAt._seconds * 1000
+                    : order.createdAt
+            ).toISOString().split('T')[0];
+
+            if (revenueMap[orderDate] !== undefined) {
+                revenueMap[orderDate] += order.total || 0;
+            }
+        });
+
+        const revData = Object.keys(revenueMap).map(date => ({
+            date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+            revenue: revenueMap[date]
+        }));
+        setRevenueData(revData);
+
+        // 2. Top Selling Products
+        const productSales: { [key: string]: number } = {};
+        orders.forEach(order => {
+            order.items?.forEach(item => {
+                if (item.name) {
+                    productSales[item.name] = (productSales[item.name] || 0) + (item.quantity || 1);
+                }
+            });
+        });
+
+        const topProds = Object.entries(productSales)
+            .map(([name, sales]) => ({ name, sales }))
+            .sort((a, b) => b.sales - a.sales)
+            .slice(0, 5);
+        setTopProducts(topProds);
+
+        // 3. Category Distribution
+        const catMap: { [key: string]: number } = {};
+        products.forEach(p => {
+            const cat = p.categoryId || 'Other';
+            catMap[cat] = (catMap[cat] || 0) + 1;
+        });
+
+        const catData = Object.entries(catMap)
+            .map(([name, value]) => ({ name: name.charAt(0).toUpperCase() + name.slice(1), value }));
+        setCategoryData(catData);
     };
 
     const getStatusColor = (status: string) => {
@@ -120,13 +190,15 @@ export default function AdminHome() {
         return new Date(createdAt).toLocaleDateString();
     };
 
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
+
     if (loading) {
         return (
-            <Layout>
+            <AdminLayout>
                 <div className="min-h-[60vh] flex items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 </div>
-            </Layout>
+            </AdminLayout>
         );
     }
 
@@ -135,71 +207,147 @@ export default function AdminHome() {
             <Helmet>
                 <title>Admin Dashboard | Somne</title>
             </Helmet>
-            <Layout>
+            <AdminLayout>
                 <div className="bg-slate-50 min-h-screen py-8">
                     <div className="luxury-container">
 
                         {/* Header */}
-                        <div className="mb-8">
-                            <h1 className="font-serif text-3xl font-medium text-foreground">Admin Dashboard</h1>
-                            <p className="text-muted-foreground mt-2">Overview of your store and customer inquiries</p>
+                        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h1 className="font-serif text-3xl font-medium text-foreground">Admin Dashboard</h1>
+                                <p className="text-muted-foreground mt-2">Overview of your store performance</p>
+                            </div>
+                            <Button onClick={() => fetchDashboardData()} variant="outline" size="sm">
+                                <Activity className="w-4 h-4 mr-2" /> Refresh Data
+                            </Button>
                         </div>
 
                         {/* Stats Cards */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
-                                        <Package className="w-5 h-5 text-blue-600" />
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">Orders</span>
+                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
+                            <StatsCard
+                                title="Total Revenue"
+                                value={`£${stats.totalRevenue.toLocaleString()}`}
+                                icon={DollarSign}
+                                color="text-green-600"
+                                bg="bg-green-50"
+                            />
+                            <StatsCard
+                                title="Total Orders"
+                                value={stats.totalOrders}
+                                icon={ShoppingBag}
+                                color="text-blue-600"
+                                bg="bg-blue-50"
+                            />
+                            <StatsCard
+                                title="Products"
+                                value={stats.totalProducts}
+                                icon={Package}
+                                color="text-purple-600"
+                                bg="bg-purple-50"
+                            />
+                            <StatsCard
+                                title="Inquiries"
+                                value={stats.pendingInquiries}
+                                icon={MessageSquare}
+                                color="text-orange-600"
+                                bg="bg-orange-50"
+                            />
+                            <StatsCard
+                                title="Discounts"
+                                value={stats.activeDiscounts}
+                                icon={Ticket}
+                                color="text-pink-600"
+                                bg="bg-pink-50"
+                            />
+                        </div>
+
+                        {/* Charts Section */}
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            {/* Revenue Chart */}
+                            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-serif text-lg font-medium mb-6 flex items-center gap-2">
+                                    <TrendingUp className="w-5 h-5 text-accent" />
+                                    Revenue Overview
+                                </h3>
+                                <div className="h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={revenueData}>
+                                            <defs>
+                                                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#133a54" stopOpacity={0.1} />
+                                                    <stop offset="95%" stopColor="#133a54" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                            <XAxis
+                                                dataKey="date"
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fontSize: 12, fill: '#64748B' }}
+                                                dy={10}
+                                            />
+                                            <YAxis
+                                                axisLine={false}
+                                                tickLine={false}
+                                                tick={{ fontSize: 12, fill: '#64748B' }}
+                                                tickFormatter={(value) => `£${value}`}
+                                                dx={-10}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #E2E8F0', padding: '12px' }}
+                                                formatter={(value: number) => [`£${value.toLocaleString()}`, 'Revenue']}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="revenue"
+                                                stroke="#133a54"
+                                                strokeWidth={2}
+                                                fillOpacity={1}
+                                                fill="url(#colorRevenue)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
                                 </div>
-                                <p className="text-2xl font-semibold text-foreground">{stats.totalOrders}</p>
                             </div>
 
-                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
-                                        <span className="text-green-600 font-semibold">£</span>
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">Revenue</span>
+                            {/* Top Products */}
+                            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+                                <h3 className="font-serif text-lg font-medium mb-6 flex items-center gap-2">
+                                    <Package className="w-5 h-5 text-accent" />
+                                    Top Selling Products
+                                </h3>
+                                <div className="space-y-6">
+                                    {topProducts.length > 0 ? (
+                                        topProducts.map((product, index) => (
+                                            <div key={index} className="flex items-center justify-between group">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center font-medium text-slate-600 text-xs">
+                                                        {index + 1}
+                                                    </div>
+                                                    <span className="text-sm font-medium text-slate-700 truncate max-w-[120px]" title={product.name}>
+                                                        {product.name}
+                                                    </span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-accent rounded-full"
+                                                            style={{ width: `${(product.sales / topProducts[0].sales) * 100}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className="text-xs font-medium text-slate-500">{product.sales} sold</span>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground text-center py-8">No sales data yet</p>
+                                    )}
                                 </div>
-                                <p className="text-2xl font-semibold text-foreground">£{stats.totalRevenue.toLocaleString()}</p>
-                            </div>
-
-                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
-                                        <ShoppingBag className="w-5 h-5 text-purple-600" />
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">Products</span>
-                                </div>
-                                <p className="text-2xl font-semibold text-foreground">{stats.totalProducts}</p>
-                            </div>
-
-                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-orange-50 rounded-lg flex items-center justify-center">
-                                        <MessageSquare className="w-5 h-5 text-orange-600" />
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">Inquiries</span>
-                                </div>
-                                <p className="text-2xl font-semibold text-foreground">{stats.pendingInquiries}</p>
-                            </div>
-
-                            <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                                <div className="flex items-center gap-3 mb-3">
-                                    <div className="w-10 h-10 bg-pink-50 rounded-lg flex items-center justify-center">
-                                        <Ticket className="w-5 h-5 text-pink-600" />
-                                    </div>
-                                    <span className="text-sm text-muted-foreground">Discounts</span>
-                                </div>
-                                <p className="text-2xl font-semibold text-foreground">{stats.activeDiscounts}</p>
                             </div>
                         </div>
 
-                        {/* Quick Links */}
-                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-10">
+                        {/* Quick Links Row */}
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
                             <Link to="/admin/orders" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -209,8 +357,8 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-
-                            <Link to="/admin" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+                            {/* ... more links can go here if needed, keeping it clean for now */}
+                            <Link to="/admin/products" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <ShoppingBag className="w-5 h-5 text-slate-600" />
@@ -219,7 +367,6 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-
                             <Link to="/admin/contact-forms" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -229,7 +376,6 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-
                             <Link to="/admin/discount" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -239,7 +385,6 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-
                             <Link to="/admin/add" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -251,46 +396,46 @@ export default function AdminHome() {
                             </Link>
                         </div>
 
-                        {/* Two Column Layout */}
+                        {/* Recent Activity Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
                             {/* Recent Orders */}
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                                <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+                                <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                     <div>
-                                        <h2 className="font-serif text-xl font-medium text-foreground">Recent Orders</h2>
-                                        <p className="text-sm text-muted-foreground mt-1">Latest 5 orders</p>
+                                        <h2 className="font-serif text-lg font-medium text-foreground">Recent Orders</h2>
                                     </div>
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="ghost" size="sm" asChild className="text-xs hover:bg-white">
                                         <Link to="/admin/orders">View All</Link>
                                     </Button>
                                 </div>
-
                                 <div className="divide-y divide-slate-100">
                                     {recentOrders.length > 0 ? (
                                         recentOrders.map((order) => (
                                             <div
                                                 key={order.id}
-                                                className="p-4 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                                                className="p-4 hover:bg-slate-50 transition-colors cursor-pointer group"
                                                 onClick={() => navigate(`/admin/orders/${order.id}`)}
                                             >
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <p className="font-mono text-sm text-accent font-medium">
-                                                            {order.orderNumber ? `#${order.orderNumber}` : `#${order.id.slice(0, 8)}`}
-                                                        </p>
-                                                        <p className="text-sm text-foreground mt-1">
-                                                            {order.shippingDetails.firstName} {order.shippingDetails.lastName}
-                                                        </p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-100 transition-colors">
+                                                            <Package className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-sm text-foreground">
+                                                                {order.shippingDetails.firstName} {order.shippingDetails.lastName}
+                                                            </p>
+                                                            <p className="text-xs text-muted-foreground">
+                                                                {order.orderNumber ? `#${order.orderNumber}` : `#${order.id.slice(0, 8)}`}
+                                                            </p>
+                                                        </div>
                                                     </div>
                                                     <div className="text-right">
                                                         <p className="font-medium text-foreground">£{order.total.toLocaleString()}</p>
-                                                        <p className="text-xs text-muted-foreground">{formatDate(order.createdAt)}</p>
+                                                        <div className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium border mt-1", getStatusColor(order.status))}>
+                                                            {order.status}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border", getStatusColor(order.status))}>
-                                                    {getStatusIcon(order.status)}
-                                                    {order.status}
                                                 </div>
                                             </div>
                                         ))
@@ -305,31 +450,33 @@ export default function AdminHome() {
 
                             {/* Recent Inquiries */}
                             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-                                <div className="p-5 border-b border-slate-100 flex justify-between items-center">
+                                <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                     <div>
-                                        <h2 className="font-serif text-xl font-medium text-foreground">Recent Inquiries</h2>
-                                        <p className="text-sm text-muted-foreground mt-1">Latest contact form submissions</p>
+                                        <h2 className="font-serif text-lg font-medium text-foreground">Recent Inquiries</h2>
                                     </div>
-                                    <Button variant="outline" size="sm" asChild>
+                                    <Button variant="ghost" size="sm" asChild className="text-xs hover:bg-white">
                                         <Link to="/admin/contact-forms">View All</Link>
                                     </Button>
                                 </div>
-
                                 <div className="divide-y divide-slate-100">
                                     {recentInquiries.length > 0 ? (
                                         recentInquiries.map((form) => (
-                                            <div key={form.id} className="p-4 hover:bg-slate-50/50 transition-colors">
+                                            <div key={form.id} className="p-4 hover:bg-slate-50 transition-colors group">
                                                 <div className="flex justify-between items-start mb-2">
-                                                    <div>
-                                                        <p className="font-medium text-sm text-foreground">{form.name}</p>
-                                                        <p className="text-xs text-muted-foreground">{form.email}</p>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-100 transition-colors">
+                                                            <MessageSquare className="w-5 h-5" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-medium text-sm text-foreground">{form.name}</p>
+                                                            <p className="text-xs text-muted-foreground">{form.email}</p>
+                                                        </div>
                                                     </div>
-                                                    <p className="text-xs text-muted-foreground">{formatDate(form.createdAt)}</p>
+                                                    <span className="text-[10px] text-muted-foreground bg-slate-100 px-2 py-1 rounded-full">
+                                                        {formatDate(form.createdAt)}
+                                                    </span>
                                                 </div>
-                                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{form.message}</p>
-                                                <div className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border", getInquiryStatusColor(form.status))}>
-                                                    {form.status}
-                                                </div>
+                                                <p className="text-sm text-slate-600 line-clamp-2 pl-[52px]">{form.message}</p>
                                             </div>
                                         ))
                                     ) : (
@@ -343,7 +490,21 @@ export default function AdminHome() {
                         </div>
                     </div>
                 </div>
-            </Layout>
+            </AdminLayout>
         </>
+    );
+}
+
+function StatsCard({ title, value, icon: Icon, color, bg }: { title: string, value: string | number, icon: any, color: string, bg: string }) {
+    return (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+            <div className="flex items-center gap-3 mb-3">
+                <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", bg)}>
+                    <Icon className={cn("w-5 h-5", color)} />
+                </div>
+                <span className="text-sm text-muted-foreground">{title}</span>
+            </div>
+            <p className="text-2xl font-semibold text-foreground">{value}</p>
+        </div>
     );
 }

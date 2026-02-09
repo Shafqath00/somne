@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useEffect, useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { getAllOrders, updateOrderStatus } from '@/api/api';
 import { Loader2, Package, Truck, CheckCircle, Clock, XCircle, Search, Eye, AlertTriangle, ArrowRight, Filter } from 'lucide-react';
 import { toast } from 'sonner';
@@ -165,16 +165,16 @@ export default function AdminDashboard() {
 
     if (loading) {
         return (
-            <Layout>
+            <AdminLayout>
                 <div className="min-h-[60vh] flex items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 </div>
-            </Layout>
+            </AdminLayout>
         );
     }
 
     return (
-        <Layout>
+        <AdminLayout>
             <div className="bg-white min-h-screen py-8">
                 <div className="luxury-container">
 
@@ -351,6 +351,6 @@ export default function AdminDashboard() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </Layout>
+        </AdminLayout>
     );
 }

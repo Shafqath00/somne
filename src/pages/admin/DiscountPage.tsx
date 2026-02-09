@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from "react";
-import { Layout } from "@/components/layout/Layout";
+import { AdminLayout } from "@/components/layout/AdminLayout";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -136,7 +136,7 @@ export default function DiscountPage() {
             <Helmet>
                 <title>Manage Discounts | Bed Showroom Admin</title>
             </Helmet>
-            <Layout>
+            <AdminLayout>
                 <div className="min-h-screen bg-slate-50/50 py-12">
                     <div className="luxury-container max-w-6xl mx-auto px-4">
                         <div className="mb-8">
@@ -379,7 +379,7 @@ export default function DiscountPage() {
                         </DialogFooter>
                     </DialogContent>
                 </Dialog>
-            </Layout>
+            </AdminLayout>
         </>
     );
 }

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from 'react';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { getAllContactForms, updateContactFormStatus, markContactFormAsRead, ContactForm } from '@/api/api';
 import {
     Loader2, MessageSquare, Search, Clock, CheckCircle, AlertCircle, XCircle, Eye, ChevronDown
@@ -140,11 +140,11 @@ export default function AdminContactForms() {
 
     if (loading) {
         return (
-            <Layout>
+            <AdminLayout>
                 <div className="min-h-[60vh] flex items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 </div>
-            </Layout>
+            </AdminLayout>
         );
     }
 
@@ -153,7 +153,7 @@ export default function AdminContactForms() {
             <Helmet>
                 <title>Customer Inquiries | Admin</title>
             </Helmet>
-            <Layout>
+            <AdminLayout>
                 <div className="bg-slate-50 min-h-screen py-8">
                     <div className="luxury-container">
 
@@ -321,7 +321,7 @@ export default function AdminContactForms() {
                         </DialogContent>
                     </Dialog>
                 </div>
-            </Layout>
+            </AdminLayout>
         </>
     );
 }

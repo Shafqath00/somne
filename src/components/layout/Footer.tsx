@@ -109,7 +109,7 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <Phone className="h-4 w-4 mt-1 text-accent" />
                 <span className="font-sans text-sm text-primary-foreground/80">
-                  0800 123 4567
+                  01924 906335
                 </span>
               </li>
               <li className="flex items-start gap-3">
@@ -118,14 +118,14 @@ export function Footer() {
                   hello@bedshowroom.co.uk
                 </span>
               </li>
-              <li className="flex items-start gap-3">
+              {/* <li className="flex items-start gap-3">
                 <MapPin className="h-4 w-4 mt-1 text-accent" />
                 <span className="font-sans text-sm text-primary-foreground/80">
                   Somne<br />
                   123 Craftsman Way<br />
                   London, SW1 2AB
                 </span>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>

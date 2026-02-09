@@ -793,7 +793,7 @@ const ProductPage = () => {
                               {/* Left Panel: Mattress List */}
                               <div className={`
                             flex-1 overflow-y-auto p-4 md:p-6 scrollbar-thin
-                            ${selectedUpsellMattress ? 'hidden md:block' : 'block'}`}>
+                            block`}>
                                 {compatibleMattresses.length === 0 ? (
                                   <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground p-8">
                                     <Sparkles className="w-8 h-8 mb-3 opacity-20" />
@@ -801,7 +801,11 @@ const ProductPage = () => {
                                   </div>
                                 ) : (
                                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                                    {compatibleMattresses.map(mattress => {
+                                    {compatibleMattresses.sort((a, b) => {
+                                      const priceA = (a.discountPrice || a.basePrice || a.price || 0) + (a.sizes.find(s => s.name === selectedSize?.name)?.priceModifier || 0);
+                                      const priceB = (b.discountPrice || b.basePrice || b.price || 0) + (b.sizes.find(s => s.name === selectedSize?.name)?.priceModifier || 0);
+                                      return priceA - priceB;
+                                    }).map(mattress => {
                                       // console.log(mattress,"sdsds")
                                       const isSelected = selectedUpsellMattress?.id === mattress.id;
                                       const sizePrice = mattress.sizes.find(s => s.name === selectedSize?.name)?.priceModifier || 0;

@@ -21,11 +21,11 @@ const faqs = [
     {
         question: "What is included in the 5-year warranty?",
         answer: "All of our products are backed by a comprehensive 5-year warranty, reflecting our confidence in their quality and workmanship.If you encounter any issues or have concerns during the warranty period, our customer support team is here to help. We’ll work quickly to resolve the matter, whether that means arranging a repair, a replacement, or an appropriate solution."
+    },
+    {
+        question: "Do you offer removal of old beds or mattresses?",
+        answer: "At present, we do not provide a removal service for old beds or mattresses.We recommend contacting your local council, as they often offer a convenient and cost-effective collection service for disposing of unwanted furniture.",
     }
-    // {
-    //     question: "Do you offer finance options?",
-    //     answer: "Yes, we partner with Klarna and Clearpay to offer flexible payment options, allowing you to spread the cost of your purchase over time interest-free."
-    // }
 ];
 
 export function FAQSection() {

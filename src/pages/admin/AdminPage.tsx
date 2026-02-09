@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { AdminProductCard } from '@/components/products/adminProduct';
 import { Button } from '@/components/ui/button';
 import { getAllProducts } from '@/api/api';
@@ -35,7 +35,7 @@ export default function AdminPage() {
             <Helmet>
                 <title>Admin Dashboard | Bed Showroom</title>
             </Helmet>
-            <Layout>
+            <AdminLayout>
                 <div className="min-h-screen bg-slate-50/50">
                     <div className='luxury-container section-padding'>
 
@@ -158,7 +158,7 @@ export default function AdminPage() {
                         )}
                     </div>
                 </div>
-            </Layout>
+            </AdminLayout>
         </>
     );
 }

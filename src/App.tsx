@@ -7,7 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
-import LoginPage from "./pages/LoginPage";
+import LoginPage from "./pages/admin/LoginPage";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import HomePage from "./pages/HomePage";
 import CategoryPage from "./pages/CategoryPage";
@@ -25,12 +25,12 @@ import AdminContactForms from "./pages/admin/AdminContactForms";
 import AdminOrderDetail from "./pages/admin/AdminOrderDetail";
 import ProductAdd from "./pages/admin/ProductAdd";
 import AdminProductEdit from "./pages/admin/AdminProductEdit";
-import Checkout from "./pages/Checkout";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentCancel from "./pages/PaymentCancel";
+import Checkout from "./pages/PaymentPages/Checkout";
+import PaymentSuccess from "./pages/PaymentPages/PaymentSuccess";
+import PaymentCancel from "./pages/PaymentPages/PaymentCancel";
 import ScrollToTop from "./components/layout/ScrollToTop";
-import DiscountPage from "./pages/DiscountPage";
-import OrderTracking from "./pages/OrderTracking";
+import DiscountPage from "./pages/admin/DiscountPage";
+import OrderTracking from "./pages/PaymentPages/OrderTracking";
 
 // Configure React Query with sensible defaults
 const queryClient = new QueryClient({
@@ -70,12 +70,14 @@ const App = () => (
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/admin" element={
                   <PrivateRoute>
-                    <AdminPage />
+                     <AdminHome />
+                    {/* <AdminPage /> */}
                   </PrivateRoute>
                 } />
-                <Route path="/admin/dashboard" element={
+                <Route path="/admin/products" element={
                   <PrivateRoute>
-                    <AdminHome />
+                    {/* <AdminHome /> */}
+                    <AdminPage />
                   </PrivateRoute>
                 } />
                 <Route path="/admin/contact-forms" element={

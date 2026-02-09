@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { getOrderById, updateOrderStatus } from '@/api/api';
 import { Loader2, Package, Truck, CheckCircle, Clock, XCircle, ArrowLeft, MapPin, Mail, Phone, Calendar, Save, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
@@ -111,18 +111,18 @@ export default function AdminOrderDetail() {
 
     if (loading) {
         return (
-            <Layout>
+            <AdminLayout>
                 <div className="min-h-[60vh] flex items-center justify-center">
                     <Loader2 className="w-8 h-8 animate-spin text-accent" />
                 </div>
-            </Layout>
+            </AdminLayout>
         );
     }
 
     if (!order) return null;
 
     return (
-        <Layout>
+        <AdminLayout>
             <div className="bg-white min-h-screen py-8">
                 <div className="luxury-container">
                     {/* Header */}
@@ -325,7 +325,7 @@ export default function AdminOrderDetail() {
                     </DialogContent>
                 </Dialog>
             </div>
-        </Layout>
+        </AdminLayout>
     );
 }
 

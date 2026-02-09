@@ -86,7 +86,7 @@ export function Header() {
       {/* Top bar */}
       <div className="bg-primary text-primary-foreground py-2">
         <div className="luxury-container text-center text-xs tracking-widest uppercase font-sans flex flex-col md:flex-row items-center justify-center gap-2">
-          <span>NEW YEAR SALE - EXTRA 25% OFF | ENDS IN</span>
+          <span>WINTER SALE - EXTRA 25% OFF | ENDS IN</span>
           <span className="font-bold tabular-nums min-w-[60px]">{timeLeft}</span>
           <div className='border p-2 rounded-md'>
             <span>USE CODE </span>
@@ -299,7 +299,7 @@ export function Header() {
                       '#C0C0C0',             // 1
                       '#0466c8',                    // 2 (Handled above)
                       '#F5E7C6',             // 3
-                      '#857c78'              // 4
+                      '#005F02'              // 4
                     ][currentLogoIndex] || 'hsl(var(--primary))'
                   }
                 }
@@ -312,7 +312,7 @@ export function Header() {
                   'bg-[#C0C0C0]', // 1
                   'bg-[#0466c8]', // 2
                   'bg-[#F5E7C6]', // 3
-                  'bg-[#857c78]'  // 4
+                  'bg-[#005F02]'  // 4
                 ].map((colorClass, index) => (
                   <div
                     key={index}

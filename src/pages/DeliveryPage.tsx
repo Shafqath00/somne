@@ -135,8 +135,8 @@ const DeliveryPage = () => {
                       <div className="bg-secondary p-4 rounded-md text-sm">
                         <p className="font-medium mb-2">Get in touch via:</p>
                         <ul className="space-y-1">
-                          <li>Email: support@somne.co.uk</li>
-                          <li>Telephone: 01924 926117</li>
+                          <li>Email: contact@somne.co.uk</li>
+                          <li>Telephone: 01924 906335</li>
                         </ul>
                       </div>
                     </div>
@@ -147,12 +147,12 @@ const DeliveryPage = () => {
                     <p className="mb-4">
                       A £75 collection fee applies if you choose to return an item. This fee will be deducted from your refund. For example, if your item costs £500, you will receive £425 once it's returned in reasonable condition.
                     </p>
-                    <p className="mb-4">
+                    {/* <p className="mb-4">
                       Alternatively, you are welcome to arrange your own return. Returns must be sent to:
                     </p>
                     <address className="not-italic bg-secondary p-4 rounded-md text-sm mb-4">
                       Somne Group, Alexandra Mills, Alexandra Road, Batley, WF17 6JA.
-                    </address>
+                    </address> */}
                   </div>
 
                   <div>
