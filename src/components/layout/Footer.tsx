@@ -6,13 +6,14 @@ const footerLinks = {
     { label: 'Beds', href: '/beds/divan-beds' },
     { label: 'Mattresses', href: '/mattresses' },
     { label: 'Headboards', href: '/headboards' },
+    { label: 'Panels', href: '/product/acoustic-wall-panel-pack-of-4' },
   ],
   help: [
     {label: 'Order Tracking', href: '/track-order'},
     { label: 'Returns & Refunds', href: '/returns' },
     // { label: 'FAQ', href: '/faq' },
     { label: 'Contact Us', href: '/contact' },
-    // { label: 'Blog', href: '/blog' },
+    { label: 'Blogs', href: '/blogs' },
   ],
   company: [
     { label: 'About Us', href: '/about' },
@@ -115,7 +116,7 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <Mail className="h-4 w-4 mt-1 text-accent" />
                 <span className="font-sans text-sm text-primary-foreground/80">
-                  hello@bedshowroom.co.uk
+                  contact@somne.co.uk
                 </span>
               </li>
               {/* <li className="flex items-start gap-3">

@@ -20,7 +20,7 @@ export function CategoryGrid() {
           </p> */}
         </div>
         <div className='grid grid-cols-2 md:grid-cols-3 gap-6'>
-          <Link to="/beds/divan-beds group">
+          <Link to="/beds/divan-beds">
             <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
               <img src="/img/beds/green.png" alt="bed" />
               {/* <div className="absolute inset-0 hover:bg-black/20" /> */}
@@ -30,7 +30,7 @@ export function CategoryGrid() {
           </Link>
           <Link to="/beds/upholstered-beds">
             <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src="/img/beds/black.png" alt="bed" />
+              <img src="/img/beds/uphoslstered.jpeg" alt="bed" />
               <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-md md:text-2xl w-fit mx-auto px-2 text-white bg-primary'>Upholstered Beds</h2>
             </div>
             {/* <h2 className='text-center mt-4'>Upholstered Beds</h2> */}

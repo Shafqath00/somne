@@ -2,10 +2,10 @@ import { processSteps } from '@/data';
 
 export function ProcessSection() {
     return (
-        <section className="section-padding bg-secondary">
+        <section className="section-padding bg-gray-100">
             <div className="luxury-container">
                 <div className="text-center mb-12 md:mb-16">
-                    <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
+                    <span className="font-sans text-sm tracking-[0.2em] uppercase text-primary mb-4 block">
                         How It Works
                     </span>
                     <h2 className="luxury-heading text-foreground mb-4">
@@ -25,7 +25,7 @@ export function ProcessSection() {
                             )}
 
                             {/* Step number */}
-                            <div className="w-16 h-16 mx-auto mb-6 bg-accent rounded-full text-primary font-serif text-2xl font-medium flex items-center justify-center">
+                            <div className="w-16 h-16 mx-auto mb-6 bg-primary rounded-full text-white font-serif text-2xl font-medium flex items-center justify-center">
                                 {step.step}
                             </div>
 

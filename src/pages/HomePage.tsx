@@ -1,40 +1,63 @@
+import { Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { HeroSection } from '@/components/home/HeroSection';
 import { USPStrip } from '@/components/home/USPStrip';
-import { CategoryGrid } from '@/components/home/CategoryGrid';
-import { FeaturedProducts } from '@/components/home/FeaturedProducts';
-import { CustomizeBanner } from '@/components/home/CustomizeBanner';
-import { WhyChooseUs } from '@/components/home/WhyChooseUs';
-import { TestimonialsSection } from '@/components/home/TestimonialsSection';
-import { ProcessSection } from '@/components/home/ProcessSection';
-import { InstagramGallery } from '@/components/home/InstagramGallery';
-import { TrendingProducts } from '@/components/home/trending';
-import { FAQSection } from '@/components/home/faq';
+
+// Lazy load below-the-fold components
+const CategoryGrid = lazy(() => import('@/components/home/CategoryGrid').then(module => ({ default: module.CategoryGrid })));
+const TrendingProducts = lazy(() => import('@/components/home/trending').then(module => ({ default: module.TrendingProducts })));
+const WhyChooseUs = lazy(() => import('@/components/home/WhyChooseUs').then(module => ({ default: module.WhyChooseUs })));
+const TestimonialsSection = lazy(() => import('@/components/home/TestimonialsSection').then(module => ({ default: module.TestimonialsSection })));
+const ProcessSection = lazy(() => import('@/components/home/ProcessSection').then(module => ({ default: module.ProcessSection })));
+const FAQSection = lazy(() => import('@/components/home/faq').then(module => ({ default: module.FAQSection })));
+
+// Loading fallback
+const SectionLoader = () => <div className="h-96 flex items-center justify-center bg-gray-50"><div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
 const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Somne</title>
+        <title>Somne® Beds & Mattresses UK | Divan & Ottoman Beds Online</title>
         <meta
           name="description"
-          content="Discover luxury beds and mattresses handcrafted in the UK. Premium upholstered beds, divan sets, ottoman beds & natural mattresses. Free delivery & 5-year guarantee."
+          content="Shop Somne® for premium divan and ottoman beds, mattresses, headboards and more. UK-wide delivery, great value, and styles made for better sleep."
         />
-        <meta property="og:title" content="Somne" />
-        <meta property="og:description" content="Experience hotel-quality comfort in your own home with our premium handcrafted beds and mattresses." />
+        <meta property="og:title" content="Somne® Beds & Mattresses UK | Divan & Ottoman Beds Online" />
+        <meta property="og:description" content="Shop Somne® for premium divan and ottoman beds, mattresses, headboards and more. UK-wide delivery, great value, and styles made for better sleep." />
       </Helmet>
       <Layout>
         <HeroSection />
         <USPStrip />
-        <CategoryGrid />
-        <TrendingProducts />
+
+        <Suspense fallback={<SectionLoader />}>
+          <CategoryGrid />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <TrendingProducts />
+        </Suspense>
+
         {/* <FeaturedProducts /> */}
         {/* <CustomizeBanner /> */}
-        <WhyChooseUs />
-        <TestimonialsSection />
-        <ProcessSection />
-        <FAQSection />
+
+        <Suspense fallback={<SectionLoader />}>
+          <WhyChooseUs />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <TestimonialsSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <ProcessSection />
+        </Suspense>
+
+        <Suspense fallback={<SectionLoader />}>
+          <FAQSection />
+        </Suspense>
+
         {/* <InstagramGallery /> */}
       </Layout>
     </>

@@ -216,9 +216,32 @@ const DeliveryPage = () => {
                   </div>
 
                   <div>
-                    <h3 className="font-serif text-xl font-medium text-foreground mb-3">Refunds: How & When</h3>
+                    <h3 className="font-serif text-xl font-medium text-foreground mb-3">Refund processing times</h3>
                     <p className="mb-4">
-                      Once we’ve received the returned item and confirmed it’s in reasonable condition, we’ll process your refund as quickly as possible. Refunds are made using the same payment method used during the purchase. Please allow up to 5 working days for the refund to appear in your account after processing.
+                      Once your refund is approved, we submit it to your original payment method immediately. After that, the timeline is controlled by the card networks and your bank.
+                    </p>
+                    <p className="mb-4">
+                      <strong>Refund reference (ARN):</strong> For card refunds, a tracking reference called an Acquirer Reference Number (ARN) is usually generated within 1–3 business days after the refund is initiated.
+                    </p>
+                    <p className="mb-4">
+                      <strong>When you’ll receive the money:</strong> Most refunds appear within 5–10 business days, depending on your bank and card provider.
+                    </p>
+                    <p className="mb-4">
+                      <strong>Weekends & bank holidays:</strong> Business days exclude weekends and bank holidays, so refunds may take longer during those periods.
+                    </p>
+
+                    <h4 className="font-serif text-lg font-medium text-foreground mb-2 mt-6">How refunds appear</h4>
+                    <p className="mb-4">
+                      Refunds typically return to the same card/bank account used for the purchase. In some cases, banks may show the refund as:
+                    </p>
+                    <ul className="list-disc pl-5 space-y-2 mb-4">
+                      <li>a separate “Refund” transaction, or</li>
+                      <li>an adjustment/credit against the original transaction.</li>
+                    </ul>
+
+                    <h4 className="font-serif text-lg font-medium text-foreground mb-2 mt-6">If you don’t see your refund yet</h4>
+                    <p className="mb-4">
+                      If you haven’t received the refund after 10 business days, contact us and we’ll share the ARN (if available) so your bank can trace it.
                     </p>
                   </div>
 

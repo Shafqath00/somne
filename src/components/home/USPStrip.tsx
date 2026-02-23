@@ -3,24 +3,27 @@ import { usps } from '@/data';
 
 export function USPStrip() {
   return (
-    <section className="bg-secondary py-6 md:py-8 border-y border-border overflow-hidden">
+    <section className="bg-gray-100 py-6 border-y border-border overflow-hidden">
       <div className="luxury-container">
         {/* Desktop View - Grid */}
-        <div className="hidden md:grid md:grid-cols-3 gap-8">
+        <div className="hidden md:grid md:grid-cols-3">
           {usps.map((usp, index) => {
             return (
-              <div key={usp.title} className={`flex items-center justify-center gap-3 border-r-2 border-black ${index === usps.length - 1 ? 'border-none' : ''}`}>
-                <div >
+              <div key={usp.title} className="relative flex items-center justify-center gap-3 px-6 py-2">
+                {/* Short divider on the right, 60% height, vertically centered */}
+                {index !== usps.length - 1 && (
+                  <span className="absolute right-0 top-1/2 -translate-y-1/2 h-[60%] w-[2px] bg-black/30 rounded-full" />
+                )}
+                <div className="flex flex-col items-center gap-3 text-center">
                   <img
                     src={usp.icon}
                     alt="icon"
-                    className={`${[1].includes(index) ? 'w-[90px]' : ''} ${[2].includes(index) ? 'w-[90px]' : 'w-[120px]'} h-auto`}
+                    className={`${[1].includes(index) ? 'w-[58px]' : ''} ${[2].includes(index) ? 'w-[70px]' : 'w-[90px]'} h-auto`}
                   />
-
-                </div>
-                <div>
-                  <p className="font-sans text-2xl font-bold text-foreground">{usp.title}</p>
-                  <p className="font-sans text-xs text-muted-foreground">{usp.description}</p>
+                  <div className="flex flex-col text-center">
+                    <p className="font-sans text-2xl font-bold text-foreground">{usp.title}</p>
+                    <p className="font-sans text-xs text-muted-foreground">{usp.description}</p>
+                  </div>
                 </div>
               </div>
             );
@@ -30,7 +33,7 @@ export function USPStrip() {
         {/* Mobile View - Infinite Loop */}
         <div className="md:hidden relative w-full">
           <motion.div
-            className="flex gap-6 w-max"
+            className="flex gap-12 w-max"
             animate={{ x: "-50%" }}
             transition={{
               duration: 20,
@@ -39,11 +42,11 @@ export function USPStrip() {
             }}
           >
             {[...usps, ...usps].map((usp, index) => (
-              <div key={`${usp.title}-${index}`} className="flex items-center justify-center gap-3 w-[280px]">
+              <div key={`${usp.title}-${index}`} className={`flex flex-col items-center justify-center gap-3`}>
                 <div>
-                  <img src={usp.icon} alt={usp.title} className="w-16 h-auto" />
+                  <img src={usp.icon} alt={usp.title} className={`${[1].includes(index % usps.length) ? 'w-[40px]' : ''} ${[2].includes(index % usps.length) ? 'w-[50px]' : 'w-[60px]'} h-auto`} />
                 </div>
-                <div>
+                <div className="flex flex-col text-center">
                   <p className="font-sans text-sm font-medium text-foreground">{usp.title}</p>
                   <p className="font-sans text-xs text-muted-foreground">{usp.description}</p>
                 </div>

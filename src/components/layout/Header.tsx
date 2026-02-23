@@ -119,13 +119,13 @@ export function Header() {
                 onMouseEnter={() => setActiveDropdown(item.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <Link
-                  to={item.href}
-                  className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors py-2 px-4 rounded-full"
+                <span
+                  // to={item.href}
+                  className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors cursor-pointer py-2 px-4 rounded-full"
                 >
                   {item.label}
                   {item.children && <ChevronDown className="h-3 w-3" />}
-                </Link>
+                </span>
                 {/* Dropdown */}
                 {item.children && activeDropdown === item.label && (
                   <div className="absolute top-full left-0 pt-2  animate-fade-in">
@@ -203,13 +203,19 @@ export function Header() {
                 onMouseEnter={() => setActiveDropdown(item.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <Link
-                  to={item.href}
-                  className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors py-2 px-4 rounded-full"
-                >
-                  {item.label}
-                  {item.children && <ChevronDown className="h-3 w-3" />}
-                </Link>
+                {item.children ? (
+                  <span className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors cursor-pointer py-2 px-4 rounded-full">
+                    {item.label}
+                    <ChevronDown className="h-3 w-3" />
+                  </span>
+                ) : (
+                  <Link
+                    to={item.href}
+                    className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors cursor-pointer py-2 px-4 rounded-full"
+                  >
+                    {item.label}
+                  </Link>
+                )}
 
                 {/* Dropdown */}
                 {item.children && activeDropdown === item.label && (
@@ -402,7 +408,7 @@ export function Header() {
             ))}
 
             {/* Secondary navigation items */}
-            <div className="pt-4 mt-4 border-t border-border">
+            <div className="border-border">
               {navigationItems2.map((item) => (
                 <div
                   key={item.href}

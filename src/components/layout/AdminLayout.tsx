@@ -12,7 +12,8 @@ import {
     X,
     Tag,
     MessageSquare,
-    PlusCircle
+    PlusCircle,
+    FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -75,6 +76,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         // { name: "Add Product", icon: PlusCircle, path: "/admin/products/add" },
         { name: "Discounts", icon: Tag, path: "/admin/discount" },
         { name: "Inquiries", icon: MessageSquare, path: "/admin/contact-forms" },
+        { name: "Blog", icon: FileText, path: "/admin/blogs" },
         // { name: "Settings", icon: Settings, path: "/admin/settings" },
     ];
 

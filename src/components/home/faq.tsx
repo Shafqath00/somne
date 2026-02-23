@@ -25,7 +25,36 @@ const faqs = [
     {
         question: "Do you offer removal of old beds or mattresses?",
         answer: "At present, we do not provide a removal service for old beds or mattresses.We recommend contacting your local council, as they often offer a convenient and cost-effective collection service for disposing of unwanted furniture.",
-    }
+    },
+    {
+        question: "How long do refunds take?",
+        answer: "Most refunds take 5–10 business days to appear in your account after we process them. Some banks may take longer."
+    },
+    {
+        question: "What is an ARN and when will it be available?",
+        answer: "An ARN (Acquirer Reference Number) is a tracking number used by card networks and banks to locate a refund. It usually becomes available 1–3 business days after the refund is initiated."
+    },
+    {
+        question: "Can I track my refund?",
+        answer: "Yes. Once the ARN is available, your bank/card provider can use it to trace the refund. If you ask us, we can share the ARN as soon as it’s generated."
+    },
+    {
+        question: "Why does it say “refunded” but I haven’t received it yet?",
+        answer: "“Refunded” means the refund has been successfully sent to the payment network. The remaining time is your bank’s processing time, which is usually 5–10 business days."
+    },
+    {
+        question: "Do weekends and holidays count?",
+        answer: "No. Refund timelines are in business days (excluding weekends and bank holidays). This can extend the wait time."
+    },
+    {
+        question: "What if my card is closed or replaced?",
+        answer: "Banks typically route refunds to your updated account automatically, but it depends on the bank. If your card is closed, contact your bank—if needed, we can provide the ARN to help them locate it."
+    },
+    {
+        question: "What should I do if it’s been more than 10 business days?",
+        answer: "Message us with: your order/payment email, the last 4 digits of the card (if applicable), and purchase date/amount. We’ll confirm the refund details and provide the ARN (if available) so your bank can trace it."
+    },
+
 ];
 
 export function FAQSection() {

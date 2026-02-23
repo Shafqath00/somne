@@ -8,7 +8,7 @@ export function TestimonialsSection() {
     <section className="section-padding bg-white">
       <div className="luxury-container">
         <div className="text-center mb-12 md:mb-16">
-          <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
+          <span className="font-sans text-sm tracking-[0.2em] uppercase text-primary mb-4 block">
             Testimonials
           </span>
           <h2 className="luxury-heading text-foreground mb-4">
@@ -30,7 +30,7 @@ export function TestimonialsSection() {
               key={review.id}
               className="bg-card p-8 border rounded-xl border-border hover-lift"
             >
-              <Quote className="w-8 h-8 text-accent/30 mb-4" />
+              <Quote className="w-8 h-8 text-primary mb-4" />
               <div className="flex gap-1 mb-4">
                 {[...Array(review.rating)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 fill-accent text-accent" />

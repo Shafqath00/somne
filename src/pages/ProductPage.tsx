@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/ban-ts-comment */
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useSearchParams, Navigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { ChevronRight, Star, Truck, Shield, Wrench, Minus, Plus, Check, Loader2, BedDouble, BedSingle, Ruler, Weight, Palette, Layers, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -386,7 +386,7 @@ const ProductPage = () => {
         <div className="section-padding luxury-container text-center">
           <h1 className="font-serif text-3xl text-foreground mb-4">Product Not Found</h1>
           <Button variant="luxury" asChild>
-            <Link to="/beds">Browse Products</Link>
+            <Link to="/beds/divan-beds">Browse Products</Link>
           </Button>
         </div>
       </Layout>
@@ -467,11 +467,59 @@ const ProductPage = () => {
   //   .filter((p) => p.category === product.categoryId && p.id !== product.id)
   //   .slice(0, 4);
 
+  if (!loading && !product) {
+    return <Navigate to="/404" replace />;
+  }
+
+  const canonicalUrl = `${window.location.origin}/product/${encodeURIComponent(product.slug || product.name)}`;
+  const productImageUrl = product.images?.[0] ? (product.images[0].startsWith('http') ? product.images[0] : `${window.location.origin}${product.images[0]}`) : `${window.location.origin}/img/logo.png`;
+
+  const jsonLd = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": product.name,
+    "image": productImageUrl,
+    "description": product.description,
+    "sku": product.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "Somne"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": canonicalUrl,
+      "priceCurrency": "GBP",
+      "price": product.discountPrice || product.price,
+      "availability": "https://schema.org/InStock",
+      "itemCondition": "https://schema.org/NewCondition"
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>{product.name} | Somne</title>
         <meta name="description" content={product.description} />
+        <link rel="canonical" href={canonicalUrl} />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="product" />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:title" content={`${product.name} | Somne`} />
+        <meta property="og:description" content={product.description} />
+        <meta property="og:image" content={productImageUrl} />
+
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={canonicalUrl} />
+        <meta property="twitter:title" content={`${product.name} | Somne`} />
+        <meta property="twitter:description" content={product.description} />
+        <meta property="twitter:image" content={productImageUrl} />
+
+        {/* Structured Data */}
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
       </Helmet>
       <Layout>
         {/* Breadcrumb */}
@@ -480,10 +528,10 @@ const ProductPage = () => {
             <nav className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm font-sans text-muted-foreground overflow-x-auto whitespace-nowrap scrollbar-hide">
               <Link to="/" className="hover:text-accent transition-colors">Home</Link>
               <p className=" text-border flex-shrink-0">/</p>
-              <Link to={`/${product.categoryId}/${product.subcategoryId}`} className="hover:text-accent transition-colors capitalize">
+              <Link to={`/${product.categoryId}/${product.subcategoryId}`} className={`hover:text-accent transition-colors capitalize ${product.categoryId === 'panels' ? 'hidden' : ''}`}>
                 {product.subcategoryId}
               </Link>
-              <p className=" text-border flex-shrink-0">/</p>
+              <p className={` text-border flex-shrink-0 ${product.categoryId === 'panels' ? 'hidden' : ''}`}>/</p>
               <span className="text-foreground font-medium truncate max-w-[150px] md:max-w-none">{product.name}</span>
             </nav>
           </div>
@@ -539,7 +587,7 @@ const ProductPage = () => {
                             key={idx}
                             className={cn(
                               "w-2 h-2 rounded-full transition-all duration-300",
-                              activeImageIndex === idx ? "bg-primary w-4" : "bg-black/20"
+                              activeImageIndex === idx ? "bg-primary w-4" : "bg-white"
                             )}
                           />
                         ))}
@@ -1204,17 +1252,17 @@ const ProductPage = () => {
             </div>
           </div>
         </section>
-        <section className="py-6 md:py-10 bg-secondary/50 border border-border/50 overflow-hidden">
+        <section className="py-6 bg-secondary/50 border border-border/50 overflow-hidden">
           <div className="luxury-container">
             {/* Desktop Grid Layout */}
             <div className="hidden md:grid grid-cols-1 md:grid-cols-3 gap-6">
               {[
 
-                { src: "/img/icons/icon4.png", alt: "icon2", title: "Free UK Delivery", className: "w-24 h-auto" },
-                { src: "/img/icons/uk2.png", alt: "icon3", title: "Made in the UK", className: "w-20 h-auto" },
-                { src: "/img/icons/icon5.png", alt: "icon1", title: "5 Year Warranty", className: "w-24 h-auto" }
+                { src: "/img/icons/1.png", alt: "icon2", title: "Free UK Delivery", className: "w-[90px] h-auto" },
+                { src: "/img/icons/2.png", alt: "icon3", title: "Made in the UK", className: "w-[60px] h-auto" },
+                { src: "/img/icons/3.png", alt: "icon1", title: "5 Year Warranty", className: "w-[70px] h-auto" }
               ].map((item, index) => (
-                <div key={index} className={`flex items-center justify-center gap-2 border-r-2 border-black ${index === 2 ? 'border-none' : ''}`}>
+                <div key={index} className={`flex items-center flex-col justify-center gap-2 border-r-2 border-black ${index === 2 ? 'border-none' : ''}`}>
                   <img src={item.src} alt={item.alt} className={item.className} />
                   <h1 className='text-2xl font-bold'>{item.title}</h1>
                 </div>
@@ -1224,7 +1272,7 @@ const ProductPage = () => {
             {/* Mobile Infinite Loop */}
             <div className="md:hidden relative w-full overflow-hidden">
               <motion.div
-                className="flex w-max gap-4"
+                className="flex w-max gap-10"
                 animate={{ x: "-50%" }}
                 transition={{
                   duration: 20,
@@ -1233,14 +1281,14 @@ const ProductPage = () => {
                 }}
               >
                 {[
-                  { src: "/img/icons/icon4.png", alt: "icon2", title: "Free UK Delivery", className: "w-24 h-auto" },
-                  { src: "/img/icons/uk2.png", alt: "icon3", title: "Made in the UK", className: "w-20 h-auto" },
-                  { src: "/img/icons/icon5.png", alt: "icon1", title: "5 Year Warranty", className: "w-24 h-auto" },
-                  { src: "/img/icons/icon4.png", alt: "icon2", title: "Free UK Delivery", className: "w-24 h-auto" },
-                  { src: "/img/icons/uk2.png", alt: "icon3", title: "Made in the UK", className: "w-20 h-auto" },
-                  { src: "/img/icons/icon5.png", alt: "icon1", title: "5 Year Warranty", className: "w-24 h-auto" }
+                  { src: "/img/icons/1.png", alt: "icon2", title: "Free UK Delivery", className: "w-[90px] h-auto" },
+                  { src: "/img/icons/2.png", alt: "icon3", title: "Made in the UK", className: "w-[60px] h-auto" },
+                  { src: "/img/icons/3.png", alt: "icon1", title: "5 Year Warranty", className: "w-[70px] h-auto" },
+                  { src: "/img/icons/1.png", alt: "icon2", title: "Free UK Delivery", className: "w-[90px] h-auto" },
+                  { src: "/img/icons/2.png", alt: "icon3", title: "Made in the UK", className: "w-[60px] h-auto" },
+                  { src: "/img/icons/3.png", alt: "icon1", title: "5 Year Warranty", className: "w-[70px] h-auto" }
                 ].map((item, index) => (
-                  <div key={index} className={`flex items-center justify-center gap-2 pr-4 border-r-2 border-black ${index === 5 ? 'border-none' : ''}`}>
+                  <div key={index} className={`flex items-center flex-col justify-center gap-2 pr-10 border-r-2 border-black ${index === 5 ? 'border-none' : ''}`}>
                     <img src={item.src} alt={item.alt} className={item.className} />
                     <h1 className='text-xl font-bold whitespace-nowrap'>{item.title}</h1>
                   </div>

@@ -256,7 +256,7 @@ export default function AdminProductEdit() {
                 const currentImages = newColors[index].productImages || [];
                 newColors[index] = {
                     ...newColors[index],
-                    productImages: [...currentImages, ...urls]
+                    productImages: [...urls, ...currentImages]
                 };
                 return { ...prev, colors: newColors };
             });
@@ -333,7 +333,7 @@ export default function AdminProductEdit() {
                 const currentImages = newColors[index].productImages || [];
                 newColors[index] = {
                     ...newColors[index],
-                    productImages: [...currentImages, ...urls]
+                    productImages: [...urls, ...currentImages]
                 };
                 return { ...prev, colors: newColors };
             });
@@ -841,7 +841,7 @@ export default function AdminProductEdit() {
 
 
                                 {/* Sizes */}
-                                <div className={`bg-card/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300 ${formData.categoryId === 'mattresses' || formData.categoryId === 'panels' ? 'hidden' : ''}`}>
+                                <div className={`bg-card/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300 ${ formData.categoryId === 'panels' ? 'hidden' : ''}`}>
                                     <SectionHeader icon={Ruler} title="Size Options" description="Select available sizes and set price modifiers" />
 
                                     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>

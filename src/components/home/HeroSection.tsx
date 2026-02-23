@@ -15,6 +15,10 @@ export function HeroSection() {
             src="/Somnehero.png"
             alt="Luxury bedroom"
             className="w-full md:h-full h-full object-cover"
+            width={1920} // Approximate dimensions to prevent layout shift
+            height={1080}
+            fetchPriority="high"
+            loading="eager"
           />
         </picture>
         {/* <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent" /> */}

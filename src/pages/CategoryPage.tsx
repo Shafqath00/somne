@@ -24,56 +24,78 @@ const validCategories = [
   'headboards',
 ];
 
-const categoryInfo: Record<string, { title: string; description: string }> = {
+const categoryInfo: Record<string, { title: string; description: string; seoTitle?: string; seoDescription?: string }> = {
   beds: {
     title: 'Luxury Beds',
     description: 'Handcrafted beds in a variety of styles, from elegant upholstered designs to practical storage solutions.',
+    seoTitle: 'Luxury Beds & Bed Frames | Handcrafted in UK | Somne',
+    seoDescription: 'Discover our collection of handcrafted luxury beds. From statement upholstered frames to practical storage solutions, find the perfect centerpiece for your bedroom.',
   },
   "upholstered-beds": {
     title: 'Upholstered Beds',
     description: 'Elegant fabric-covered beds featuring tall, padded headboards and premium upholstery.',
+    seoTitle: 'Upholstered Beds | Fabric Bed Frames & Headboards | Somne',
+    seoDescription: 'Shop our range of premium upholstered beds. Available in a wide variety of luxury fabrics and colors to match your style. Handcrafted in the UK.',
   },
   "divan-beds": {
     title: 'Divan Beds',
     description: 'Complete bed sets combining a sturdy divan base with a luxury mattress, available with storage options.',
+    seoTitle: 'Divan Beds with Storage | Luxury Bases & Mattresses | Somne UK',
+    seoDescription: 'Maximize your bedroom storage with our versatile divan beds. Choose from various drawer configurations and fabric finishes. Includes luxury mattress options.',
   },
   "ottoman-divan-beds": {
     title: 'Ottoman Divan Beds',
     description: 'Maximize your space with our ottoman beds featuring gas-lift storage and stylish designs.',
+    seoTitle: 'Ottoman Divan Beds | Gas Lift Storage Beds | Somne UK',
+    seoDescription: 'The ultimate space-saving solution. Our ottoman divan beds offer full under-bed storage with easy gas-lift access. Stylish, practical, and built to last.',
   },
   "upholstered-ottoman-bed": {
     title: 'Ottoman Upholstered Beds',
     description: 'Elegant fabric-covered beds featuring tall, padded headboards and premium upholstery.',
+    seoTitle: 'Upholstered Ottoman Beds | Fabric Storage Beds | Somne',
+    seoDescription: 'Combine luxury style with practical storage. Our upholstered ottoman beds feature premium fabrics and spacious gas-lift storage compartments.',
   },
   mattresses: {
     title: 'Mattresses',
     description: 'From memory foam to natural pocket sprung, find your perfect mattress for restful sleep.',
+    seoTitle: 'Premium Mattresses | Pocket Sprung, Memory Foam & Orthopaedic | Somne',
+    seoDescription: 'Experience the perfect night\'s sleep with our range of premium mattresses. Choose from pocket sprung, memory foam, and hybrid options. 100-night trial available.',
   },
   'memory-foam': {
     title: 'Memory Foam Mattresses',
     description: 'Pressure-relieving comfort with responsive memory foam that contours to your body.',
+    seoTitle: 'Memory Foam Mattresses | Pressure Relief & Comfort | Somne',
+    seoDescription: 'Sink into comfort with our high-quality memory foam mattresses. Designed to contour to your body and relieve pressure points for a restful sleep.',
   },
   "orthopaedic-mattress": {
     title: 'Orthopaedic Mattresses',
     description: 'Firm support designed to promote proper spinal alignment and relieve back pain.',
+    seoTitle: 'Orthopaedic Mattresses | Back Support & Firm Comfort | Somne',
+    seoDescription: 'Get the support you need with our orthopaedic mattresses. Expertly designed to promote healthy spinal alignment and alleviate back pain.',
   },
   "pocket-sprung-mattress": {
     title: 'Pocket Sprung Mattresses',
     description: 'Individual pocket springs provide targeted support and minimal motion transfer.',
+    seoTitle: 'Pocket Sprung Mattresses | Individual Support & Comfort | Somne',
+    seoDescription: 'Enjoy tailored support with our pocket sprung mattresses. Individual springs move independently to contour to your body and minimize partner disturbance.',
   },
   "pillow-top-mattress": {
     title: 'Pillow Top Mattresses',
     description: 'Soft and comfortable pillow top mattresses with a plush texture.',
+    seoTitle: 'Pillow Top Mattresses | Luxury Soft Top Layers | Somne',
+    seoDescription: 'Experience cloud-like comfort with our pillow top mattresses. Featuring an extra layer of plush cushioning for the ultimate luxury sleep experience.',
   },
   headboards: {
     title: 'Headboards',
     description: 'Transform your bedroom with our collection of statement headboards.',
+    seoTitle: 'Luxury Headboards | Upholstered & Floor Standing | Somne',
+    seoDescription: 'Complete your bed with a stylish headboard. Browse our collection of upholstered, floor-standing, and strutted headboards in varying designs and fabrics.',
   },
 };
 
 const CategoryPage = () => {
   const { category, subcategory } = useParams();
-  console.log("category, subcategory", { category, subcategory });
+  // console.log("category, subcategory", { category, subcategory });
   const [searchParams, setSearchParams] = useSearchParams();
   // console.log(useParams());
   const [showFilters, setShowFilters] = useState(false);
@@ -213,6 +235,15 @@ const CategoryPage = () => {
         result.sort((a: any, b: any) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     }
 
+    // Force test products (price <= 1) to the bottom
+    result.sort((a: any, b: any) => {
+      const isTestA = (a.basePrice || a.price || 0) <= 1;
+      const isTestB = (b.basePrice || b.price || 0) <= 1;
+      if (isTestA && !isTestB) return 1;
+      if (!isTestA && isTestB) return -1;
+      return 0;
+    });
+
     return result;
   }, [products, category, subcategory, selectedColor, selectedSize, selectedPrice, selectedFirmness, sortBy]);
 
@@ -233,8 +264,11 @@ const CategoryPage = () => {
   return (
     <>
       <Helmet>
-        <title>{info.title} | Somne</title>
-        <meta name="description" content={info.description} />
+        <title>{info.seoTitle || `${info.title} | Somne`}</title>
+        <meta name="description" content={info.seoDescription || info.description} />
+        <link rel="canonical" href={`https://somne.co.uk/${category}${subcategory ? `/${subcategory}` : ''}`} />
+        <meta property="og:title" content={info.seoTitle || `${info.title} | Somne`} />
+        <meta property="og:description" content={info.seoDescription || info.description} />
       </Helmet>
       <Layout>
         {/* Breadcrumb */}

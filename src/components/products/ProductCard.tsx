@@ -43,6 +43,8 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
     return null;
   }, [selectedColor, product.colors]);
 
+  // console.log(product);
+
   const handleAddToCart = () => {
     if (product.sizes.length > 0) {
       addItem(product, 1, product.sizes[0], product.colors?.[0], product.storageOptions?.[0]);
@@ -59,7 +61,7 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
     <div className="group flex flex-col h-full bg-white border border-border/50 hover:border-accent/40 rounded-xl sm:rounded-2xl overflow-hidden transition-all shadow-md duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1">
       {/* Image */}
       <Link
-        to={`/product/${product.slug || product.name}?variant=${encodeURIComponent(displayColorName || product.colors?.[0]?.name || '')}`}
+        to={`/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`}
         className="block relative aspect-[4/3] overflow-hidden bg-secondary/20"
       >
         <img
@@ -91,7 +93,10 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
 
       {/* Content */}
       <div className="p-3 sm:p-5 flex flex-col flex-1">
-        <Link to={`/product/${product.slug || product.name}`} className="block mb-2 sm:mb-3">
+        <Link
+          to={`/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`}
+          className="block mb-2 sm:mb-3"
+        >
           <h3 className="font-serif text-base sm:text-xl font-medium text-foreground group-hover:text-accent transition-colors">
             {product.name}
           </h3>
