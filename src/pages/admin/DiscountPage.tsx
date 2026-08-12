@@ -36,6 +36,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { AdminPageHeader, AdminPageShell } from "@/components/admin/AdminUI";
 
 const discountSchema = z.object({
     code: z.string().min(3, "Code must be at least 3 characters").toUpperCase(),
@@ -137,18 +138,18 @@ export default function DiscountPage() {
                 <title>Manage Discounts | Bed Showroom Admin</title>
             </Helmet>
             <AdminLayout>
-                <div className="min-h-screen bg-slate-50/50 py-12">
-                    <div className="luxury-container max-w-6xl mx-auto px-4">
-                        <div className="mb-8">
-                            <h1 className="text-3xl font-serif font-bold text-primary mb-2">Discount Management</h1>
-                            <p className="text-muted-foreground">Create and manage discount codes for your store.</p>
-                        </div>
+                <AdminPageShell className="max-w-6xl">
+                        <AdminPageHeader
+                            title="Discount Management"
+                            description="Create and manage discount codes, usage limits, expiry dates, and auto-apply rules."
+                            icon={Tag}
+                        />
 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* Create Discount Form */}
                             <div className="lg:col-span-1">
-                                <Card className="border-none shadow-lg">
-                                    <CardHeader className="bg-white rounded-t-lg pb-4">
+                                <Card className="overflow-hidden rounded-lg border border-slate-200 shadow-sm">
+                                    <CardHeader className="bg-white pb-4">
                                         <CardTitle className="text-xl flex items-center gap-2">
                                             <Tag className="w-5 h-5 text-accent" />
                                             New Discount Code
@@ -288,7 +289,7 @@ export default function DiscountPage() {
                                                     )}
                                                 />
 
-                                                <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-white" disabled={isSubmitting}>
+                                                <Button type="submit" className="w-full" disabled={isSubmitting}>
                                                     {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Create Discount Code"}
                                                 </Button>
                                             </form>
@@ -299,7 +300,7 @@ export default function DiscountPage() {
 
                             {/* Existing Discounts List */}
                             <div className="lg:col-span-2 space-y-4">
-                                <h2 className="text-xl font-semibold mb-4 text-primary">Active Discounts</h2>
+                                <h2 className="text-xl font-semibold mb-4 text-slate-950">Active Discounts</h2>
                                 {isLoading ? (
                                     <div className="flex justify-center p-12"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
                                 ) : discounts.length === 0 ? (
@@ -352,8 +353,7 @@ export default function DiscountPage() {
                                 )}
                             </div>
                         </div>
-                    </div>
-                </div>
+                </AdminPageShell>
 
                 {/* Delete Confirmation Dialog */}
                 <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

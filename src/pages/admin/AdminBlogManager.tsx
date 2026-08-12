@@ -18,6 +18,7 @@ import {
     GripVertical, Image as ImageIcon, Type, List, Quote,
     Link2, Minus, FolderOpen, FileText, X, Upload, Eye
 } from 'lucide-react';
+import { AdminPageHeader, AdminPageShell } from '@/components/admin/AdminUI';
 
 // ============================================
 // MAIN COMPONENT
@@ -34,15 +35,13 @@ export default function AdminBlogManager() {
                 <title>Blog Manager | Somne Admin</title>
             </Helmet>
             <AdminLayout>
-                <div className="bg-slate-50 min-h-screen py-8">
-                    <div className="luxury-container">
-                        {/* Header */}
-                        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <h1 className="font-serif text-3xl font-medium text-foreground">Blog Manager</h1>
-                                <p className="text-muted-foreground mt-2">Create and manage blog posts and categories</p>
-                            </div>
-                            <div className="flex items-center gap-3">
+                <AdminPageShell>
+                        <AdminPageHeader
+                            title="Blog Manager"
+                            description="Create and manage blog posts, content blocks, categories, images, and publishing state."
+                            icon={FileText}
+                            actions={
+                            <>
                                 <div className="flex bg-white rounded-lg border border-slate-200 p-1">
                                     <button
                                         onClick={() => setActiveTab('blogs')}
@@ -67,7 +66,7 @@ export default function AdminBlogManager() {
                                     >
                                         <FolderOpen className="w-4 h-4 inline mr-2" />
                                         Categories
-                                    </button>
+                                        </button>
                                 </div>
                                 {activeTab === 'blogs' && !showBlogEditor && (
                                     <Button
@@ -77,8 +76,9 @@ export default function AdminBlogManager() {
                                         <Plus className="w-4 h-4 mr-2" /> New Post
                                     </Button>
                                 )}
-                            </div>
-                        </div>
+                            </>
+                            }
+                        />
 
                         {/* Content */}
                         {activeTab === 'categories' && <CategoryManager />}
@@ -93,8 +93,7 @@ export default function AdminBlogManager() {
                                 onClose={() => { setShowBlogEditor(false); setEditingBlog(null); }}
                             />
                         )}
-                    </div>
-                </div>
+                </AdminPageShell>
             </AdminLayout>
         </>
     );
@@ -185,7 +184,7 @@ function CategoryManager() {
                 </Button>
             ) : (
                 <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm space-y-4">
-                    <h3 className="font-serif text-lg font-medium">{editId ? 'Edit Category' : 'New Category'}</h3>
+                    <h3 className="text-lg font-semibold text-slate-950">{editId ? 'Edit Category' : 'New Category'}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label className="text-sm font-medium text-slate-600 mb-1 block">Name *</label>
@@ -209,7 +208,7 @@ function CategoryManager() {
             {/* Category List */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="p-5 bg-slate-50/50 border-b">
-                    <h3 className="font-serif text-lg font-medium">Categories ({categories.length})</h3>
+                    <h3 className="text-lg font-semibold text-slate-950">Categories ({categories.length})</h3>
                 </div>
                 {categories.length === 0 ? (
                     <div className="p-10 text-center text-muted-foreground">
@@ -286,7 +285,7 @@ function BlogList({ onEdit }: { onEdit: (blog: BlogPost) => void }) {
     return (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div className="p-5 bg-slate-50/50 border-b">
-                <h3 className="font-serif text-lg font-medium">All Posts ({blogs.length})</h3>
+                <h3 className="text-lg font-semibold text-slate-950">All Posts ({blogs.length})</h3>
             </div>
             {blogs.length === 0 ? (
                 <div className="p-10 text-center text-muted-foreground">
@@ -489,7 +488,7 @@ function BlogEditor({ blog, onClose }: { blog: BlogPost | null; onClose: () => v
         <form onSubmit={handleSubmit} className="space-y-6">
             {/* Top Bar */}
             <div className="flex items-center justify-between bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
-                <h2 className="font-serif text-xl font-medium">
+                <h2 className="text-xl font-semibold text-slate-950">
                     {isEdit ? 'Edit Post' : 'New Post'}
                 </h2>
                 <div className="flex items-center gap-3">
@@ -511,7 +510,7 @@ function BlogEditor({ blog, onClose }: { blog: BlogPost | null; onClose: () => v
                             value={form.title || ''}
                             onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
                             placeholder="Enter blog title..."
-                            className="text-lg font-serif"
+                            className="text-lg"
                             required
                         />
                     </div>
@@ -780,7 +779,7 @@ function ContentBlockEditor({
                             value={block.text || ''}
                             onChange={e => onUpdate({ text: e.target.value })}
                             placeholder="Heading text..."
-                            className="font-serif"
+                            className=""
                         />
                     </div>
                 </div>
@@ -892,7 +891,7 @@ function ContentBlockEditor({
                     onChange={e => onUpdate({ text: e.target.value })}
                     placeholder="Quote text..."
                     rows={3}
-                    className="italic font-serif"
+                    className="italic"
                 />
             )}
 

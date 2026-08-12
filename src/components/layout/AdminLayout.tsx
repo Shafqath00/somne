@@ -5,15 +5,13 @@ import {
     LayoutDashboard,
     Package,
     ShoppingCart,
-    Users,
-    Settings,
     LogOut,
     Menu,
     X,
     Tag,
     MessageSquare,
-    PlusCircle,
-    FileText
+    FileText,
+    Store
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -81,26 +79,33 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     ];
 
     return (
-        <div className="h-screen bg-gray-50 flex">
+        <div className="flex h-screen bg-slate-100 text-slate-950">
             {/* Sidebar */}
             <aside
                 className={cn(
-                    "bg-white border-r border-gray-200 fixed inset-y-0 left-0 z-50 w-64 transition-transform duration-300 ease-in-out md:translate-x-0 md:static shrink-0",
+                    "fixed inset-y-0 left-0 z-50 w-72 shrink-0 border-r border-slate-200 bg-white transition-transform duration-300 ease-in-out md:static md:w-64 md:translate-x-0",
                     !isSidebarOpen && "-translate-x-full md:hidden"
                 )}
             >
-                <div className="h-full flex flex-col">
+                <div className="flex h-full flex-col">
                     {/* Logo Area */}
-                    <div className="h-16 flex items-center px-6 border-b border-gray-100">
-                        <Link to="/admin" className="font-serif text-xl font-bold tracking-tight text-primary">
-                            SOMNE <span className="text-gray-400 font-sans text-xs ml-1">ADMIN</span>
+                    <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-5">
+                        <Link to="/admin" className="flex min-w-0 items-center gap-3">
+                            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-950 text-white">
+                                <Store className="h-5 w-5" />
+                            </span>
+                            <span className="min-w-0">
+                                <span className="block truncate text-base font-semibold tracking-normal text-slate-950">SOMNE</span>
+                                <span className="block text-xs font-medium uppercase tracking-wide text-slate-500">Admin workspace</span>
+                            </span>
                         </Link>
                         {isMobile && (
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="ml-auto md:hidden"
+                                className="ml-auto h-9 w-9 md:hidden"
                                 onClick={() => setIsSidebarOpen(false)}
+                                aria-label="Close admin menu"
                             >
                                 <X className="w-5 h-5" />
                             </Button>
@@ -108,7 +113,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                     </div>
 
                     {/* Navigation */}
-                    <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                    <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
                         {navItems.map((item) => {
                             const Icon = item.icon;
                             const isActive = location.pathname === item.path ||
@@ -118,10 +123,10 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                     key={item.path}
                                     to={item.path}
                                     className={cn(
-                                        "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                                         isActive
-                                            ? "bg-primary text-primary-foreground shadow-sm"
-                                            : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                                            ? "bg-slate-950 text-white shadow-sm"
+                                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
                                     )}
                                     onClick={() => isMobile && setIsSidebarOpen(false)}
                                 >
@@ -130,24 +135,24 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                                 </Link>
                             );
                         })}
-                    </div>
+                    </nav>
 
                     {/* User & Logout */}
-                    <div className="p-4 border-t border-gray-100">
-                        <div className="flex items-center gap-3 mb-4 px-2">
-                            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                    <div className="border-t border-slate-200 p-4">
+                        <div className="mb-4 flex min-w-0 items-center gap-3 rounded-lg bg-slate-50 p-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-950 text-xs font-semibold text-white">
                                 AD
                             </div>
-                            <div className="flex-1">
-                                <p className="text-sm font-medium">Administrator</p>
-                                <p className="text-xs text-muted-foreground truncate max-w-[140px]" title={user?.email || ""}>
+                            <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-semibold text-slate-950">Administrator</p>
+                                <p className="truncate text-xs text-slate-500" title={user?.email || ""}>
                                     {user?.email || "admin@somne.com"}
                                 </p>
                             </div>
                         </div>
                         <Button
                             variant="outline"
-                            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 border-red-100"
+                            className="h-10 w-full justify-start border-red-200 bg-white text-red-600 hover:bg-red-50 hover:text-red-700"
                             onClick={handleLogout}
                         >
                             <LogOut className="w-4 h-4 mr-2" />
@@ -158,22 +163,23 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </aside>
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex min-w-0 flex-1 flex-col">
                 {/* Mobile Header */}
-                <header className="bg-white border-b border-gray-200 h-16 flex items-center px-4 md:hidden sticky top-0 z-40">
+                <header className="sticky top-0 z-40 flex h-16 items-center border-b border-slate-200 bg-white px-4 md:hidden">
                     <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => setIsSidebarOpen(true)}
                         className="-ml-2"
+                        aria-label="Open admin menu"
                     >
                         <Menu className="w-5 h-5" />
                     </Button>
-                    <span className="font-serif font-bold ml-2">Admin Dashboard</span>
+                    <span className="ml-2 text-sm font-semibold text-slate-950">Somne Admin</span>
                 </header>
 
                 {/* Content Area */}
-                <main className="flex-1 overflow-auto p-4 md:p-8">
+                <main className="flex-1 overflow-auto bg-slate-100">
                     {children}
                 </main>
             </div>

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { submitContactForm } from '@/api/api';
+import { submitContactForm, sendLeadForwarder } from '@/api/api';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -29,6 +29,24 @@ const ContactPage = () => {
     try {
       const response = await submitContactForm(formData);
       setSubmittedToken(response.refNo);
+
+      // Trigger lead forwarding in the background
+      try {
+        await sendLeadForwarder({
+          subject: "New Contact Form Submission - Somne",
+          from: formData.name,
+          toEmail: ["contact@somne.co.uk"],
+          Name: formData.name,
+          Email: formData.email,
+          Phone: formData.phone || "Not provided",
+          Message: formData.message,
+          RefNo: response.refNo,
+        });
+        
+      } catch (leadError) {
+        console.error("Lead forwarder failed, but form was submitted:", leadError);
+      }
+
       toast.success('Your message has been sent successfully!');
       setFormData({ name: '', email: '', phone: '', message: '' });
     } catch (error) {

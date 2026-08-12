@@ -5,13 +5,14 @@ import { getAllOrders, getAllProducts, getAllContactForms, getAllDiscounts, Cont
 import {
     Loader2, Package, ShoppingBag, MessageSquare, Ticket,
     Clock, CheckCircle, Truck, XCircle,
-    ArrowRight, Plus, TrendingUp, DollarSign, Activity
+    ArrowRight, Plus, TrendingUp, DollarSign, Activity, LayoutDashboard
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Helmet } from 'react-helmet-async';
+import { AdminPageHeader, AdminPageShell, AdminStatCard } from '@/components/admin/AdminUI';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     BarChart, Bar, Cell, PieChart, Pie, Legend
@@ -208,19 +209,17 @@ export default function AdminHome() {
                 <title>Admin Dashboard | Somne</title>
             </Helmet>
             <AdminLayout>
-                <div className="bg-slate-50 min-h-screen py-8">
-                    <div className="luxury-container">
-
-                        {/* Header */}
-                        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <div>
-                                <h1 className="font-serif text-3xl font-medium text-foreground">Admin Dashboard</h1>
-                                <p className="text-muted-foreground mt-2">Overview of your store performance</p>
-                            </div>
+                <AdminPageShell>
+                        <AdminPageHeader
+                            title="Admin Dashboard"
+                            description="Overview of store performance, recent orders, customer inquiries, and catalog activity."
+                            icon={LayoutDashboard}
+                            actions={
                             <Button onClick={() => fetchDashboardData()} variant="outline" size="sm">
                                 <Activity className="w-4 h-4 mr-2" /> Refresh Data
                             </Button>
-                        </div>
+                            }
+                        />
 
                         {/* Stats Cards */}
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-8">
@@ -264,8 +263,8 @@ export default function AdminHome() {
                         {/* Charts Section */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                             {/* Revenue Chart */}
-                            <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                                <h3 className="font-serif text-lg font-medium mb-6 flex items-center gap-2">
+                            <div className="lg:col-span-2 bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+                                <h3 className="text-lg font-semibold mb-6 flex items-center gap-2 text-slate-950">
                                     <TrendingUp className="w-5 h-5 text-accent" />
                                     Revenue Overview
                                 </h3>
@@ -311,8 +310,8 @@ export default function AdminHome() {
                             </div>
 
                             {/* Top Products */}
-                            <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
-                                <h3 className="font-serif text-lg font-medium mb-6 flex items-center gap-2">
+                            <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm">
+                                <h3 className="text-lg font-semibold mb-6 flex items-center gap-2 text-slate-950">
                                     <Package className="w-5 h-5 text-accent" />
                                     Top Selling Products
                                 </h3>
@@ -348,7 +347,7 @@ export default function AdminHome() {
 
                         {/* Quick Links Row */}
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-                            <Link to="/admin/orders" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+                            <Link to="/admin/orders" className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <Package className="w-5 h-5 text-slate-600" />
@@ -358,7 +357,7 @@ export default function AdminHome() {
                                 </div>
                             </Link>
                             {/* ... more links can go here if needed, keeping it clean for now */}
-                            <Link to="/admin/products" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+                            <Link to="/admin/products" className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <ShoppingBag className="w-5 h-5 text-slate-600" />
@@ -367,7 +366,7 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-                            <Link to="/admin/contact-forms" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+                            <Link to="/admin/contact-forms" className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <MessageSquare className="w-5 h-5 text-slate-600" />
@@ -376,7 +375,7 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-                            <Link to="/admin/discount" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+                            <Link to="/admin/discount" className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <Ticket className="w-5 h-5 text-slate-600" />
@@ -385,7 +384,7 @@ export default function AdminHome() {
                                     <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" />
                                 </div>
                             </Link>
-                            <Link to="/admin/add" className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
+                            <Link to="/admin/add" className="bg-white rounded-lg border border-slate-200 p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all group">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <Plus className="w-5 h-5 text-slate-600" />
@@ -399,10 +398,10 @@ export default function AdminHome() {
                         {/* Recent Activity Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             {/* Recent Orders */}
-                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                     <div>
-                                        <h2 className="font-serif text-lg font-medium text-foreground">Recent Orders</h2>
+                                        <h2 className="text-lg font-semibold text-slate-950">Recent Orders</h2>
                                     </div>
                                     <Button variant="ghost" size="sm" asChild className="text-xs hover:bg-white">
                                         <Link to="/admin/orders">View All</Link>
@@ -449,10 +448,10 @@ export default function AdminHome() {
                             </div>
 
                             {/* Recent Inquiries */}
-                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                                 <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                                     <div>
-                                        <h2 className="font-serif text-lg font-medium text-foreground">Recent Inquiries</h2>
+                                        <h2 className="text-lg font-semibold text-slate-950">Recent Inquiries</h2>
                                     </div>
                                     <Button variant="ghost" size="sm" asChild className="text-xs hover:bg-white">
                                         <Link to="/admin/contact-forms">View All</Link>
@@ -488,23 +487,15 @@ export default function AdminHome() {
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                </AdminPageShell>
             </AdminLayout>
         </>
     );
 }
 
-function StatsCard({ title, value, icon: Icon, color, bg }: { title: string, value: string | number, icon: any, color: string, bg: string }) {
+function StatsCard({ title, value, icon: Icon, color, bg: _bg }: { title: string, value: string | number, icon: any, color: string, bg: string }) {
+    const tone = color.includes('green') ? 'green' : color.includes('blue') ? 'blue' : color.includes('purple') ? 'purple' : color.includes('orange') ? 'amber' : 'slate';
     return (
-        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center gap-3 mb-3">
-                <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center", bg)}>
-                    <Icon className={cn("w-5 h-5", color)} />
-                </div>
-                <span className="text-sm text-muted-foreground">{title}</span>
-            </div>
-            <p className="text-2xl font-semibold text-foreground">{value}</p>
-        </div>
+        <AdminStatCard title={title} value={value} icon={Icon} tone={tone as any} />
     );
 }

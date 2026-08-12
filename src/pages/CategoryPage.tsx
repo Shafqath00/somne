@@ -1,13 +1,45 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
+import { SlidersHorizontal, X } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { BedCategory } from '@/api/api';
 import { useQuery } from '@tanstack/react-query';
+import { ComingSoon } from '@/components/ui/coming-soon';
+import { shouldShowOttomanComingSoon } from '@/lib/ottomanAvailability';
+
+const CatalogueSkeleton = () => (
+  <div className="flex animate-pulse gap-5 lg:gap-8" aria-label="Loading products" role="status">
+    <div className="hidden w-64 flex-shrink-0 lg:block">
+      <div className="rounded-3xl border border-black/5 bg-white p-6 shadow-sm">
+        <div className="h-6 w-24 rounded-full bg-black/10" />
+        <div className="mt-7 space-y-4">
+          {Array.from({ length: 5 }).map((_, index) => (
+            <div key={index} className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-black/10" />
+              <div className="h-4 w-28 rounded-full bg-black/10" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+    <div className="grid flex-1 grid-cols-2 gap-3 md:gap-5 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, index) => (
+        <div key={index} className="overflow-hidden rounded-2xl bg-white">
+          <div className="aspect-[4/5] bg-black/10" />
+          <div className="space-y-3 p-4">
+            <div className="h-4 w-3/4 rounded-full bg-black/10" />
+            <div className="h-4 w-1/3 rounded-full bg-black/10" />
+          </div>
+        </div>
+      ))}
+    </div>
+    <span className="sr-only">Loading the product catalogue</span>
+  </div>
+);
 
 // Valid category slugs that are allowed
 const validCategories = [
@@ -93,6 +125,13 @@ const categoryInfo: Record<string, { title: string; description: string; seoTitl
   },
 };
 
+const getCleanColorName = (name: string): string => {
+  let cleaned = name.replace(/\s*plush\s*/i, '').trim();
+  if (cleaned.toLowerCase() === 'cream') return 'Beige';
+  if (cleaned.toLowerCase() === 'emerald') return 'Green';
+  return cleaned;
+};
+
 const CategoryPage = () => {
   const { category, subcategory } = useParams();
   // console.log("category, subcategory", { category, subcategory });
@@ -104,6 +143,7 @@ const CategoryPage = () => {
   const [selectedFirmness, setSelectedFirmness] = useState<string | null>(null);
 
   const selectedColor = searchParams.get('color');
+  const isTestUrl = window.location.hostname === 'somne-f5b59.web.app' || searchParams.get('test') === 'true';
 
   const setSelectedColor = (color: string | null) => {
     setSearchParams(prev => {
@@ -140,13 +180,16 @@ const CategoryPage = () => {
 
   const currentCategory = subcategory || category || 'beds';
   const info = categoryInfo[currentCategory] || categoryInfo.beds;
+  console.log(currentCategory);
+  const isComingSoonCategory = shouldShowOttomanComingSoon(currentCategory);
+  console.log(isComingSoonCategory,"sss")
 
   // React Query Fetch Data
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: products = [], isLoading: loading } = useQuery<any[]>({
-    queryKey: ['category', category, subcategory],
-    queryFn: () => BedCategory(subcategory || 'all', category || 'beds'),
-    enabled: !!isValidCategory && !!isValidSubcategory,
+    queryKey: ['category', category, subcategory, isTestUrl],
+    queryFn: () => BedCategory(subcategory || 'all', category || 'beds', isTestUrl),
+    enabled: !!isValidCategory && !!isValidSubcategory && !isComingSoonCategory,
     staleTime: 1000 * 60 * 5, // 5 minutes fresh
   });
 
@@ -155,14 +198,18 @@ const CategoryPage = () => {
     const colorMap = new Map<string, { name: string; hex: string }>();
     products.forEach((product: any) => {
       if (product.colors && Array.isArray(product.colors)) {
-        product.colors.forEach((color: { name: string; hex: string }) => {
+        product.colors.filter((color: any) => !color.disabled).forEach((color: { name: string; hex: string }) => {
           if (color.name && color.hex) {
-            colorMap.set(color.name.toLowerCase(), { name: color.name, hex: color.hex });
+            const cleanName = getCleanColorName(color.name);
+            const key = cleanName.toLowerCase();
+            if (!colorMap.has(key)) {
+              colorMap.set(key, { name: cleanName, hex: color.hex });
+            }
           }
         });
       }
     });
-    return Array.from(colorMap.values());
+    return Array.from(colorMap.values()).filter(c => c.name.toLowerCase() !== 'silver');
   }, [products]);
 
   const filteredProducts = useMemo(() => {
@@ -190,7 +237,7 @@ const CategoryPage = () => {
       result = result.filter((p: any) => {
         if (p.colors && Array.isArray(p.colors)) {
           return p.colors.some(
-            (c: { name: string }) => c.name.toLowerCase() === selectedColor.toLowerCase()
+            (c: { name: string; disabled?: boolean }) => !c.disabled && getCleanColorName(c.name).toLowerCase() === selectedColor.toLowerCase()
           );
         }
         return false;
@@ -269,6 +316,8 @@ const CategoryPage = () => {
         <link rel="canonical" href={`https://somne.co.uk/${category}${subcategory ? `/${subcategory}` : ''}`} />
         <meta property="og:title" content={info.seoTitle || `${info.title} | Somne`} />
         <meta property="og:description" content={info.seoDescription || info.description} />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://somne.co.uk/img/logo.png" />
       </Helmet>
       <Layout>
         {/* Breadcrumb */}
@@ -293,98 +342,130 @@ const CategoryPage = () => {
         </div> */}
 
         {/* Header */}
-        <div className="bg-primary md:py-12 py-8">
-          <div className="luxury-container text-center">
-            <h1 className="font-serif text-3xl md:text-4xl lg:text-5xl font-medium text-cream ">
+        <div className="bg-black py-9 text-white">
+          <div className="luxury-container">
+            {/* <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+              Somne collection
+            </p> */}
+            <h1 className="max-w-4xl text-3xl font-black leading-tight text-white md:text-5xl">
               {info.title}
             </h1>
-            <p className="font-sans md:text-lg text-sm text-cream/80 max-w-2xl mx-auto">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
               {info.description}
             </p>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="md:section-padding py-6 bg-white">
+        {isComingSoonCategory ? (
+          <ComingSoon
+            title={`${info.title} are almost here`}
+            description="We are putting the finishing touches on this collection. Explore our available beds while we prepare these new storage designs."
+          />
+        ) : (
+        /* Content */
+        <div className="bg-[#f4f4f4] py-7 md:py-12">
           <div className="luxury-container">
             {/* Toolbar */}
-            <div className="flex flex-row items-start sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-border">
-              <div className="flex items-center justify-between md:justify-start w-full  gap-4">
+            <div className="mb-7 flex items-center justify-between gap-3 border-b border-black/10 pb-5 md:mb-10 md:pb-6">
+              <div className="flex min-w-0 items-center gap-3">
                 <Button
-                  variant="luxuryOutline"
                   size="sm"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="lg:hidden rounded-lg "
+                  className="h-10 rounded-full border border-black/20 bg-transparent px-4 text-xs font-bold uppercase tracking-[0.08em] text-black shadow-none hover:bg-black hover:text-white lg:hidden"
                 >
-                  <SlidersHorizontal className="w-4 h-4 md:mr-2" />
+                  <SlidersHorizontal className="h-4 w-4" />
                   Filters
                 </Button>
-                <p className="hidden md:block font-sans text-sm text-muted-foreground">
-                  {products.length} products
-                </p>
-
+                {loading ? (
+                  <div className="h-4 w-24 animate-pulse rounded-full bg-black/10" aria-hidden="true" />
+                ) : (
+                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-black/55 md:text-sm">
+                    {filteredProducts.length} products
+                  </p>
+                )}
               </div>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="font-sans text-sm rounded-lg border-2 border-black px-4 py-2 focus:outline-none focus:ring-1 focus:ring-accent"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-                <option value="rating">Highest Rated</option>
-              </select>
+              <label className="flex items-center gap-2">
+                <span className="hidden text-xs font-bold uppercase tracking-[0.12em] text-black/45 sm:inline">
+                  Sort
+                </span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  disabled={loading}
+                  className="h-10 rounded-full border border-black/20 bg-white px-4 text-sm font-semibold text-black shadow-sm outline-none transition-colors focus:border-black focus:ring-2 focus:ring-black/10"
+                >
+                  <option value="featured">Featured</option>
+                  <option value="price-low">Price: Low to High</option>
+                  <option value="price-high">Price: High to Low</option>
+                  <option value="rating">Highest Rated</option>
+                </select>
+              </label>
             </div>
 
-            <div className="flex gap-8">
+            {loading ? <CatalogueSkeleton /> : (
+            <div className="flex gap-5 lg:gap-8">
               {/* Filters Sidebar */}
               <aside
                 className={cn(
-                  'fixed lg:relative inset-0 lg:inset-auto z-50 lg:z-auto bg-background lg:bg-transparent w-full lg:w-64 flex-shrink-0 transition-transform lg:transition-none duration-300',
+                  'fixed inset-0 z-[70] w-full flex-shrink-0 bg-white transition-transform duration-300 lg:sticky lg:inset-auto lg:top-[calc(var(--daily-deal-bar-height)+7rem)] lg:z-10 lg:h-fit lg:max-h-[calc(100vh-var(--daily-deal-bar-height)-8rem)] lg:w-64 lg:self-start lg:overflow-hidden lg:rounded-3xl lg:border lg:border-black/5 lg:bg-white lg:shadow-[0_14px_40px_rgba(0,0,0,0.07)] lg:transition-none',
                   showFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
                 )}
               >
-                <div className="h-full lg:h-auto overflow-y-auto p-6 lg:p-0">
+                <div className="h-full overflow-y-auto p-6 lg:max-h-[calc(100vh-var(--daily-deal-bar-height)-8rem)] lg:p-6">
                   {/* Mobile header */}
-                  <div className="flex items-center justify-between mb-6 lg:hidden">
-                    <h2 className="font-serif text-xl">Filters</h2>
-                    <button onClick={() => setShowFilters(false)}>
-                      <X className="w-6 h-6" />
+                  <div className="mb-8 flex items-center justify-between lg:hidden">
+                    <h2 className="text-2xl font-black text-black">Filters</h2>
+                    <button
+                      onClick={() => setShowFilters(false)}
+                      className="flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-black transition-colors hover:bg-black hover:text-white"
+                      aria-label="Close filters"
+                    >
+                      <X className="h-5 w-5" />
                     </button>
                   </div>
 
                   {/* Color filter - hide for mattresses */}
                   {availableColors.length > 0 && category !== 'mattresses' && (
-                    <div className="mb-8">
-                      <div className="flex items-center gap-4 mb-4">
-                        <h3 className="font-serif text-lg font-medium text-foreground">Color</h3>
+                    <div className="mb-8 border-b border-black/10 pb-8 lg:border-b-0">
+                      <div className="mb-4 flex items-baseline justify-between gap-4">
+                        <h3 className="text-lg font-black text-black">Color</h3>
                         {selectedColor && (
-                          <p className="text-sm text-muted-foreground">Selected: <span className="font-medium text-foreground">{selectedColor}</span></p>
+                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-black/50">
+                            {selectedColor}
+                          </p>
                         )}
                       </div>
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-2">
                         {availableColors.map((color) => (
-                          <div key={color.name} className='flex items-center ml-4 gap-2 cursor-pointer' onClick={() => setSelectedColor(selectedColor === color.name ? null : color.name)}>
+                          <div
+                            key={color.name}
+                            className={cn(
+                              'flex cursor-pointer items-center gap-3 rounded-full px-2 py-1.5 transition-colors',
+                              selectedColor === color.name ? 'bg-black text-white' : 'text-black hover:bg-white'
+                            )}
+                            onClick={() => setSelectedColor(selectedColor === color.name ? null : color.name)}
+                          >
                             <button
 
                               className={cn(
-                                'group relative w-8 h-8 rounded-full border-2 transition-all duration-200 hover:scale-110',
+                                'group relative h-8 w-8 rounded-full border-2 transition-all duration-200 hover:scale-110',
                                 selectedColor === color.name
-                                  ? 'border-accent ring-2 ring-accent ring-offset-2 scale-110'
-                                  : 'border-border hover:border-accent/50'
+                                  ? 'scale-110 border-white ring-2 ring-black ring-offset-2'
+                                  : 'border-black/15 hover:border-black/45'
                               )}
                               style={{ backgroundColor: color.hex }}
                               title={color.name}
+                              aria-label={`Filter by ${color.name}`}
                             >
                               {selectedColor === color.name && (
                                 <span className="absolute inset-0 flex items-center justify-center">
-                                  <svg className="w-4 h-4 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <svg className="h-4 w-4 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                                   </svg>
                                 </span>
                               )}
                             </button>
-                            <p>{color.name}</p>
+                            <p className="text-sm font-semibold">{color.name}</p>
                           </div>
                         ))}
                       </div>
@@ -394,7 +475,7 @@ const CategoryPage = () => {
                   {hasActiveFilters && (
                     <button
                       onClick={clearFilters}
-                      className="font-sans text-sm text-accent hover:underline"
+                      className="mb-8 inline-flex text-xs font-bold uppercase tracking-[0.12em] text-black/55 underline-offset-4 transition-colors hover:text-black hover:underline"
                     >
                       Clear all
                     </button>
@@ -403,7 +484,7 @@ const CategoryPage = () => {
                   {/* Mattress Type filter (for mattresses) */}
                   {category === 'mattresses' && (
                     <div className="mb-8">
-                      <h3 className="font-serif text-lg font-medium text-foreground mb-4">Mattress Type</h3>
+                      <h3 className="mb-4 text-lg font-black text-black">Mattress Type</h3>
                       <div className="space-y-2">
                         {[
                           { label: 'All Mattresses', href: '/mattresses' },
@@ -420,10 +501,10 @@ const CategoryPage = () => {
                               key={type.label}
                               to={type.href}
                               className={cn(
-                                'block w-full text-left px-3 py-2 font-sans text-sm transition-colors rounded-md',
+                                'block w-full rounded-full px-4 py-2.5 text-left text-sm font-semibold transition-colors',
                                 isActive
-                                  ? 'bg-accent text-primary font-medium'
-                                  : 'text-muted-foreground hover:bg-secondary'
+                                  ? 'bg-black text-white'
+                                  : 'text-black/60 hover:bg-white hover:text-black'
                               )}
                             >
                               {type.label}
@@ -438,21 +519,24 @@ const CategoryPage = () => {
               {/* Products Grid */}
               <div className="flex-1">
                 {loading ? (
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="w-8 h-8 animate-spin" />
+                  <div className="flex min-h-[420px] items-center justify-center bg-white">
+                    <Loader2 className="h-8 w-8 animate-spin text-black/35" />
                   </div>
-                ) : products.length > 0 ? (
-                  <div className="grid grid-cols-2 xl:grid-cols-3 md:gap-6 gap-3">
+                ) : filteredProducts.length > 0 ? (
+                  <div className="grid grid-cols-2 gap-3 md:gap-5 xl:grid-cols-3">
                     {filteredProducts.map((product: any) => (
                       <ProductCard key={product.id} product={product} selectedColor={selectedColor} />
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <p className="font-serif text-xl text-muted-foreground mb-4">
+                  <div className="bg-white px-4 py-20 text-center">
+                    <p className="mb-5 text-2xl font-black text-black">
                       No products match your filters
                     </p>
-                    <Button variant="luxury" onClick={clearFilters}>
+                    <Button
+                      onClick={clearFilters}
+                      className="rounded-full border border-black bg-transparent px-7 text-xs font-bold uppercase tracking-[0.08em] text-black shadow-none hover:bg-black hover:text-white"
+                    >
                       Clear Filters
                     </Button>
                   </div>
@@ -460,8 +544,10 @@ const CategoryPage = () => {
 
               </div>
             </div>
+            )}
           </div>
         </div>
+        )}
       </Layout>
     </>
   );

@@ -1,63 +1,159 @@
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import heroBedroom from '@/assets/hero-bedroom.jpg';
-import { ChevronsDown } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+
+const LETTERS = 'SOMNE'.split('');
+
+const TAPE_ITEMS = Array(20).fill(null); // duplicate for seamless loop
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.3 },
+  },
+};
+
+const letterVariants = {
+  hidden: { opacity: 0, y: 48, filter: 'blur(12px)' },
+  visible: {
+    opacity: 1,
+    y: 0,
+    filter: 'blur(0px)',
+    transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const taglineVariants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.9, delay: 0.85, ease: [0.16, 1, 0.3, 1] },
+  },
+};
+
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { duration: 1.2, ease: 'easeOut' } },
+};
+
+const tapeVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, delay: 1.1, ease: [0.16, 1, 0.3, 1] },
+  },
+};
 
 export function HeroSection() {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
-    <section className="relative min-h-[70vh] lg:min-h-[85vh] flex items-end justify-center overflow-hidden">
-      {/* Background Image */}
+    <section className="relative isolate min-h-[80svh] overflow-hidden bg-black text-white md:min-h-screen">
+
+      {/* ── Background images ── */}
       <div className="absolute inset-0">
-        <picture>
-          <source media="(max-width: 639px)" srcSet="/Somneheromobile.png" />
-          <source media="(min-width: 640px)" srcSet="/Somnehero.png" />
-          <img
-            src="/Somnehero.png"
-            alt="Luxury bedroom"
-            className="w-full md:h-full h-full object-cover"
-            width={1920} // Approximate dimensions to prevent layout shift
-            height={1080}
-            fetchPriority="high"
-            loading="eager"
-          />
-        </picture>
-        {/* <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-transparent" /> */}
+        <img
+          src="/img/home/hero_mobile_image.png"
+          alt="A complete Somne bed package in a monochrome bedroom"
+          className="md:hidden h-full w-full object-cover object-[center_20%]"
+        />
+        <img
+          src="/img/home/hero_image.png"
+          alt="A complete Somne bed package in a monochrome bedroom"
+          className="hidden md:block h-full w-full object-cover object-[58%_center] md:object-center"
+        />
       </div>
 
-      {/* Content */}
-      <div className="relative luxury-container h-full  md:mb-20 mb-5">
-        {/* <div className="max-w-2xl animate-fade-in-up">
-          <span className="inline-block text-accent font-sans text-sm tracking-[0.3em] uppercase mb-4">
-            Handcrafted in the UK
-          </span>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-medium text-cream leading-tight mb-6">
-            Luxury Beds & Mattresses
-          </h1>
-          <p className="font-sans text-lg md:text-xl text-cream/90 leading-relaxed mb-8 max-w-lg">
-            Experience hotel-quality comfort in your own home. Premium craftsmanship,
-            exceptional materials, and complimentary delivery across the UK.
-          </p>
+      {/* ── Gradient vignette ── */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/70 md:hidden"
+        variants={overlayVariants}
+        initial="hidden"
+        animate="visible"
+      />
 
-        </div> */}
-        <div className="flex  justify-end md:flex-row flex-col  mx-20 md:mx-0 gap-4 ">
-          <Button variant="hero" size="xl" className="h-12 px-8 text-sm md:h-14 md:px-10 md:text-base bg-primary text-white hover:bg-primary/80" asChild>
-            <Link to="/beds/divan-beds">Divan Beds</Link>
-          </Button>
-          <Button variant="hero" size="xl" className="h-12 px-8 text-sm md:h-14 md:px-10 md:text-base bg-primary text-white hover:bg-primary/80" asChild>
-            <Link to="/beds/ottoman-divan-beds">Ottoman Beds</Link>
-          </Button>
-          <Button variant="hero" size="xl" className="h-12 px-8 text-sm md:h-14 md:px-10 md:text-base bg-primary text-white hover:bg-primary/80" asChild>
-            <Link to="/mattresses/pocket-sprung-mattress">Mattresses</Link>
-          </Button>
+      {/* ── Content ── */}
+      <div className="relative z-10 flex min-h-[80svh] flex-col items-center justify-end pb-0 px-4 pt-[calc(4.5rem+env(safe-area-inset-top))] md:min-h-screen md:justify-center md:pb-0 md:pt-0">
+
+        {/* Mobile animated wordmark */}
+        <div className="md:hidden flex flex-col items-center gap-3 pb-10">
+          <motion.div
+            className="flex"
+            variants={containerVariants}
+            initial={shouldReduceMotion ? 'visible' : 'hidden'}
+            animate="visible"
+            aria-label="SOMNE"
+          >
+            {LETTERS.map((letter, i) => (
+              <motion.span
+                key={i}
+                variants={letterVariants}
+                className="text-[22vw] font-black leading-none tracking-[-0.02em] text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.8)]"
+                style={{ display: 'inline-block' }}
+              >
+                {letter}
+              </motion.span>
+            ))}
+          </motion.div>
+
+          <motion.p
+            variants={taglineVariants}
+            initial={shouldReduceMotion ? 'visible' : 'hidden'}
+            animate="visible"
+            className="text-[11px] uppercase tracking-[0.35em] text-white/60 font-medium"
+          >
+            Sleep Engineered
+          </motion.p>
         </div>
+
+        {/* Desktop wordmark */}
+        <div className="hidden md:flex flex-1 items-center justify-center w-full">
+          <h1 className="text-center text-6xl font-black leading-none tracking-normal text-white drop-shadow-[0_4px_18px_rgba(0,0,0,0.65)] lg:text-9xl">
+            SOMNE
+          </h1>
+        </div>
+
       </div>
 
-      {/* Scroll indicator */}
-      <div className="hidden md:block absolute bottom-0 left-1/2 -translate-x-1/2 animate-bounce">
+      {/* ── Offer Tape — absolutely pinned to the bottom ── */}
+      <motion.div
+        className="absolute bottom-20 left-0 right-0 z-20 overflow-hidden"
+        variants={tapeVariants}
+        initial={shouldReduceMotion ? 'visible' : 'hidden'}
+        animate="visible"
+      >
+        <div className="flex bg-[#C0392B] h-16 items-center">
+          <div
+            className="flex whitespace-nowrap"
+            style={{
+              animation: shouldReduceMotion
+                ? 'none'
+                : 'somne-tape-scroll 18s linear infinite',
+            }}
+          >
+            {TAPE_ITEMS.map((_, i) => (
+              <span
+                key={i}
+                className="inline-flex items-center gap-10  text-white uppercase tracking-widest font-black text-lg px-10"
+              >
+                25% OFF
+                <span className=" text-xl tracking-[0.18em]">
+                  SOMNE25
+                </span>
+                <span className="w-0.5 h-10  bg-white flex-shrink-0" />
+              </span>
+            ))}
+          </div>
+        </div>
+      </motion.div>
 
-        <ChevronsDown className="w-12 h-12 text-primary" />
-
-      </div>
+      {/* ── Tape scroll keyframe ── */}
+      <style>{`
+        @keyframes somne-tape-scroll {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+      `}</style>
     </section>
   );
 }

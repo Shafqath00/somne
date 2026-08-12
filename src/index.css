@@ -1,5 +1,7 @@
 /* Inter (clean, bold) - include common weights */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+/* Great Vibes for Spring Sale */
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -52,6 +54,7 @@
     --gold-dark: 42 50% 45%;
     --charcoal: 220 20% 25%;
     --warm-white: 40 40% 98%;
+    --daily-deal-bar-height: 5.75rem;
 
     /* Gradients */
     --gradient-hero: linear-gradient(180deg, hsl(var(--navy)) 0%, hsl(225 30% 22%) 100%);
@@ -133,6 +136,18 @@
     @apply bg-background text-foreground antialiased;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --daily-deal-bar-height: 3.5rem;
+    }
+  }
+
+  @media (min-width: 768px) {
+    :root {
+      --daily-deal-bar-height: 3rem;
+    }
   }
 
   /* headings: inherit Inter, but use heavier weights for bold, clean look */

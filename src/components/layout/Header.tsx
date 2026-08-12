@@ -37,35 +37,6 @@ export function Header() {
     return () => clearInterval(interval);
   }, [logos.length]);
 
-  // Countdown timer state
-  const [timeLeft, setTimeLeft] = useState("");
-
-  useEffect(() => {
-    const calculateTimeLeft = () => {
-      const now = new Date();
-      // 13 hour cycle in milliseconds
-      const cycleDuration = 13 * 60 * 60 * 1000;
-      // Calculate remaining time in the current cycle based on UTC timestamp
-      const elapsed = now.getTime() % cycleDuration;
-      const remaining = cycleDuration - elapsed;
-
-      const hours = Math.floor((remaining / (1000 * 60 * 60)));
-      const minutes = Math.floor((remaining / (1000 * 60)) % 60);
-      const seconds = Math.floor((remaining / 1000) % 60);
-
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    };
-
-    // Initial update
-    setTimeLeft(calculateTimeLeft());
-
-    const timer = setInterval(() => {
-      setTimeLeft(calculateTimeLeft());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
   // Scroll detection
   const [hasScrolled, setHasScrolled] = useState(false);
 
@@ -80,24 +51,12 @@ export function Header() {
 
   return (
     <header className={cn(
-      "md:fixed top-0 left-0 right-0 z-40 border-b bg-white transition-all duration-300",
-      hasScrolled ? "shadow-lg" : "shadow-none"
+      "fixed left-3 right-3 top-[calc(var(--daily-deal-bar-height)+0.75rem)] z-50 rounded-full border bg-white transition-all duration-300 md:left-1/2 md:right-auto md:top-[calc(var(--daily-deal-bar-height)+1rem)] md:w-[95%] md:max-w-7xl md:-translate-x-1/2",
+      hasScrolled ? "top-[calc(var(--daily-deal-bar-height)+0.5rem)] shadow-lg md:top-[calc(var(--daily-deal-bar-height)+0.75rem)]" : "shadow-md"
     )}>
-      {/* Top bar */}
-      <div className="bg-primary text-primary-foreground py-2">
-        <div className="luxury-container text-center text-xs tracking-widest uppercase font-sans flex flex-col md:flex-row items-center justify-center gap-2">
-          <span>WINTER SALE - EXTRA 25% OFF | ENDS IN</span>
-          <span className="font-bold tabular-nums min-w-[60px]">{timeLeft}</span>
-          <div className='border p-2 rounded-md'>
-            <span>USE CODE </span>
-            <span className="font-bold">SOMNE25</span>
-          </div>
-        </div>
-      </div>
-
       {/* Main header */}
-      <div className="luxury-container relative md:mr-[150px] mr-0">
-        <div className="flex items-center justify-between h-20 w-full">
+      <div className="px-6 md:px-8 relative">
+        <div className="flex items-center justify-between h-16 md:h-20 w-full">
           {/* Mobile menu button */}
           <button
             className="lg:hidden p-2 -ml-2"
@@ -107,49 +66,11 @@ export function Header() {
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
 
-          {/* Logo */}
-
-
-          {/* Desktop navigation */}
-          <nav className="hidden lg:flex items-center gap-2">
-            {navigationItems.map((item) => (
-              <div
-                key={item.href}
-                className="relative group"
-                onMouseEnter={() => setActiveDropdown(item.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <span
-                  // to={item.href}
-                  className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors cursor-pointer py-2 px-4 rounded-full"
-                >
-                  {item.label}
-                  {item.children && <ChevronDown className="h-3 w-3" />}
-                </span>
-                {/* Dropdown */}
-                {item.children && activeDropdown === item.label && (
-                  <div className="absolute top-full left-0 pt-2  animate-fade-in">
-                    <div className="bg-card  rounded-lg overflow-hidden  min-w-[240px]">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          to={child.href}
-                          className="block px-5 py-2.5 text-sm font-sans text-foreground hover:bg-primary hover:text-white transition-colors"
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </nav>
-
+          {/* Logo (Left) */}
           <Link to="/" className="flex-shrink-0 flex items-center flex-col relative overflow-hidden translate-y-1">
             <h1
               key={currentLogoIndex}
-              className={`text-6xl font-black transition-all duration-300  ease-out ${isAnimating
+              className={`text-4xl font-black transition-all duration-300  ease-out ${isAnimating
                 ? 'opacity-0 translate-y-full'
                 : 'opacity-100 translate-y-0 animate-slide-down-logo'
                 }`}
@@ -194,9 +115,9 @@ export function Header() {
               ))}
             </div>
           </Link>
-
-          <nav className="hidden lg:flex items-center gap-2">
-            {navigationItems2.map((item) => (
+          {/* Desktop navigation (Center) */}
+          <nav className="hidden lg:flex items-center justify-center gap-6 absolute left-1/2 -translate-x-1/2">
+            {[...navigationItems, ...navigationItems2].map((item) => (
               <div
                 key={item.href}
                 className="relative group"
@@ -204,14 +125,14 @@ export function Header() {
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 {item.children ? (
-                  <span className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors cursor-pointer py-2 px-4 rounded-full">
+                  <span className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-gray-500 transition-colors cursor-pointer py-2">
                     {item.label}
                     <ChevronDown className="h-3 w-3" />
                   </span>
                 ) : (
                   <Link
                     to={item.href}
-                    className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-white hover:bg-primary transition-colors cursor-pointer py-2 px-4 rounded-full"
+                    className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-gray-500 transition-colors py-2"
                   >
                     {item.label}
                   </Link>
@@ -219,13 +140,13 @@ export function Header() {
 
                 {/* Dropdown */}
                 {item.children && activeDropdown === item.label && (
-                  <div className="absolute top-full left-0 pt-2  animate-fade-in">
-                    <div className="bg-card  rounded-lg overflow-hidden  min-w-[240px]">
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 animate-fade-in">
+                    <div className="bg-white shadow-xl rounded-2xl overflow-hidden min-w-[200px] border border-gray-100 p-2">
                       {item.children.map((child) => (
                         <Link
                           key={child.href}
                           to={child.href}
-                          className="block px-5 py-2.5 text-sm font-sans text-foreground hover:bg-primary hover:text-white transition-colors"
+                          className="block px-4 py-2 text-sm font-sans text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                         >
                           {child.label}
                         </Link>
@@ -235,35 +156,49 @@ export function Header() {
                 )}
               </div>
             ))}
-
           </nav>
 
-          {/* Cart button */}
+
+          {/* Mobile Cart button */}
           <button
             onClick={toggleCart}
-            className="relative block lg:hidden   p-2 hover:text-accent transition-colors"
+            className="relative block lg:hidden p-2 hover:text-gray-500 transition-colors"
             aria-label="Open cart"
           >
             <ShoppingBag className="h-6 w-6" />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-black text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                 {itemCount}
               </span>
             )}
           </button>
         </div>
-        <button
-          onClick={toggleCart}
-          className="absolute -right-6 top-[20px] hidden lg:block p-2 hover:text-accent transition-colors"
-          aria-label="Open cart"
-        >
-          <ShoppingBag className="h-6 w-6" />
-          {itemCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+
+        {/* Desktop Right Icons */}
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 n hidden lg:flex items-center gap-4">
+          <button className="p-2 hover:text-gray-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+          </button>
+          <button className="p-2 hover:text-gray-500 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+          </button>
+          <button className="p-2 hover:text-gray-500 transition-colors relative">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
+            <span className="absolute 1 top-0 right-0 bg-black text-white text-[10px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
+              0
+            </span>
+          </button>
+          <button
+            onClick={toggleCart}
+            className="relative p-2 hover:text-gray-500 transition-colors"
+            aria-label="Open cart"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            <span className="absolute 1 top-0 right-0 bg-black text-white text-[10px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
               {itemCount}
             </span>
-          )}
-        </button>
+          </button>
+        </div>
       </div>
 
       {/* Mobile navigation - Full screen overlay */}

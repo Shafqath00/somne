@@ -23,6 +23,7 @@ const ContactPage = lazy(() => import("./pages/ContactPage"));
 const DeliveryPage = lazy(() => import("./pages/DeliveryPage"));
 const FAQPage = lazy(() => import("./pages/FAQPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const PolicyPage = lazy(() => import("./pages/policy"));
 const AdminPage = lazy(() => import("./pages/admin/AdminPage"));
 const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
 const AdminHome = lazy(() => import("./pages/admin/AdminHome"));
@@ -30,6 +31,7 @@ const AdminContactForms = lazy(() => import("./pages/admin/AdminContactForms"));
 const AdminOrderDetail = lazy(() => import("./pages/admin/AdminOrderDetail"));
 const ProductAdd = lazy(() => import("./pages/admin/ProductAdd"));
 const AdminProductEdit = lazy(() => import("./pages/admin/AdminProductEdit"));
+const ProductBulkUpload = lazy(() => import("./pages/admin/ProductBulkUpload"));
 const Checkout = lazy(() => import("./pages/PaymentPages/Checkout"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentPages/PaymentSuccess"));
 const PaymentCancel = lazy(() => import("./pages/PaymentPages/PaymentCancel"));
@@ -38,6 +40,7 @@ const OrderTracking = lazy(() => import("./pages/PaymentPages/OrderTracking"));
 const BlogsPage = lazy(() => import("./pages/blogs/BlogsPage"));
 const BlogDetailPage = lazy(() => import("./pages/blogs/BlogDetailPage"));
 const AdminBlogManager = lazy(() => import("./pages/admin/AdminBlogManager"));
+import MaintenancePage from "./pages/MaintenancePage";
 
 // Configure React Query with sensible defaults
 const queryClient = new QueryClient({
@@ -60,8 +63,15 @@ const PageLoader = () => (
   </div>
 );
 
-const App = () => (
-  <HelmetProvider>
+const IS_MAINTENANCE = false; // Set to false to disable maintenance mode
+
+const App = () => {
+  if (IS_MAINTENANCE) {
+    return <MaintenancePage />;
+  }
+
+  return (
+    <HelmetProvider>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
@@ -80,6 +90,7 @@ const App = () => (
                   <Route path="/about" element={<AboutPage />} /> */}
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/returns" element={<DeliveryPage />} />
+                  <Route path="/privacy" element={<PolicyPage />} />
                   {/* <Route path="/faq" element={<FAQPage />} /> */}
 
                   {/* Admin Routes */}
@@ -121,6 +132,11 @@ const App = () => (
                       <ProductAdd />
                     </PrivateRoute>
                   } />
+                  <Route path="/admin/products/bulk-upload" element={
+                    <PrivateRoute>
+                      <ProductBulkUpload />
+                    </PrivateRoute>
+                  } />
                   <Route path="/admin/edit/:id" element={
                     <PrivateRoute>
                       <AdminProductEdit />
@@ -156,9 +172,10 @@ const App = () => (
           </TooltipProvider>
         </CartProvider>
       </AuthProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   </HelmetProvider>
-);
+  );
+};
 
 export default App;

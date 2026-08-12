@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../lib/firebase";
 import { getAuth } from "firebase/auth";
 
@@ -58,19 +58,72 @@ export async function resizeImageFile(file: File, maxWidth = 1200, outputType = 
     return canvas.convertToBlob({ type: outputType, quality });
 }
 
-export const uploadImage = async (file: File, folder: string = 'products'): Promise<string> => {
+export type UploadProgressHandler = (progress: number) => void;
+
+export const uploadImageResumable = async (
+    file: File,
+    folder: string = 'products',
+    onProgress?: UploadProgressHandler
+): Promise<string> => {
     try {
         const blob = await resizeImageFile(file);
         const filename = `${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}.webp`;
         const storageRef = ref(storage, filename);
+        const uploadTask = uploadBytesResumable(storageRef, blob, { contentType: 'image/webp' });
 
-        await uploadBytes(storageRef, blob, { contentType: 'image/webp' });
-        const url = await getDownloadURL(storageRef);
-        return url;
+        return await new Promise((resolve, reject) => {
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = snapshot.totalBytes
+                        ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+                        : 0;
+                    onProgress?.(progress);
+                },
+                reject,
+                async () => {
+                    const url = await getDownloadURL(uploadTask.snapshot.ref);
+                    onProgress?.(100);
+                    resolve(url);
+                }
+            );
+        });
     } catch (error) {
         console.error("Error uploading image:", error);
         throw error;
     }
+};
+
+export const uploadImage = async (file: File, folder: string = 'products'): Promise<string> => {
+    return uploadImageResumable(file, folder);
+};
+
+export const uploadImagesWithProgress = async (
+    files: File[],
+    folder: string,
+    onFileProgress?: (index: number, progress: number) => void,
+    concurrency = 3
+): Promise<string[]> => {
+    const urls: string[] = new Array(files.length);
+    let nextIndex = 0;
+
+    const worker = async () => {
+        while (nextIndex < files.length) {
+            const currentIndex = nextIndex;
+            nextIndex += 1;
+            urls[currentIndex] = await uploadImageResumable(
+                files[currentIndex],
+                folder,
+                (progress) => onFileProgress?.(currentIndex, progress)
+            );
+        }
+    };
+
+    await Promise.all(
+        Array.from({ length: Math.min(concurrency, files.length) }, () => worker())
+    );
+
+    return urls;
 };
 
 // --- Product API (Admin) ---
@@ -79,10 +132,21 @@ export const postProduct = async (productData: any) => {
     return adminAxios('POST', '/products', productData);
 };
 
+export const bulkCreateProducts = async (products: any[]) => {
+    return adminAxios('POST', '/products/bulk', { products });
+};
+
 export const updateProduct = async (productData: any) => {
     return adminAxios('PUT', `/products/${productData.id}`, productData);
 };
 
+export const deleteProduct = async (id: string) => {
+    return adminAxios('DELETE', `/products/${id}`);
+};
+
+export const bulkUpdateProductStatus = async (filter: { category?: string; subcategory?: string }, active: boolean) => {
+    return adminAxios('PUT', `/products/bulk/status`, { ...filter, active });
+};
 export const getAllProducts = async (filters?: { category?: string; subcategory?: string }) => {
     // Note: Admin route /admin/products supports filtering
     return adminAxios('GET', '/products', null, filters);
@@ -90,9 +154,9 @@ export const getAllProducts = async (filters?: { category?: string; subcategory?
 
 // --- Product API (Public) ---
 
-export const BedCategory = async (categoryId: string, type: string) => {
+export const BedCategory = async (categoryId: string, type: string, isTest?: boolean) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/collection/${type}/${categoryId}`);
+        const response = await axios.get(`${API_BASE_URL}/collection/${type}/${categoryId}${isTest ? '?test=true' : ''}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching categories:", error);
@@ -121,6 +185,16 @@ export const getProductById = async (id: string) => {
         return response.data;
     } catch (error) {
         console.error("Error fetching product:", error);
+        throw error;
+    }
+};
+
+export const getProductByDocId = async (id: string) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/products/id/${encodeURIComponent(id)}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching product by document ID:", error);
         throw error;
     }
 };
@@ -395,6 +469,17 @@ export const submitContactForm = async (data: { name: string; email: string; pho
         return response.data;
     } catch (error) {
         console.error("Error submitting contact form:", error);
+        throw error;
+    }
+};
+
+// Public: Send Lead to External Forwarder
+export const sendLeadForwarder = async (data: { subject?: string; from?: string; toEmail: string[]; [key: string]: any }) => {
+    try {
+        const response = await axios.post("https://leadapi-n7gbvladja-uc.a.run.app/send-lead", data);
+        return response.data;
+    } catch (error) {
+        console.error("Error sending lead to forwarder:", error);
         throw error;
     }
 };
