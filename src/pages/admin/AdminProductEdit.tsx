@@ -662,7 +662,7 @@ export default function AdminProductEdit() {
                     <div className="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
-                                <Link to="/admin">
+                                <Link to="/admin/products">
                                     <Button variant="outline" size="icon" className="bg-white">
                                         <ArrowLeft className="w-4 h-4" />
                                     </Button>
