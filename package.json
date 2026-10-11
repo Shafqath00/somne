@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:full": "npm run build:sitemap && vite build && node scripts/prerender.js",
+    "build:sitemap": "node scripts/generate-sitemap.js",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -84,6 +86,7 @@
     "globals": "^15.15.0",
     "lovable-tagger": "^1.1.13",
     "postcss": "^8.5.6",
+    "puppeteer": "^24.37.5",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",

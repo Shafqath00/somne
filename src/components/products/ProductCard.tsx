@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link } from 'react-router-dom';
-import { Star, ShoppingBag, Eye, Palette } from 'lucide-react';
+import { Star, ShoppingBag, Eye, EyeOff, Palette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
@@ -12,40 +12,66 @@ interface ProductCardProps {
   selectedColor?: string | null;
 }
 
+const getCleanColorName = (name: string): string => {
+  let cleaned = name.replace(/\s*plush\s*/i, '').trim();
+  if (cleaned.toLowerCase() === 'cream') return 'Beige';
+  if (cleaned.toLowerCase() === 'emerald') return 'Green';
+  return cleaned;
+};
+
 export function ProductCard({ product, selectedColor }: ProductCardProps) {
+  const isTestUrl = window.location.hostname === 'somne-f5b59.web.app' || new URLSearchParams(window.location.search).get('test') === 'true';
   const { addItem } = useCart();
+  const enabledColors = useMemo(
+    () => product.colors?.filter((color: any) => !color.disabled) || [],
+    [product.colors]
+  );
+  const disabledColorImages = useMemo(
+    () => product.colors
+      ?.filter((color: any) => color.disabled)
+      .flatMap((color: any) => [
+        ...(color.image ? [color.image] : []),
+        ...(color.productImages || [])
+      ]) || [],
+    [product.colors]
+  );
+  const safeCoverImage = product.coverImage && !disabledColorImages.includes(product.coverImage)
+    ? product.coverImage
+    : undefined;
 
   // Get the image based on selected color filter
   const displayImage = useMemo(() => {
-    if (selectedColor && product.colors && Array.isArray(product.colors)) {
+    if (selectedColor && enabledColors.length > 0) {
       // Find the color variant that matches the selected filter
-      const matchingColor = product.colors.find(
-        (c: any) => c.name?.toLowerCase() === selectedColor.toLowerCase()
+      const matchingColor = enabledColors.find(
+        (c: any) => c.name && getCleanColorName(c.name).toLowerCase() === selectedColor.toLowerCase()
       );
       if (matchingColor?.image) {
         return matchingColor.image;
       }
     }
     // Default: show the product's main image or default color's image
-    return product.image || product.images?.[0] || "";
-  }, [selectedColor, product.colors, product.image, product.images]);
+    return safeCoverImage || product.image || product.images?.[0] || "";
+  }, [selectedColor, enabledColors, safeCoverImage, product.image, product.images]);
 
   // Get the display color name (for showing which variant is displayed)
   const displayColorName = useMemo(() => {
-    if (selectedColor && product.colors && Array.isArray(product.colors)) {
-      const matchingColor = product.colors.find(
-        (c: any) => c.name?.toLowerCase() === selectedColor.toLowerCase()
+    if (selectedColor && enabledColors.length > 0) {
+      const matchingColor = enabledColors.find(
+        (c: any) => c.name && getCleanColorName(c.name).toLowerCase() === selectedColor.toLowerCase()
       );
       if (matchingColor) {
         return matchingColor.name;
       }
     }
     return null;
-  }, [selectedColor, product.colors]);
+  }, [selectedColor, enabledColors]);
+
+  // console.log(product);
 
   const handleAddToCart = () => {
     if (product.sizes.length > 0) {
-      addItem(product, 1, product.sizes[0], product.colors?.[0], product.storageOptions?.[0]);
+      addItem(product, 1, product.sizes[0], enabledColors[0], product.storageOptions?.[0]);
       toast.success(`${product.name} added to bag`);
     }
   };
@@ -59,7 +85,7 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
     <div className="group flex flex-col h-full bg-white border border-border/50 hover:border-accent/40 rounded-xl sm:rounded-2xl overflow-hidden transition-all shadow-md duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1">
       {/* Image */}
       <Link
-        to={`/product/${product.slug || product.name}?variant=${encodeURIComponent(displayColorName || product.colors?.[0]?.name || '')}`}
+        to={`/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`}
         className="block relative aspect-[4/3] overflow-hidden bg-secondary/20"
       >
         <img
@@ -70,6 +96,21 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
 
         {/* Badges Overlay */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-2">
+          {isTestUrl && (
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-sm border border-black/5 text-[10px] font-bold tracking-wider uppercase ${product.active !== false ? 'text-green-600' : 'text-red-600'}`}>
+              {product.active !== false ? (
+                <>
+                  <Eye className="w-3 h-3 mr-1" />
+                  Live
+                </>
+              ) : (
+                <>
+                  <EyeOff className="w-3 h-3 mr-1" />
+                  Not Live
+                </>
+              )}
+            </span>
+          )}
           {product.bestseller && (
             <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-sm border border-black/5 text-[10px] font-bold tracking-wider uppercase text-foreground">
               <Star className="w-3 h-3 mr-1 fill-accent text-accent" />
@@ -91,7 +132,10 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
 
       {/* Content */}
       <div className="p-3 sm:p-5 flex flex-col flex-1">
-        <Link to={`/product/${product.slug || product.name}`} className="block mb-2 sm:mb-3">
+        <Link
+          to={`/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`}
+          className="block mb-2 sm:mb-3"
+        >
           <h3 className="font-serif text-base sm:text-xl font-medium text-foreground group-hover:text-accent transition-colors">
             {product.name}
           </h3>
@@ -122,9 +166,9 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
             )}
           </div>
 
-          <div className="hidden xs:flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-secondary/50 border border-border/50 text-[10px] sm:text-xs font-medium text-muted-foreground group-hover:bg-accent/5 group-hover:text-accent group-hover:border-accent/20 transition-colors">
+          <div className="hidden items-center gap-1.5 rounded-lg border border-border/50 bg-secondary/50 px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors group-hover:border-accent/20 group-hover:bg-accent/5 group-hover:text-accent sm:flex sm:px-3 sm:py-1.5 sm:text-xs">
             <Palette className="w-3.5 h-3.5" />
-            <span>{product.colors?.length || 0} Colors</span>
+            <span>{enabledColors.length} Colors</span>
           </div>
         </div>
       </div>
