@@ -97,17 +97,17 @@ export const categories = [
 // USP Data
 export const usps = [
   {
-    icon: '/img/icons/icon4.png',
+    icon: '/img/icons/1.png',
     title: 'Free Delivery',
     description: 'UK Mainland',
   },
   {
-    icon: '/img/icons/uk2.png',
+    icon: '/img/icons/2.png',
     title: 'Made in UK',
     description: 'Handcrafted in the UK',
   },
   {
-    icon: '/img/icons/icon6.png',
+    icon: '/img/icons/3.png',
     title: '5-Year Warranty',
     description: 'Peace of mind',
   },

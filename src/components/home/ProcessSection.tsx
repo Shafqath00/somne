@@ -1,40 +1,37 @@
+import { ArrowRight } from 'lucide-react';
 import { processSteps } from '@/data';
 
 export function ProcessSection() {
-    return (
-        <section className="section-padding bg-secondary">
-            <div className="luxury-container">
-                <div className="text-center mb-12 md:mb-16">
-                    <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
-                        How It Works
-                    </span>
-                    <h2 className="luxury-heading text-foreground mb-4">
-                        Our Simple Process
-                    </h2>
-                    <p className="md:luxury-body text-sm max-w-2xl mx-auto">
-                        From browsing to bedroom, we make buying your perfect bed effortless.
-                    </p>
-                </div>
+  return (
+    <section className="bg-white py-10 md:py-14">
+      <div className="luxury-container">
+        <div className="mb-8 flex flex-col justify-between gap-4 md:mb-14 md:flex-row md:items-end">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/60 md:mb-3 md:text-sm">How it works</p>
+            <h2 className="max-w-2xl text-2xl font-black text-foreground md:text-5xl">
+              From package choice to bedroom, kept simple.
+            </h2>
+          </div>
+          <p className="max-w-md text-sm leading-7 text-muted-foreground md:text-base">
+            Pick your product, checkout securely, then we keep you updated before delivery.
+          </p>
+        </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 rounded-md gap-8 md:gap-12">
-                    {processSteps.map((step, index) => (
-                        <div key={step.step} className="relative text-center">
-                            {/* Connector line */}
-                            {index < processSteps.length - 1 && (
-                                <div className="hidden md:block absolute top-8 left-[calc(50%+3rem)] w-[calc(100%-6rem)] h-px bg-border" />
-                            )}
-
-                            {/* Step number */}
-                            <div className="w-16 h-16 mx-auto mb-6 bg-accent rounded-full text-primary font-serif text-2xl font-medium flex items-center justify-center">
-                                {step.step}
-                            </div>
-
-                            <h3 className="font-serif text-xl font-medium text-foreground mb-3">{step.title}</h3>
-                            <p className="font-sans text-sm text-muted-foreground leading-relaxed">{step.description}</p>
-                        </div>
-                    ))}
-                </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {processSteps.map((step) => (
+            <div key={step.step} className="rounded-2xl border border-black/10 bg-[#f4f4f4] p-5 md:rounded-lg md:p-8">
+              <div className="mb-6 flex items-center justify-between md:mb-8">
+                <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-black text-lg font-black text-white md:h-12 md:w-12 md:text-xl">
+                  {step.step}
+                </span>
+                <ArrowRight className="hidden h-5 w-5 text-muted-foreground md:block" />
+              </div>
+              <h3 className="text-2xl font-black text-foreground">{step.title}</h3>
+              <p className="mt-4 text-sm leading-7 text-muted-foreground">{step.description}</p>
             </div>
-        </section>
-    );
+          ))}
+        </div>
+      </div>
+    </section>
+  );
 }

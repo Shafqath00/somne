@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
-import { Layout } from '@/components/layout/Layout';
+import { AdminLayout } from '@/components/layout/AdminLayout';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Save, ArrowLeft, BedSingle, BedDouble, Weight, BrickWall, Upload, Package, Palette, Ruler, Archive, Crown, Layers, Sparkles, Images, X, Star } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowLeft, ArrowRight, ArrowUp, BedSingle, BedDouble, Weight, BrickWall, Upload, Package, Palette, Ruler, Archive, Crown, Layers, Sparkles, Images, X, Star, Eye, EyeOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ProductSize, ProductColor, ProductCategory, ProductSubcategory } from '@/types';
 import { toast } from 'sonner';
-import { postProduct, uploadImage } from '@/api/api';
+import { postProduct, uploadImage, uploadImagesWithProgress } from '@/api/api';
 import {
     Dialog,
     DialogContent,
@@ -22,11 +22,11 @@ const initialColor: ProductColor[] = [{ name: 'Black Plush', hex: '#000000' }, {
 // Section Header Component
 const SectionHeader = ({ icon: Icon, title, description }: { icon: any, title: string, description?: string }) => (
     <div className="flex items-start gap-4 mb-6">
-        <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/10">
-            <Icon className="w-5 h-5 text-primary" />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+            <Icon className="w-5 h-5" />
         </div>
         <div>
-            <h2 className="font-serif text-xl font-medium text-foreground">{title}</h2>
+            <h2 className="text-xl font-semibold tracking-normal text-slate-950">{title}</h2>
             {description && <p className="text-sm text-muted-foreground mt-0.5">{description}</p>}
         </div>
     </div>
@@ -41,7 +41,7 @@ const InputField = ({ label, required, ...props }: { label: string, required?: b
         </label>
         <input
             {...props}
-            className="w-full px-4 py-3 border border-border rounded-lg bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-200 placeholder:text-muted-foreground/50"
+            className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 transition-all duration-200 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
         />
     </div>
 );
@@ -52,12 +52,17 @@ const SelectField = ({ label, children, ...props }: { label: string, children: R
         <label className="text-sm font-medium text-foreground">{label}</label>
         <select
             {...props}
-            className="w-full px-4 py-3 border border-border rounded-lg bg-background/50 backdrop-blur-sm focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all duration-200 appearance-none cursor-pointer"
+            className="w-full cursor-pointer appearance-none rounded-lg border border-slate-200 bg-white px-4 py-3 transition-all duration-200 focus:border-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-200"
         >
             {children}
         </select>
     </div>
 );
+
+type LocalImageFile = {
+    file: File;
+    previewUrl: string;
+};
 
 export default function ProductAdd() {
     const [formData, setFormData] = useState({
@@ -68,6 +73,7 @@ export default function ProductAdd() {
         categoryId: 'beds' as ProductCategory,
         subcategoryId: '' as string,
         images: [] as string[],
+        coverImage: '',
         sizes: [] as any[],
         colors: initialColor,
         storageOptions: [] as any[],
@@ -77,7 +83,9 @@ export default function ProductAdd() {
         discountPercentage: 0,
         discountPrice: 0,
     });
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
+    const [imageFiles, setImageFiles] = useState<LocalImageFile[]>([]);
+    const [uploadingImages, setUploadingImages] = useState(false);
+    const [imageProgress, setImageProgress] = useState<Record<string, number>>({});
     const [loading, setLoading] = useState(false);
     // Generate a unique ID for storage organization
     const [storageId] = useState(() => {
@@ -91,22 +99,35 @@ export default function ProductAdd() {
             toast.error('Please fill in product name and base price');
             return;
         }
+        if (uploadingImages || formData.images.some(url => url.startsWith('blob:'))) {
+            toast.error('Please wait for product images to finish uploading');
+            return;
+        }
         // if (formData.sizes.length === 0) {
         //     toast.error('Please select at least one size');
         //     return;
         // }
         try {
             setLoading(true);
-            const uploadedImageUrls: string[] = [];
+            const uploadedImageUrls = new Map<string, string>();
             if (imageFiles.length > 0) {
-                const uploadPromises = imageFiles.map(file => uploadImage(file, `products/${storageId}/main`));
+                const uploadPromises = imageFiles.map(({ file }) => uploadImage(file, `products/${storageId}/main`));
                 const urls = await Promise.all(uploadPromises);
-                uploadedImageUrls.push(...urls);
+                imageFiles.forEach((item, index) => uploadedImageUrls.set(item.previewUrl, urls[index]));
             }
             const discountPrice = formData.basePrice * (1 - formData.discountPercentage / 100);
+            const images = formData.images
+                .map(url => uploadedImageUrls.get(url) || url)
+                .filter(url => url.startsWith('http'));
+            const colorImageUrls = getColorImageUrls();
+            const finalImages = formData.categoryId === 'beds' ? colorImageUrls : images;
+            const finalCoverImage = formData.categoryId === 'beds'
+                ? (finalImages.includes(formData.coverImage) ? formData.coverImage : finalImages[0] || '')
+                : formData.coverImage || finalImages[0] || '';
             const finalProductData = {
                 ...formData,
-                images: [...formData.images.filter(url => url.startsWith('http')), ...uploadedImageUrls],
+                images: finalImages,
+                coverImage: finalCoverImage,
                 discountPrice
             };
             if (formData.categoryId === 'mattresses') {
@@ -123,6 +144,7 @@ export default function ProductAdd() {
                 categoryId: 'beds',
                 subcategoryId: '',
                 images: [],
+                coverImage: '',
                 sizes: [],
                 colors: initialColor,
                 storageOptions: [],
@@ -192,7 +214,16 @@ export default function ProductAdd() {
     };
 
     const removeColor = (index: number) => {
-        setFormData(prev => ({ ...prev, colors: prev.colors.filter((_, i) => i !== index) }));
+        setFormData(prev => {
+            const removedColor = prev.colors[index];
+            const removedImages = [removedColor?.image, ...(removedColor?.productImages || [])].filter(Boolean);
+            const nextColors = prev.colors.filter((_, i) => i !== index);
+            return {
+                ...prev,
+                colors: nextColors,
+                coverImage: removedImages.includes(prev.coverImage) ? resolveCoverImage('', nextColors, prev.images) : prev.coverImage
+            };
+        });
     };
 
     const setDefaultColor = (index: number) => {
@@ -202,28 +233,173 @@ export default function ProductAdd() {
         }));
     };
 
+    const getColorImageList = (color?: ProductColor) => {
+        const urls = [
+            ...(color?.image ? [color.image] : []),
+            ...(color?.productImages || [])
+        ].filter(Boolean);
+        return Array.from(new Set(urls));
+    };
+
+    const writeColorImageList = (color: ProductColor, images: string[]) => {
+        const uniqueImages = Array.from(new Set(images.filter(Boolean)));
+        return {
+            ...color,
+            image: uniqueImages[0] || '',
+            productImages: uniqueImages.slice(1)
+        };
+    };
+
+    const getEnabledColorImageUrls = (colors: ProductColor[]) => {
+        const urls = colors
+            .filter(color => !color.disabled)
+            .flatMap(color => getColorImageList(color));
+        return Array.from(new Set(urls.filter(url => url && url.startsWith('http'))));
+    };
+
+    const resolveCoverImage = (currentCover: string, colors: ProductColor[], images: string[] = []) => {
+        const enabledColorImages = getEnabledColorImageUrls(colors);
+        const validImages = [...enabledColorImages, ...images.filter(url => url && url.startsWith('http'))];
+        if (currentCover && validImages.includes(currentCover)) return currentCover;
+        return enabledColorImages[0] || images.find(url => url && url.startsWith('http')) || '';
+    };
+
+    const setColorImageList = (colorIndex: number, images: string[]) => {
+        setFormData(prev => {
+            const newColors = [...prev.colors];
+            newColors[colorIndex] = writeColorImageList(newColors[colorIndex], images);
+            return {
+                ...prev,
+                colors: newColors,
+                coverImage: resolveCoverImage(prev.coverImage, newColors, prev.images)
+            };
+        });
+    };
+
+    const appendColorImages = (colorIndex: number, urls: string[]) => {
+        setFormData(prev => {
+            const newColors = [...prev.colors];
+            const mergedImages = Array.from(new Set([...getColorImageList(newColors[colorIndex]), ...urls]));
+            newColors[colorIndex] = writeColorImageList(newColors[colorIndex], mergedImages);
+            return {
+                ...prev,
+                colors: newColors,
+                coverImage: resolveCoverImage(prev.coverImage, newColors, prev.images)
+            };
+        });
+    };
+
+    const moveColorImage = (colorIndex: number, imageIndex: number, direction: -1 | 1) => {
+        const images = getColorImageList(formData.colors[colorIndex]);
+        const nextIndex = imageIndex + direction;
+        if (nextIndex < 0 || nextIndex >= images.length) return;
+        const nextImages = [...images];
+        [nextImages[imageIndex], nextImages[nextIndex]] = [nextImages[nextIndex], nextImages[imageIndex]];
+        setColorImageList(colorIndex, nextImages);
+    };
+
+    const setColorMainImage = (colorIndex: number, imageIndex: number) => {
+        const images = getColorImageList(formData.colors[colorIndex]);
+        const imageToMove = images[imageIndex];
+        if (!imageToMove) return;
+        setColorImageList(colorIndex, [imageToMove, ...images.filter((_, i) => i !== imageIndex)]);
+    };
+
+    const toggleColorDisabled = (index: number) => {
+        setFormData(prev => {
+            const newColors = [...prev.colors];
+            newColors[index] = { ...newColors[index], disabled: !newColors[index].disabled };
+            return {
+                ...prev,
+                colors: newColors,
+                coverImage: resolveCoverImage(prev.coverImage, newColors, prev.images)
+            };
+        });
+    };
+
+    const normalizeImageMatchName = (value: string) => value
+        .toLowerCase()
+        .replace(/\.[^/.]+$/, '')
+        .replace(/[^a-z0-9]/g, '');
+
+    const findColorIndexForFile = (fileName: string, colors: ProductColor[]) => {
+        const normalizedFileName = normalizeImageMatchName(fileName);
+        const matches = colors
+            .map((color, index) => ({ index, name: normalizeImageMatchName(color.name || '') }))
+            .filter(match => match.name && normalizedFileName.includes(match.name))
+            .sort((a, b) => b.name.length - a.name.length);
+        return matches[0]?.index ?? -1;
+    };
+
     const calculateFinalPrice = (sizeModifier: number) => {
         return Number(formData.discountPrice) + Number(sizeModifier || 0);
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
-            setImageFiles(prev => [...prev, ...files]);
-            const newImageUrls = files.map(file => URL.createObjectURL(file));
+            const pendingImages = files.map(file => ({
+                file,
+                previewUrl: URL.createObjectURL(file)
+            }));
+            setImageFiles(prev => [...prev, ...pendingImages]);
             setFormData(prev => ({
                 ...prev,
-                images: [...prev.images.filter(img => img !== ''), ...newImageUrls]
+                images: [...prev.images.filter(img => img !== ''), ...pendingImages.map(image => image.previewUrl)],
+                coverImage: prev.coverImage || pendingImages[0].previewUrl
             }));
+            setUploadingImages(true);
+            try {
+                const urls = await uploadImagesWithProgress(
+                    files,
+                    `products/${storageId}/main`,
+                    (index, progress) => {
+                        const previewUrl = pendingImages[index]?.previewUrl;
+                        if (previewUrl) {
+                            setImageProgress(prev => ({ ...prev, [previewUrl]: progress }));
+                        }
+                    },
+                    3
+                );
+                setFormData(prev => ({
+                    ...prev,
+                    images: prev.images.map(image => {
+                        const pendingIndex = pendingImages.findIndex(pending => pending.previewUrl === image);
+                        return pendingIndex >= 0 ? urls[pendingIndex] : image;
+                    }),
+                    coverImage: pendingImages.some(pending => pending.previewUrl === prev.coverImage)
+                        ? urls[pendingImages.findIndex(pending => pending.previewUrl === prev.coverImage)]
+                        : prev.coverImage
+                }));
+                setImageFiles(prev => prev.filter(item => !pendingImages.some(pending => pending.previewUrl === item.previewUrl)));
+                setImageProgress(prev => {
+                    const next = { ...prev };
+                    pendingImages.forEach(image => delete next[image.previewUrl]);
+                    return next;
+                });
+                pendingImages.forEach(image => URL.revokeObjectURL(image.previewUrl));
+                toast.success(`Uploaded ${urls.length} product image${urls.length === 1 ? '' : 's'}`);
+            } catch (error) {
+                console.error(error);
+                toast.error('Failed to upload product images');
+            } finally {
+                setUploadingImages(false);
+            }
         }
+        e.target.value = '';
     };
 
     const removeImage = (index: number) => {
+        const imageToRemove = formData.images[index];
+        if (imageToRemove?.startsWith('blob:')) {
+            URL.revokeObjectURL(imageToRemove);
+            setImageFiles(prev => prev.filter(item => item.previewUrl !== imageToRemove));
+        }
         setFormData(prev => ({
             ...prev,
-            images: prev.images.filter((_, i) => i !== index)
+            images: prev.images.filter((_, i) => i !== index),
+            coverImage: prev.coverImage === imageToRemove ? (prev.images.filter((_, i) => i !== index)[0] || '') : prev.coverImage
         }));
-        setImageFiles(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleVariantImageUpload = async (index: number, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,27 +407,79 @@ export default function ProductAdd() {
         if (files.length === 0) return;
 
         try {
-            // Show loading toast
-            const toastId = toast.loading('Uploading variant images...');
+            const imageFiles = files.filter(file => file.type.startsWith('image/'));
+            if (imageFiles.length === 0) {
+                toast.error('No valid images found');
+                return;
+            }
 
-            const uploadPromises = files.map(file => uploadImage(file, `products/${storageId}/variants`));
+            const toastId = toast.loading('Uploading color images...');
+
+            const uploadPromises = imageFiles.map(file => uploadImage(file, `products/${storageId}/variants`));
             const urls = await Promise.all(uploadPromises);
 
-            setFormData(prev => {
-                const newColors = [...prev.colors];
-                const currentImages = newColors[index].productImages || [];
-                newColors[index] = {
-                    ...newColors[index],
-                    productImages: [...currentImages, ...urls]
-                };
-                return { ...prev, colors: newColors };
-            });
+            appendColorImages(index, urls);
 
             toast.dismiss(toastId);
             toast.success(`Uploaded ${urls.length} images`);
         } catch (error) {
             console.error(error);
-            toast.error('Failed to upload variant images');
+            toast.dismiss();
+            toast.error('Failed to upload color images');
+        } finally {
+            e.target.value = '';
+        }
+    };
+
+    const handleBulkColorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []).filter(file => file.type.startsWith('image/'));
+        if (files.length === 0) return;
+
+        const matchedFiles = files
+            .map(file => ({ file, colorIndex: findColorIndexForFile(file.name, formData.colors) }))
+            .filter(item => item.colorIndex >= 0);
+        const unmatchedCount = files.length - matchedFiles.length;
+
+        if (matchedFiles.length === 0) {
+            toast.error('No images matched existing color names');
+            e.target.value = '';
+            return;
+        }
+
+        const toastId = toast.loading(`Uploading ${matchedFiles.length} color images...`);
+        try {
+            const uploads = await Promise.all(matchedFiles.map(async ({ file, colorIndex }) => ({
+                colorIndex,
+                url: await uploadImage(file, `products/${storageId}/variants`)
+            })));
+
+            setFormData(prev => {
+                const newColors = [...prev.colors];
+                const urlsByColor = uploads.reduce((map, upload) => {
+                    map.set(upload.colorIndex, [...(map.get(upload.colorIndex) || []), upload.url]);
+                    return map;
+                }, new Map<number, string[]>());
+
+                urlsByColor.forEach((urls, colorIndex) => {
+                    const mergedImages = Array.from(new Set([...getColorImageList(newColors[colorIndex]), ...urls]));
+                    newColors[colorIndex] = writeColorImageList(newColors[colorIndex], mergedImages);
+                });
+
+                return {
+                    ...prev,
+                    colors: newColors,
+                    coverImage: resolveCoverImage(prev.coverImage, newColors, prev.images)
+                };
+            });
+
+            toast.dismiss(toastId);
+            toast.success(`Uploaded ${uploads.length} color images${unmatchedCount ? `, skipped ${unmatchedCount} unmatched` : ''}`);
+        } catch (error) {
+            console.error(error);
+            toast.dismiss(toastId);
+            toast.error('Failed to bulk upload color images');
+        } finally {
+            e.target.value = '';
         }
     };
 
@@ -279,16 +507,17 @@ export default function ProductAdd() {
         e.stopPropagation();
         setActiveDragIndex(null);
 
-        const files = Array.from(e.dataTransfer.files);
+        const files = Array.from(e.dataTransfer.files).filter(file => file.type.startsWith('image/'));
         if (files.length > 0) {
             try {
-                const toastId = toast.loading('Uploading image...');
-                const url = await uploadImage(files[0], `products/${storageId}/variants`);
-                handleColorChange(index, 'image', url);
+                const toastId = toast.loading('Uploading color images...');
+                const urls = await Promise.all(files.map(file => uploadImage(file, `products/${storageId}/variants`)));
+                appendColorImages(index, urls);
                 toast.dismiss(toastId);
-                toast.success('Image uploaded');
+                toast.success(`Uploaded ${urls.length} image${urls.length === 1 ? '' : 's'}`);
             } catch (err) {
                 console.error(err);
+                toast.dismiss();
                 toast.error('Upload failed');
             }
         }
@@ -316,31 +545,31 @@ export default function ProductAdd() {
 
             setFormData(prev => {
                 const newColors = [...prev.colors];
-                const currentImages = newColors[index].productImages || [];
-                newColors[index] = {
-                    ...newColors[index],
-                    productImages: [...currentImages, ...urls]
-                };
-                return { ...prev, colors: newColors };
+                const mergedImages = Array.from(new Set([...getColorImageList(newColors[index]), ...urls]));
+                newColors[index] = writeColorImageList(newColors[index], mergedImages);
+                return { ...prev, colors: newColors, coverImage: resolveCoverImage(prev.coverImage, newColors, prev.images) };
             });
 
             toast.dismiss(toastId);
             toast.success(`Uploaded ${urls.length} images`);
         } catch (error) {
             console.error(error);
+            toast.dismiss();
             toast.error('Failed to upload variant images');
         }
     };
 
     const removeVariantImage = (colorIndex: number, imageIndex: number) => {
+        const imageToRemove = getColorImageList(formData.colors[colorIndex])[imageIndex];
         setFormData(prev => {
             const newColors = [...prev.colors];
-            const currentImages = newColors[colorIndex].productImages || [];
-            newColors[colorIndex] = {
-                ...newColors[colorIndex],
-                productImages: currentImages.filter((_, i) => i !== imageIndex)
+            const currentImages = getColorImageList(newColors[colorIndex]);
+            newColors[colorIndex] = writeColorImageList(newColors[colorIndex], currentImages.filter((_, i) => i !== imageIndex));
+            return {
+                ...prev,
+                colors: newColors,
+                coverImage: prev.coverImage === imageToRemove ? resolveCoverImage('', newColors, prev.images) : resolveCoverImage(prev.coverImage, newColors, prev.images)
             };
-            return { ...prev, colors: newColors };
         });
     };
 
@@ -367,29 +596,43 @@ export default function ProductAdd() {
 
             setFormData(prev => ({
                 ...prev,
-                images: [...prev.images.filter(img => img), ...urls]
+                images: [...prev.images.filter(img => img), ...urls],
+                coverImage: prev.coverImage || urls[0] || ''
             }));
 
             toast.dismiss(toastId);
             toast.success(`Uploaded ${urls.length} images`);
         } catch (error) {
             console.error(error);
+            toast.dismiss();
             toast.error('Failed to upload mattress images');
         }
     };
 
     const setMattressImageAsCover = (index: number) => {
-        if (index === 0) return;
         setFormData(prev => {
             const currentImages = prev.images;
             const imageToMove = currentImages[index];
+            if (!imageToMove) return prev;
             const otherImages = currentImages.filter((_, i) => i !== index);
             return {
                 ...prev,
-                images: [imageToMove, ...otherImages]
+                images: [imageToMove, ...otherImages],
+                coverImage: imageToMove
             };
         });
     };
+
+    const setImageAsCover = (url?: string) => {
+        if (!url) return;
+        setFormData(prev => ({ ...prev, coverImage: url }));
+    };
+
+    const getColorImageUrls = () => {
+        return getEnabledColorImageUrls(formData.colors);
+    };
+
+    const coverImageOptions = getColorImageUrls();
 
 
 
@@ -400,49 +643,49 @@ export default function ProductAdd() {
             <Helmet>
                 <title>Add Product | Admin</title>
             </Helmet>
-            <Layout>
+            <AdminLayout>
                 {/* Hero Header */}
-                <div className="relative bg-gradient-to-br from-primary via-primary to-[hsl(225,30%,22%)] overflow-hidden">
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImdyaWQiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+PHBhdGggZD0iTSA2MCAwIEwgMCAwIDAgNjAiIGZpbGw9Im5vbmUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS1vcGFjaXR5PSIwLjAzIiBzdHJva2Utd2lkdGg9IjEiLz48L3BhdHRlcm4+PC9kZWZzPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9InVybCgjZ3JpZCkiLz48L3N2Zz4=')] opacity-50" />
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-accent/10 rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
-                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-accent/5 rounded-full blur-2xl -translate-x-1/2 translate-y-1/2" />
+                <div className="relative overflow-hidden border-b border-slate-200 bg-white">
+                    <div className="hidden" />
+                    <div className="hidden" />
+                    <div className="hidden" />
 
-                    <div className="relative luxury-container py-12">
+                    <div className="relative mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
                             <div className="flex items-center gap-4">
                                 <Link to="/admin">
-                                    <Button variant="outline" size="icon" className="bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white backdrop-blur-sm">
+                                    <Button variant="outline" size="icon" className="bg-white">
                                         <ArrowLeft className="w-4 h-4" />
                                     </Button>
                                 </Link>
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <Sparkles className="w-4 h-4 text-accent" />
-                                        <span className="text-xs font-medium text-accent uppercase tracking-wider">New Product</span>
+                                        <Sparkles className="w-4 h-4 text-slate-500" />
+                                        <span className="text-xs font-medium text-slate-500 uppercase tracking-wider">New Product</span>
                                     </div>
-                                    <h1 className="font-serif text-3xl md:text-4xl font-medium text-white">Create Product</h1>
-                                    <p className="text-white/60 mt-1">Add a new product to your catalog</p>
+                                    <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Create Product</h1>
+                                    <p className="text-slate-600 mt-1">Add a new product to your catalog</p>
                                 </div>
                             </div>
                             <Button
                                 onClick={postProductData}
-                                disabled={loading}
-                                className="bg-accent hover:bg-accent/90 text-primary font-medium px-6 py-3 h-auto shadow-lg shadow-accent/25 hover:shadow-xl hover:shadow-accent/30 transition-all duration-300"
+                                disabled={loading || uploadingImages}
+                                className="px-6"
                             >
                                 <Save className="w-4 h-4 mr-2" />
-                                {loading ? 'Saving...' : 'Save Product'}
+                                {loading ? 'Saving...' : uploadingImages ? 'Uploading...' : 'Save Product'}
                             </Button>
                         </div>
                     </div>
                 </div>
 
                 {/* Main Content */}
-                <div className="min-h-screen bg-gradient-to-b from-secondary/50 to-background">
-                    <div className="luxury-container py-10">
+                <div>
+                    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         <form onSubmit={postProductData} className="space-y-8 max-w-5xl mx-auto">
 
                             {/* Basic Details */}
-                            <div className="bg-card/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                            <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
                                 <SectionHeader icon={Package} title="Basic Details" description="Essential product information" />
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -557,11 +800,10 @@ export default function ProductAdd() {
                                 </div> */}
                             </div>
 
-                            {/* Mattress Images - Only for Mattress Category */}
-                            {formData.categoryId === 'mattresses' && (
-                                <div className="bg-card/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300">
+                            {/* Main Product Images */}
+                            <div className={`bg-card/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300 ${formData.categoryId === 'beds' ? 'hidden' : ''}`}>
                                     <div className="flex justify-between items-start mb-6">
-                                        <SectionHeader icon={Upload} title="Mattress Images" description="Upload high-quality mattress photos" />
+                                        <SectionHeader icon={Upload} title="Product Images" description="Upload the main gallery and choose the cover image" />
                                         <div>
                                             <input
                                                 type="file"
@@ -593,7 +835,7 @@ export default function ProductAdd() {
                                             <div key={index} className="relative aspect-square group rounded-xl overflow-hidden border border-border/50 bg-secondary/30">
                                                 <img
                                                     src={img}
-                                                    alt={`Mattress ${index + 1}`}
+                                                    alt={`Product ${index + 1}`}
                                                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                                                 />
                                                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
@@ -606,13 +848,13 @@ export default function ProductAdd() {
                                                         setMattressImageAsCover(index);
                                                     }}
                                                     className={`absolute top-2 left-2 p-2 rounded-lg backdrop-blur-sm transition-all duration-200 z-10 
-                                                        ${index === 0
+                                                        ${formData.coverImage === img
                                                             ? 'bg-amber-500 text-white opacity-100 shadow-md'
                                                             : 'bg-black/30 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-amber-500 hover:text-white hover:scale-110'
                                                         }`}
-                                                    title={index === 0 ? "Cover Image" : "Set as Cover"}
+                                                    title={formData.coverImage === img ? "Cover Image" : "Set as Cover"}
                                                 >
-                                                    <Star className={`w-4 h-4 ${index === 0 ? 'fill-current' : ''}`} />
+                                                    <Star className={`w-4 h-4 ${formData.coverImage === img ? 'fill-current' : ''}`} />
                                                 </button>
 
                                                 <button
@@ -623,8 +865,16 @@ export default function ProductAdd() {
                                                     <Trash2 className="w-4 h-4" />
                                                 </button>
                                                 <div className="absolute bottom-2 left-2 text-xs text-white font-medium opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-2 py-1 rounded">
-                                                    {index === 0 ? 'Cover' : `${index + 1} / ${formData.images.filter(img => img).length}`}
+                                                    {formData.coverImage === img ? 'Cover' : `${index + 1} / ${formData.images.filter(img => img).length}`}
                                                 </div>
+                                                {img.startsWith('blob:') && (
+                                                    <div className="absolute inset-x-2 bottom-2 h-1.5 overflow-hidden rounded-full bg-white/30">
+                                                        <div
+                                                            className="h-full rounded-full bg-amber-400 transition-all"
+                                                            style={{ width: `${imageProgress[img] || 5}%` }}
+                                                        />
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                         {formData.images.filter(img => img).length === 0 && (
@@ -636,46 +886,92 @@ export default function ProductAdd() {
                                                 <p className="text-muted-foreground font-medium">
                                                     {activeDragIndex?.type === 'mattress' ? 'Drop images here' : 'No images selected'}
                                                 </p>
-                                                <p className="text-sm text-muted-foreground/70 mt-1">Click or drag to upload mattress photos</p>
+                                                <p className="text-sm text-muted-foreground/70 mt-1">Click or drag to upload product photos</p>
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Image count badge */}
                                     <div className="mt-4 pt-4 border-t border-border/30 flex justify-between items-center">
-                                        <span className="text-sm text-muted-foreground">{formData.images.filter(img => img).length} images uploaded</span>
+                                        <span className="text-sm text-muted-foreground">
+                                            {formData.images.filter(img => img).length} images {uploadingImages ? 'uploading' : 'uploaded'}
+                                        </span>
                                     </div>
-                                </div>
-                            )}
+                            </div>
 
                             {/* Colors */}
                             <div className={`bg-card/80 backdrop-blur-sm border border-border/50 p-8 rounded-2xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-shadow duration-300 ${formData.categoryId === 'mattresses' ? 'hidden' : ''}`}>
                                 <div className="flex justify-between items-start mb-6">
                                     <SectionHeader icon={Palette} title="Color Options" description="Available fabric and finish colors" />
-                                    <Button type="button" variant="outline" onClick={addColor} className="border-dashed border-2 hover:border-accent hover:bg-accent/5">
-                                        <Plus className="w-4 h-4 mr-2" /> Add Color
-                                    </Button>
+                                    <div className="flex flex-wrap justify-end gap-2">
+                                        <input
+                                            type="file"
+                                            multiple
+                                            accept="image/*"
+                                            className="hidden"
+                                            id="bulk-color-images-upload"
+                                            onChange={handleBulkColorImageUpload}
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={() => document.getElementById('bulk-color-images-upload')?.click()}
+                                            className="border-dashed border-2 hover:border-accent hover:bg-accent/5"
+                                        >
+                                            <Images className="w-4 h-4 mr-2" /> Bulk Images
+                                        </Button>
+                                        <Button type="button" variant="outline" onClick={addColor} className="border-dashed border-2 hover:border-accent hover:bg-accent/5">
+                                            <Plus className="w-4 h-4 mr-2" /> Add Color
+                                        </Button>
+                                    </div>
                                 </div>
 
+                                {formData.categoryId === 'beds' && coverImageOptions.length > 0 && (
+                                    <div className="mb-6 rounded-xl border border-border/50 bg-secondary/30 p-4">
+                                        <div className="mb-3 flex items-center justify-between">
+                                            <span className="text-sm font-semibold text-foreground">Cover Image</span>
+                                            <span className="text-xs text-muted-foreground">{coverImageOptions.length} images</span>
+                                        </div>
+                                        <div className="flex gap-3 overflow-x-auto pb-1">
+                                            {coverImageOptions.map((url, index) => (
+                                                <button
+                                                    key={`${url}-${index}`}
+                                                    type="button"
+                                                    onClick={() => setImageAsCover(url)}
+                                                    className={`relative h-20 w-24 shrink-0 overflow-hidden rounded-lg border-2 bg-background transition-all ${formData.coverImage === url ? 'border-amber-500 ring-2 ring-amber-500/30' : 'border-border hover:border-accent'}`}
+                                                >
+                                                    <img src={url} alt={`Cover option ${index + 1}`} className="h-full w-full object-cover" />
+                                                    <span className={`absolute left-1.5 top-1.5 rounded-full p-1 ${formData.coverImage === url ? 'bg-amber-500 text-white' : 'bg-black/50 text-white'}`}>
+                                                        <Star className={`h-3.5 w-3.5 ${formData.coverImage === url ? 'fill-current' : ''}`} />
+                                                    </span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 max-h-[600px] overflow-y-auto pr-2">
-                                    {formData.colors.map((color, index) => (
-                                        <div key={index} className={`group relative border-2 rounded-xl bg-background overflow-hidden transition-all duration-200 ${color.isDefault ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-lg shadow-amber-500/10' : 'border-border hover:border-accent'}`}>
+                                    {formData.colors.map((color, index) => {
+                                        const colorImages = getColorImageList(color);
+                                        const previewImage = colorImages[0];
+                                        return (
+                                        <div key={index} className={`group relative border-2 rounded-xl bg-background overflow-hidden transition-all duration-200 ${color.disabled ? 'opacity-60 grayscale border-dashed' : color.isDefault ? 'border-amber-500 ring-2 ring-amber-500/30 shadow-lg shadow-amber-500/10' : 'border-border hover:border-accent'}`}>
                                             {/* Image Upload Area */}
                                             <div
                                                 className={`aspect-[4/3] bg-secondary/50 relative cursor-pointer overflow-hidden transition-colors duration-200 ${activeDragIndex?.type === 'color' && activeDragIndex?.index === index ? 'bg-accent/20 border-2 border-accent border-dashed' : ''}`}
-                                                onClick={() => document.getElementById(`color-image-${index}`)?.click()}
+                                                onClick={() => document.getElementById(`color-images-${index}`)?.click()}
                                                 onDragEnter={handleDragEnter('color', index)}
                                                 onDragLeave={handleDragLeave}
                                                 onDragOver={handleDrag}
                                                 onDrop={(e) => handleColorImageDrop(index, e)}
                                             >
-                                                {color.image ? (
-                                                    <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
+                                                {previewImage ? (
+                                                    <img src={previewImage} alt={color.name} className="w-full h-full object-cover" />
                                                 ) : (
                                                     <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground/50 gap-2 pointer-events-none">
                                                         <div className="w-8 h-8 rounded-full shadow-sm border border-white/20" style={{ backgroundColor: color.hex || '#000000' }} />
                                                         <span className="text-xs">
-                                                            {activeDragIndex?.type === 'color' && activeDragIndex?.index === index ? 'Drop to Upload' : 'Click or Drag Image'}
+                                                            {activeDragIndex?.type === 'color' && activeDragIndex?.index === index ? 'Drop to Upload' : 'Click or Drag Images'}
                                                         </span>
                                                     </div>
                                                 )}
@@ -683,25 +979,28 @@ export default function ProductAdd() {
                                                 <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${activeDragIndex?.type === 'color' && activeDragIndex?.index === index ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'}`}>
                                                     <Upload className="w-6 h-6 text-white" />
                                                 </div>
+                                                {previewImage && !color.disabled && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setImageAsCover(previewImage);
+                                                        }}
+                                                        className={`absolute top-2 left-2 p-1.5 rounded-full transition-all ${formData.coverImage === previewImage ? 'bg-amber-500 text-white' : 'bg-black/50 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-amber-500 hover:text-white'}`}
+                                                        title={formData.coverImage === previewImage ? 'Cover Image' : 'Set as Cover'}
+                                                    >
+                                                        <Star className={`w-3.5 h-3.5 ${formData.coverImage === previewImage ? 'fill-current' : ''}`} />
+                                                    </button>
+                                                )}
                                             </div>
 
                                             <input
                                                 type="file"
+                                                multiple
                                                 accept="image/*"
                                                 className="hidden"
-                                                id={`color-image-${index}`}
-                                                onChange={async (e) => {
-                                                    const file = e.target.files?.[0];
-                                                    if (file) {
-                                                        try {
-                                                            const url = await uploadImage(file, `products/${storageId}/variants`);
-                                                            handleColorChange(index, 'image', url);
-                                                            toast.success('Image uploaded');
-                                                        } catch (err) {
-                                                            toast.error('Upload failed');
-                                                        }
-                                                    }
-                                                }}
+                                                id={`color-images-${index}`}
+                                                onChange={(e) => handleVariantImageUpload(index, e)}
                                             />
 
                                             {/* Controls */}
@@ -746,14 +1045,30 @@ export default function ProductAdd() {
                                                 </div>
                                             )}
 
+                                            {color.disabled && (
+                                                <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-stone-900 text-white text-xs font-semibold flex items-center gap-1 shadow-md">
+                                                    <EyeOff className="w-3 h-3" />
+                                                    Hidden
+                                                </div>
+                                            )}
+
                                             {/* Set Default Button */}
                                             <button
                                                 type="button"
                                                 onClick={() => setDefaultColor(index)}
-                                                className={`absolute top-2 right-10 p-1.5 rounded-full transition-all ${color.isDefault ? 'bg-amber-500 text-white' : 'bg-black/50 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-amber-500 hover:text-white hover:scale-110'}`}
+                                                className={`absolute top-2 right-20 p-1.5 rounded-full transition-all ${color.isDefault ? 'bg-amber-500 text-white' : 'bg-black/50 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-amber-500 hover:text-white hover:scale-110'}`}
                                                 title={color.isDefault ? 'Default Color' : 'Set as Default'}
                                             >
                                                 <Star className={`w-3.5 h-3.5 ${color.isDefault ? 'fill-current' : ''}`} />
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleColorDisabled(index)}
+                                                className={`absolute top-2 right-10 p-1.5 rounded-full transition-all ${color.disabled ? 'bg-stone-900 text-white' : 'bg-black/50 text-white/70 opacity-0 group-hover:opacity-100 hover:bg-stone-900 hover:text-white hover:scale-110'}`}
+                                                title={color.disabled ? 'Enable Color' : 'Hide Color'}
+                                            >
+                                                {color.disabled ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                                             </button>
 
                                             {/* Delete Button */}
@@ -769,18 +1084,18 @@ export default function ProductAdd() {
                                             <div className="px-3 pb-3">
                                                 <Dialog>
                                                     <DialogTrigger asChild>
-                                                        <Button variant="outline" size="sm" className="w-full text-xs h-8">
-                                                            <Images className="w-3 h-3 mr-2" />
-                                                            Images ({color.productImages?.length || 0})
-                                                        </Button>
-                                                    </DialogTrigger>
-                                                    <DialogContent className="max-w-3xl">
-                                                        <DialogHeader>
-                                                            <DialogTitle>Manage Images for {color.name}</DialogTitle>
-                                                            <DialogDescription>
-                                                                Add images specific to this color variant. These will be displayed when the customer selects this color.
-                                                            </DialogDescription>
-                                                        </DialogHeader>
+                                                            <Button variant="outline" size="sm" className="w-full text-xs h-8">
+                                                                <Images className="w-3 h-3 mr-2" />
+                                                            Images ({colorImages.length})
+                                                            </Button>
+                                                        </DialogTrigger>
+                                                        <DialogContent className="max-w-3xl">
+                                                            <DialogHeader>
+                                                                <DialogTitle>Manage Images for {color.name}</DialogTitle>
+                                                                <DialogDescription>
+                                                                    Add, reorder, choose the main preview, and set the product cover from this color's images.
+                                                                </DialogDescription>
+                                                            </DialogHeader>
 
                                                         <div className="space-y-4 mt-4">
                                                             <div className="flex items-center gap-4">
@@ -798,10 +1113,10 @@ export default function ProductAdd() {
                                                                 >
                                                                     <Plus className="w-4 h-4 mr-2" /> Upload Images
                                                                 </Button>
-                                                                <span className="text-sm text-muted-foreground">
-                                                                    {color.productImages?.length || 0} images uploaded
-                                                                </span>
-                                                            </div>
+                                                                    <span className="text-sm text-muted-foreground">
+                                                                    {colorImages.length} images uploaded
+                                                                    </span>
+                                                                </div>
 
                                                             <div
                                                                 className={`grid grid-cols-4 md:grid-cols-5 gap-4 max-h-[400px] overflow-y-auto p-4 border-2 border-dashed rounded-xl transition-colors duration-200 ${activeDragIndex?.type === 'variant' && activeDragIndex?.index === index ? 'border-accent bg-accent/5' : 'border-transparent'}`}
@@ -810,9 +1125,47 @@ export default function ProductAdd() {
                                                                 onDragOver={handleDrag}
                                                                 onDrop={(e) => handleVariantImageDrop(index, e)}
                                                             >
-                                                                {color.productImages?.map((img, imgIndex) => (
+                                                                {colorImages.map((img, imgIndex) => (
                                                                     <div key={imgIndex} className="relative aspect-square group rounded-lg overflow-hidden border border-border">
                                                                         <img src={img} alt="" className="w-full h-full object-cover" />
+                                                                        {!color.disabled && (
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => setImageAsCover(img)}
+                                                                                className={`absolute top-1 left-1 p-1 rounded-md transition-opacity ${formData.coverImage === img ? 'bg-amber-500 text-white' : 'bg-black/50 text-white opacity-0 group-hover:opacity-100'}`}
+                                                                                title={formData.coverImage === img ? 'Cover Image' : 'Set as Cover'}
+                                                                            >
+                                                                                <Star className={`w-3 h-3 ${formData.coverImage === img ? 'fill-current' : ''}`} />
+                                                                            </button>
+                                                                        )}
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => setColorMainImage(index, imgIndex)}
+                                                                            className={`absolute bottom-1 left-1 p-1 rounded-md text-white ${imgIndex === 0 ? 'bg-primary' : 'bg-black/50 opacity-0 group-hover:opacity-100'}`}
+                                                                            title={imgIndex === 0 ? 'Main Image' : 'Set as Main'}
+                                                                        >
+                                                                            <ArrowUp className="w-3 h-3" />
+                                                                        </button>
+                                                                        <div className="absolute bottom-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100">
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => moveColorImage(index, imgIndex, -1)}
+                                                                                disabled={imgIndex === 0}
+                                                                                className="p-1 bg-black/50 text-white rounded-md disabled:opacity-30"
+                                                                                title="Move Left"
+                                                                            >
+                                                                                <ArrowLeft className="w-3 h-3" />
+                                                                            </button>
+                                                                            <button
+                                                                                type="button"
+                                                                                onClick={() => moveColorImage(index, imgIndex, 1)}
+                                                                                disabled={imgIndex === colorImages.length - 1}
+                                                                                className="p-1 bg-black/50 text-white rounded-md disabled:opacity-30"
+                                                                                title="Move Right"
+                                                                            >
+                                                                                <ArrowRight className="w-3 h-3" />
+                                                                            </button>
+                                                                        </div>
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => removeVariantImage(index, imgIndex)}
@@ -822,9 +1175,9 @@ export default function ProductAdd() {
                                                                         </button>
                                                                     </div>
                                                                 ))}
-                                                                {(!color.productImages || color.productImages.length === 0) && (
+                                                                {colorImages.length === 0 && (
                                                                     <div className="col-span-full py-8 text-center text-muted-foreground border-2 border-dashed border-border/50 rounded-lg pointer-events-none">
-                                                                        {activeDragIndex?.type === 'variant' && activeDragIndex?.index === index ? 'Drop images here' : 'No variant images uploaded yet'}
+                                                                        {activeDragIndex?.type === 'variant' && activeDragIndex?.index === index ? 'Drop images here' : 'No images uploaded yet'}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -833,7 +1186,8 @@ export default function ProductAdd() {
                                                 </Dialog>
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
 
                                 {/* Color count badge */}
@@ -1373,17 +1727,17 @@ export default function ProductAdd() {
                             <div className="flex justify-end pt-4">
                                 <Button
                                     onClick={postProductData}
-                                    disabled={loading}
+                                    disabled={loading || uploadingImages}
                                     className="bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary text-white font-medium px-8 py-3 h-auto shadow-lg hover:shadow-xl transition-all duration-300"
                                 >
                                     <Save className="w-4 h-4 mr-2" />
-                                    {loading ? 'Saving Product...' : 'Save Product'}
+                                    {loading ? 'Saving Product...' : uploadingImages ? 'Uploading Images...' : 'Save Product'}
                                 </Button>
                             </div>
                         </form>
                     </div>
                 </div>
-            </Layout>
+            </AdminLayout>
         </>
     );
 }
