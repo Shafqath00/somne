@@ -43,9 +43,11 @@ export default function AdminContactForms() {
 
         setFilteredForms(contactForms.filter(form =>
             (form.refNo || '').toLowerCase().includes(query) ||
-            form.name.toLowerCase().includes(query) ||
-            form.email.toLowerCase().includes(query) ||
-            form.message.toLowerCase().includes(query)
+            (form.name || '').toLowerCase().includes(query) ||
+            (form.email || '').toLowerCase().includes(query) ||
+            (form.message || '').toLowerCase().includes(query) ||
+            (form.phone || '').toLowerCase().includes(query) ||
+            (form.status || '').toLowerCase().includes(query)
         ));
     }, [search, contactForms]);
 
@@ -63,7 +65,7 @@ export default function AdminContactForms() {
 
     const requestStatusUpdate = (id: string, newStatus: string) => {
         const form = contactForms.find(item => item.id === id);
-        if (form && form.status === newStatus) return;
+        if (form && (form.status || 'pending') === newStatus) return;
         setPendingUpdate({ id, status: newStatus });
         setConfirmOpen(true);
     };
@@ -101,8 +103,8 @@ export default function AdminContactForms() {
         }
     };
 
-    const getStatusIcon = (status: string) => {
-        switch (status) {
+    const getStatusIcon = (status?: string) => {
+        switch ((status || '').toLowerCase()) {
             case 'in progress': return AlertCircle;
             case 'resolved': return CheckCircle;
             case 'closed': return XCircle;
@@ -110,11 +112,17 @@ export default function AdminContactForms() {
         }
     };
 
-    const formatDate = (createdAt: string | { _seconds: number; _nanoseconds: number }) => {
+    const formatDate = (createdAt?: string | { _seconds: number; _nanoseconds: number }) => {
+        if (!createdAt) return '—';
         if (typeof createdAt === 'object' && '_seconds' in createdAt) {
             return new Date(createdAt._seconds * 1000).toLocaleDateString();
         }
-        return new Date(createdAt).toLocaleDateString();
+        try {
+            const date = new Date(createdAt);
+            return isNaN(date.getTime()) ? '—' : date.toLocaleDateString();
+        } catch {
+            return '—';
+        }
     };
 
     if (loading) {
@@ -142,7 +150,7 @@ export default function AdminContactForms() {
 
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                         <AdminStatCard title="Total" value={contactForms.length} icon={MessageSquare} tone="blue" />
-                        <AdminStatCard title="Pending" value={contactForms.filter(form => form.status === 'pending').length} icon={Clock} tone="amber" />
+                        <AdminStatCard title="Pending" value={contactForms.filter(form => (form.status || 'pending').toLowerCase() === 'pending').length} icon={Clock} tone="amber" />
                         <AdminStatCard title="Unread" value={contactForms.filter(form => !form.isRead).length} icon={Eye} tone="purple" />
                     </div>
 
@@ -192,32 +200,32 @@ export default function AdminContactForms() {
                                                             <Eye className="mx-auto h-4 w-4 text-slate-300" />
                                                         )}
                                                     </td>
-                                                    <td className="p-4 font-mono text-sm font-semibold text-slate-900">{form.refNo || form.id.slice(0, 6)}</td>
+                                                    <td className="p-4 font-mono text-sm font-semibold text-slate-900">{form.refNo || form.id?.slice(0, 6) || '—'}</td>
                                                     <td className="whitespace-nowrap p-4 text-sm text-slate-600">{formatDate(form.createdAt)}</td>
                                                     <td className="p-4">
-                                                        <div className="text-sm font-semibold text-slate-950">{form.name}</div>
+                                                        <div className="text-sm font-semibold text-slate-950">{form.name || 'Unnamed'}</div>
                                                     </td>
                                                     <td className="p-4">
-                                                        <div className="text-sm text-slate-900">{form.email}</div>
-                                                        <div className="text-xs text-slate-500">{form.phone}</div>
+                                                        <div className="text-sm text-slate-900">{form.email || 'No email'}</div>
+                                                        <div className="text-xs text-slate-500">{form.phone || '—'}</div>
                                                     </td>
                                                     <td className="max-w-[280px] p-4">
                                                         <div className="flex items-center gap-2">
                                                             <p className="line-clamp-1 flex-1 text-sm text-slate-600">
-                                                                {form.message.slice(0, 60)}{form.message.length > 60 && '...'}
+                                                                {(form.message || '').slice(0, 60)}{(form.message || '').length > 60 && '...'}
                                                             </p>
                                                             <ChevronDown className={cn("h-4 w-4 shrink-0 text-slate-400 transition-transform", expandedId === form.id && "rotate-180")} />
                                                         </div>
                                                     </td>
                                                     <td className="p-4">
-                                                        <AdminStatusBadge tone={adminStatusTone(form.status)} icon={getStatusIcon(form.status)}>
-                                                            {form.status}
+                                                        <AdminStatusBadge tone={adminStatusTone(form.status || 'pending')} icon={getStatusIcon(form.status)}>
+                                                            {form.status || 'pending'}
                                                         </AdminStatusBadge>
                                                     </td>
                                                     <td className="p-4 text-right" onClick={(event) => event.stopPropagation()}>
                                                         <select
                                                             className="w-32 cursor-pointer rounded border border-slate-200 bg-white px-2 py-1.5 text-xs transition-colors hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-slate-300"
-                                                            value={form.status}
+                                                            value={form.status || 'pending'}
                                                             onChange={(e) => requestStatusUpdate(form.id, e.target.value)}
                                                         >
                                                             {STATUS_OPTIONS.map(status => <option key={status} value={status}>{status}</option>)}
@@ -230,7 +238,7 @@ export default function AdminContactForms() {
                                                             <div className="px-6 py-4">
                                                                 <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Full Message</div>
                                                                 <div className="rounded-lg border border-slate-200 bg-white p-4">
-                                                                    <p className="whitespace-pre-wrap text-sm leading-6 text-slate-900">{form.message}</p>
+                                                                    <p className="whitespace-pre-wrap text-sm leading-6 text-slate-900">{form.message || 'No message provided.'}</p>
                                                                 </div>
                                                             </div>
                                                         </td>

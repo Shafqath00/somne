@@ -5,7 +5,7 @@ import { Helmet } from 'react-helmet-async';
 import {
   Star, Truck, Shield, Wrench, Minus, Plus, Check,
   Loader2, Ruler, ChevronLeft, ChevronRight, Sparkles,
-  Moon, Archive, BedDouble, Maximize, Layers
+  Moon, Archive, BedDouble, Maximize, Layers, Share
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layout } from '@/components/layout/Layout';
@@ -439,6 +439,24 @@ const ProductPage = () => {
       if (ms) { addItem(selectedUpsellMattress, quantity, ms, undefined, undefined, undefined, undefined, selectedUpsellFirmness || undefined); toast.success(`${selectedUpsellMattress.name} added to bag`); }
     }
   };
+
+  const handleShare = async () => {
+    try {
+      const shareData = {
+        title: product?.name,
+        text: product?.description || `Check out ${product?.name} on Somne!`,
+        url: window.location.href,
+      };
+      if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error("Error sharing:", error);
+    }
+  };
   // console.log("product.subcategoryId", product.subcategoryId);
   const accSections = useMemo(() => {
     if (!product) return [];
@@ -534,28 +552,36 @@ const ProductPage = () => {
                 {/* Title */}
                 <div className="mb-2 lg:mb-0">
 
-                  <div className='flex  items-end gap-4'>
-                    <h1 className="font-serif text-[2rem] leading-none tracking-normal text-stone-900 sm:text-4xl md:text-5xl">
-                      {product.name}
-                    </h1>
-                    <div className='flex flex-col gap-2 text-center'>
-                      {product.bestseller && (
-                        <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
-                          <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> Best Seller
-                        </div>
-                      )}
-                      {selectedColor?.name && (
-                        <motion.p
-                          key={selectedColor.name}
-                          initial={{ opacity: 0, y: 4 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="text-sm text-stone-400  font-medium"
-                        >
-                          {selectedColor.name}{selectedFabric ? ` · ${selectedFabric}` : ''}
-                        </motion.p>
-                      )}
+                  <div className='flex items-start justify-between gap-4'>
+                    <div className='flex items-end gap-4'>
+                      <h1 className="font-serif text-[2rem] leading-none tracking-normal text-stone-900 sm:text-4xl md:text-5xl">
+                        {product.name}
+                      </h1>
+                      <div className='flex flex-col gap-2 text-center'>
+                        {product.bestseller && (
+                          <div className="inline-flex items-center gap-1.5 bg-amber-100 text-amber-700 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full">
+                            <Star className="w-2.5 h-2.5 fill-amber-500 text-amber-500" /> Best Seller
+                          </div>
+                        )}
+                        {selectedColor?.name && (
+                          <motion.p
+                            key={selectedColor.name}
+                            initial={{ opacity: 0, y: 4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="text-sm text-stone-400  font-medium"
+                          >
+                            {selectedColor.name}{selectedFabric ? ` · ${selectedFabric}` : ''}
+                          </motion.p>
+                        )}
+                      </div>
                     </div>
-
+                    <button 
+                      onClick={handleShare}
+                      className="flex-shrink-0 p-2.5 rounded-full bg-white shadow-sm border border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-stone-900 transition-colors"
+                      title="Share product"
+                    >
+                      <Share className="w-4 h-4" />
+                    </button>
                   </div>
                   <div className="hidden lg:flex items-baseline gap-2 mb-2">
                     <motion.span

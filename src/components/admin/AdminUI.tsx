@@ -126,8 +126,9 @@ export function AdminEmptyState({ icon: Icon, title, description, action }: Admi
   );
 }
 
-export function adminStatusTone(status: string): AdminStatusBadgeProps["tone"] {
-  const normalized = status.toLowerCase();
+export function adminStatusTone(status?: string | null): AdminStatusBadgeProps["tone"] {
+  if (!status) return "slate";
+  const normalized = String(status).toLowerCase();
   if (["delivered", "resolved", "active", "visible", "published"].includes(normalized)) return "green";
   if (["processing", "in progress", "shipped", "auto apply", "featured"].includes(normalized)) return "blue";
   if (["pending", "draft", "trending"].includes(normalized)) return "amber";

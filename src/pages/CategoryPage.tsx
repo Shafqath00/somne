@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { SlidersHorizontal, X } from 'lucide-react';
+import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -132,6 +132,23 @@ const getCleanColorName = (name: string): string => {
   return cleaned;
 };
 
+const FILTER_COLOR_ORDER = ['Black', 'Blue', 'Green', 'Silver', 'Pink', 'Beige', 'Latte'] as const;
+
+const FILTER_COLOR_PALETTE: Record<string, { name: string; hex: string }> = {
+  black: { name: 'Black', hex: '#000000' },
+  blue: { name: 'Blue', hex: '#133A54' },
+  green: { name: 'Green', hex: '#2A4430' },
+  silver: { name: 'Silver', hex: '#C0C0C0' },
+  pink: { name: 'Pink', hex: '#BF8D8C' },
+  beige: { name: 'Beige', hex: '#C1B5A4' },
+  latte: { name: 'Latte', hex: '#302118' },
+};
+
+const getFilterColorOrder = (name: string): number => {
+  const index = FILTER_COLOR_ORDER.findIndex((color) => color.toLowerCase() === name.toLowerCase());
+  return index === -1 ? FILTER_COLOR_ORDER.length : index;
+};
+
 const CategoryPage = () => {
   const { category, subcategory } = useParams();
   // console.log("category, subcategory", { category, subcategory });
@@ -202,14 +219,20 @@ const CategoryPage = () => {
           if (color.name && color.hex) {
             const cleanName = getCleanColorName(color.name);
             const key = cleanName.toLowerCase();
+            const paletteColor = FILTER_COLOR_PALETTE[key];
             if (!colorMap.has(key)) {
-              colorMap.set(key, { name: cleanName, hex: color.hex });
+              colorMap.set(key, {
+                name: paletteColor?.name ?? cleanName,
+                hex: paletteColor?.hex ?? color.hex,
+              });
             }
           }
         });
       }
     });
-    return Array.from(colorMap.values()).filter(c => c.name.toLowerCase() !== 'silver');
+    return Array.from(colorMap.values()).sort(
+      (a, b) => getFilterColorOrder(a.name) - getFilterColorOrder(b.name)
+    );
   }, [products]);
 
   const filteredProducts = useMemo(() => {
@@ -426,7 +449,7 @@ const CategoryPage = () => {
 
                   {/* Color filter - hide for mattresses */}
                   {availableColors.length > 0 && category !== 'mattresses' && (
-                    <div className="mb-8 border-b border-black/10 pb-8 lg:border-b-0">
+                    <div className=" border-b border-black/10 lg:border-b-0">
                       <div className="mb-4 flex items-baseline justify-between gap-4">
                         <h3 className="text-lg font-black text-black">Color</h3>
                         {selectedColor && (

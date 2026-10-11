@@ -69,22 +69,22 @@ export default function Checkout() {
     const shipping = isChargeableShipping ? 80 : 0;
     const total = subtotal + shipping - discount;
 
-    useEffect(() => {
-        const checkAutoApply = async () => {
-            if (!appliedDiscount && !discountCode && subtotal > 0) {
-                const autoDiscount = await getAutoApplyDiscount();
-                if (autoDiscount && autoDiscount.code) {
-                    setDiscountCode(autoDiscount.code);
-                    handleApplyDiscount(autoDiscount.code);
-                }
-            }
-        };
+    // useEffect(() => {
+    //     const checkAutoApply = async () => {
+    //         if (!appliedDiscount && !discountCode && subtotal > 0) {
+    //             const autoDiscount = await getAutoApplyDiscount();
+    //             if (autoDiscount && autoDiscount.code) {
+    //                 setDiscountCode(autoDiscount.code);
+    //                 handleApplyDiscount(autoDiscount.code);
+    //             }
+    //         }
+    //     };
 
-        if (subtotal > 0) {
-            checkAutoApply();
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [subtotal]);
+    //     if (subtotal > 0) {
+    //         checkAutoApply();
+    //     }
+    //     // eslint-disable-next-line react-hooks/exhaustive-deps
+    // }, [subtotal]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;

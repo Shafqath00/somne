@@ -424,6 +424,7 @@ export default function ProductAdd() {
             toast.success(`Uploaded ${urls.length} images`);
         } catch (error) {
             console.error(error);
+            toast.dismiss();
             toast.error('Failed to upload color images');
         } finally {
             e.target.value = '';
@@ -516,6 +517,7 @@ export default function ProductAdd() {
                 toast.success(`Uploaded ${urls.length} image${urls.length === 1 ? '' : 's'}`);
             } catch (err) {
                 console.error(err);
+                toast.dismiss();
                 toast.error('Upload failed');
             }
         }
@@ -552,6 +554,7 @@ export default function ProductAdd() {
             toast.success(`Uploaded ${urls.length} images`);
         } catch (error) {
             console.error(error);
+            toast.dismiss();
             toast.error('Failed to upload variant images');
         }
     };
@@ -601,6 +604,7 @@ export default function ProductAdd() {
             toast.success(`Uploaded ${urls.length} images`);
         } catch (error) {
             console.error(error);
+            toast.dismiss();
             toast.error('Failed to upload mattress images');
         }
     };
