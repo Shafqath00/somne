@@ -1,10 +1,43 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from "axios";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { storage } from "../lib/firebase";
+import { getAuth } from "firebase/auth";
 
-// Environment variable handling would go here, falling back for now  https://bedshowroom2-3duyqbp4qa-uc.a.run.app
-const API_BASE_URL = "https://bedshowroom2-3duyqbp4qa-uc.a.run.app";
+// Environment variable handling
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://bedshowroom2-3duyqbp4qa-uc.a.run.app";
+
+// Helper to get Firebase Auth Token
+const getAuthToken = async () => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    if (!user) {
+        throw new Error("User not authenticated. Please log in.");
+    }
+    return await user.getIdToken();
+};
+
+// Helper for Admin Authenticated Requests
+const adminAxios = async (method: string, endpoint: string, data?: any, params?: any) => {
+    try {
+        const token = await getAuthToken();
+        const config = {
+            method,
+            url: `${API_BASE_URL}/admin${endpoint}`,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            data,
+            params,
+        };
+        const response = await axios(config);
+        return response.data;
+    } catch (error: any) {
+        console.error(`Admin API Error [${method} ${endpoint}]:`, error);
+        throw error.response?.data || error;
+    }
+};
 
 export async function resizeImageFile(file: File, maxWidth = 1200, outputType = 'image/webp', quality = 0.8): Promise<Blob> {
     const img = await createImageBitmap(file);
@@ -25,34 +58,105 @@ export async function resizeImageFile(file: File, maxWidth = 1200, outputType = 
     return canvas.convertToBlob({ type: outputType, quality });
 }
 
-export const uploadImage = async (file: File, folder: string = 'products'): Promise<string> => {
+export type UploadProgressHandler = (progress: number) => void;
+
+export const uploadImageResumable = async (
+    file: File,
+    folder: string = 'products',
+    onProgress?: UploadProgressHandler
+): Promise<string> => {
     try {
         const blob = await resizeImageFile(file);
         const filename = `${folder}/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}.webp`;
         const storageRef = ref(storage, filename);
+        const uploadTask = uploadBytesResumable(storageRef, blob, { contentType: 'image/webp' });
 
-        await uploadBytes(storageRef, blob, { contentType: 'image/webp' });
-        const url = await getDownloadURL(storageRef);
-        return url;
+        return await new Promise((resolve, reject) => {
+            uploadTask.on(
+                'state_changed',
+                (snapshot) => {
+                    const progress = snapshot.totalBytes
+                        ? Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100)
+                        : 0;
+                    onProgress?.(progress);
+                },
+                reject,
+                async () => {
+                    const url = await getDownloadURL(uploadTask.snapshot.ref);
+                    onProgress?.(100);
+                    resolve(url);
+                }
+            );
+        });
     } catch (error) {
         console.error("Error uploading image:", error);
         throw error;
     }
 };
 
-export const postProduct = async (productData: any) => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/products`, productData);
-        return response.data;
-    } catch (error) {
-        console.error("Error adding product:", error);
-        throw error;
-    }
+export const uploadImage = async (file: File, folder: string = 'products'): Promise<string> => {
+    return uploadImageResumable(file, folder);
 };
 
-export const BedCategory = async (categoryId: string, type: string) => {
+export const uploadImagesWithProgress = async (
+    files: File[],
+    folder: string,
+    onFileProgress?: (index: number, progress: number) => void,
+    concurrency = 3
+): Promise<string[]> => {
+    const urls: string[] = new Array(files.length);
+    let nextIndex = 0;
+
+    const worker = async () => {
+        while (nextIndex < files.length) {
+            const currentIndex = nextIndex;
+            nextIndex += 1;
+            urls[currentIndex] = await uploadImageResumable(
+                files[currentIndex],
+                folder,
+                (progress) => onFileProgress?.(currentIndex, progress)
+            );
+        }
+    };
+
+    await Promise.all(
+        Array.from({ length: Math.min(concurrency, files.length) }, () => worker())
+    );
+
+    return urls;
+};
+
+// --- Product API (Admin) ---
+
+export const postProduct = async (productData: any) => {
+    return adminAxios('POST', '/products', productData);
+};
+
+export const bulkCreateProducts = async (products: any[]) => {
+    return adminAxios('POST', '/products/bulk', { products });
+};
+
+export const updateProduct = async (productData: any) => {
+    return adminAxios('PUT', `/products/${productData.id}`, productData);
+};
+
+export const deleteProduct = async (id: string) => {
+    return adminAxios('DELETE', `/products/${id}`);
+};
+
+export const bulkUpdateProductStatus = async (filter: { category?: string; subcategory?: string }, active: boolean) => {
+    return adminAxios('PUT', `/products/bulk/status`, { ...filter, active });
+};
+export const getAllProducts = async (filters?: { category?: string; subcategory?: string }) => {
+    // Note: Admin route /admin/products supports filtering
+    return adminAxios('GET', '/products', null, filters);
+};
+
+// --- Product API (Public) ---
+
+export const BedCategory = async (categoryId: string, type: string, isTest?: boolean) => {
     try {
-        const response = await axios.get(`${API_BASE_URL}/collection/${type}/${categoryId}`);
+        const response = await axios.get(`${API_BASE_URL}/collection/${type}/${categoryId}${isTest ? '?test=true' : ''}`);
         return response.data;
     } catch (error) {
         console.error("Error fetching categories:", error);
@@ -75,30 +179,6 @@ export const getProductBySlug = async (slug: string) => {
     }
 };
 
-export const getAllProducts = async (filters?: { category?: string; subcategory?: string }) => {
-    try {
-        const params = new URLSearchParams();
-        if (filters?.category) params.append('category', filters.category);
-        if (filters?.subcategory) params.append('subcategory', filters.subcategory);
-
-        const response = await axios.get(`${API_BASE_URL}/products/admin`, { params });
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching products:", error);
-        throw error;
-    }
-};
-
-export const updateProduct = async (productData: any) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/products/update/${productData.id}`, productData);
-        return response.data;
-    } catch (error) {
-        console.error("Error updating product:", error);
-        throw error;
-    }
-};
-
 export const getProductById = async (id: string) => {
     try {
         const response = await axios.get(`${API_BASE_URL}/products/getProduct/${id}`);
@@ -109,161 +189,12 @@ export const getProductById = async (id: string) => {
     }
 };
 
-// --- Order API ---
-
-export const createOrder = async (orderData: any) => {
+export const getProductByDocId = async (id: string) => {
     try {
-        const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
+        const response = await axios.get(`${API_BASE_URL}/products/id/${encodeURIComponent(id)}`);
         return response.data;
     } catch (error) {
-        console.error("Error creating order:", error);
-        throw error;
-    }
-};
-
-export const getAllOrders = async (
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    forceRefresh: boolean = false,
-    limit: number = 10,
-    lastCreatedAt?: string
-) => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/orders`, {
-            params: { limit, lastCreatedAt }
-        });
-
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching orders:", error);
-        throw error;
-    }
-};
-
-export const updateOrderStatus = async (id: string, status: string) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/orders/${id}/status`, { status });
-        return response.data;
-    } catch (error) {
-        console.error("Error updating order status:", error);
-        throw error;
-    }
-};
-
-export const getOrderById = async (id: string) => {
-    try {
-        // Try direct fetch first
-        try {
-            const response = await axios.get(`${API_BASE_URL}/orders/${id}`);
-            return response.data;
-        } catch (error: any) {
-            // If endpoint doesn't exist or order not found via direct link, 
-            // fallback to fetching all orders (robustness for non-deployed backend)
-            console.warn("Direct fetch failed, falling back to getAllOrders", error);
-            const allOrders = await getAllOrders();
-            const order = allOrders.find((o: any) => o.id === id);
-            if (order) return order;
-            throw error;
-        }
-    } catch (error) {
-        console.error("Error fetching order:", error);
-        throw error;
-    }
-};
-
-export const CheckOutHandler = async (orderData: any) => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
-        return response.data;
-    } catch (error) {
-        console.error("Error creating order:", error);
-        throw error;
-    }
-};
-
-// --- Discount Code API ---
-
-export interface DiscountValidationResult {
-    valid: boolean;
-    discountId?: string;
-    code?: string;
-    type?: 'percentage' | 'fixed';
-    value?: number;
-    discountAmount?: number;
-    message?: string;
-    error?: string;
-}
-
-export const validateDiscountCode = async (code: string, orderTotal: number): Promise<DiscountValidationResult> => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/discounts/validate`, {
-            code,
-            orderTotal
-        });
-        return response.data;
-    } catch (error: any) {
-        if (error.response?.data) {
-            return error.response.data;
-        }
-        return { valid: false, error: "Failed to validate discount code" };
-    }
-};
-
-export const createDiscount = async (discountData: any) => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/discounts`, discountData);
-        return response.data;
-    } catch (error: any) {
-        console.error("Error creating discount:", error);
-        throw error.response?.data || { error: "Failed to create discount" };
-    }
-};
-
-export const getAllDiscounts = async () => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/discounts`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching discounts:", error);
-        throw error;
-    }
-};
-
-export const deleteDiscount = async (id: string) => {
-    try {
-        const response = await axios.delete(`${API_BASE_URL}/discounts/${id}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error deleting discount:", error);
-        throw error;
-    }
-};
-
-export const getAutoApplyDiscount = async () => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/discounts/auto`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching auto-apply discount:", error);
-        return null; // Fail silently for auto-apply
-    }
-};
-
-export const createCheckoutSession = async (
-    items: any[],
-    payload: any, // Can be orderId (string) or orderData (object)
-    email: string,
-    discountCode?: string
-) => {
-    try {
-        const response = await axios.post(`${API_BASE_URL}/stripe/create-checkout-session`, {
-            items,
-            payload,
-            email,
-            discountCode
-        });
-        return response.data;
-    } catch (error) {
-        console.error("Error creating checkout session:", error);
+        console.error("Error fetching product by document ID:", error);
         throw error;
     }
 };
@@ -278,7 +209,6 @@ export const getMattresses = async () => {
     }
 };
 
-// Smart fetch: Try slug first, then fallback to name
 export const getTrendingProducts = async () => {
     try {
         const response = await axios.get(`${API_BASE_URL}/products/trending`);
@@ -289,10 +219,66 @@ export const getTrendingProducts = async () => {
     }
 };
 
-// Fetch order by Stripe session ID (for success page)
+// --- Order API ---
+
+// Public: Create Order (Guest/User)
+export const createOrder = async (orderData: any) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/orders`, orderData);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating order:", error);
+        throw error;
+    }
+};
+
+// Public: Alias for createOrder
+export const CheckOutHandler = async (orderData: any) => {
+    return createOrder(orderData);
+};
+
+// Admin: Get All Orders
+export const getAllOrders = async (
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    forceRefresh: boolean = false,
+    limit: number = 10,
+    lastCreatedAt?: string
+) => {
+    return adminAxios('GET', '/orders', null, { limit, lastCreatedAt });
+};
+
+// Admin: Update Order Status
+export const updateOrderStatus = async (id: string, status: string) => {
+    return adminAxios('PUT', `/orders/${id}/status`, { status });
+};
+
+// Public: Get Order by ID (Try direct -> fallback to admin list if fails/auth'd?)
+// Actually, public users usually use trackOrder or session lookup. 
+// This function seems to be used by admin mostly, but let's keep the fallback logic for safety if user is admin.
+export const getOrderById = async (id: string) => {
+    try {
+        // Try admin route first if authenticated? No, let's try public session-like fetch if possible?
+        // Backend `routes/orders.js` doesn't have GET /:id except for session.
+        // Backend `routes/admin.js` HAS GET /orders/:id.
+
+        // If we are in admin context, we should use adminAxios
+        // But this function might be used in general context.
+        // Let's try the admin route if we have a user, or fail.
+        // Assuming this is used in Admin Dashboard:
+        return adminAxios('GET', `/orders/${id}`);
+    } catch (error) {
+        // Fallback for public/guest? 
+        // Public can only fetch by session ID or track by ref+email.
+        // If this is for admin dashboard, the above adminAxios is correct.
+        console.error("Error fetching order (requires admin):", error);
+        throw error;
+    }
+};
+
+// Public: Fetch order by Stripe session ID (Success Page)
 export interface OrderBySession {
     orderId: string;
-    orderNumber?: number; // Add friendly ID
+    orderNumber?: number;
     orderReference: string;
     status: string;
     paymentStatus: string;
@@ -327,7 +313,7 @@ export const getOrderBySession = async (sessionId: string): Promise<OrderBySessi
     }
 };
 
-// Track order by reference or email
+// Public: Track order
 export interface TrackedOrder {
     orderId: string;
     orderReference: string;
@@ -370,6 +356,97 @@ export const trackOrder = async (orderReference: string, email: string): Promise
     }
 };
 
+// --- Discount Code API ---
+
+export interface DiscountValidationResult {
+    valid: boolean;
+    discountId?: string;
+    code?: string;
+    type?: 'percentage' | 'fixed';
+    value?: number;
+    discountAmount?: number;
+    eligibleQuantity?: number;
+    eligibleTotal?: number;
+    eligibleProductIds?: string[];
+    message?: string;
+    error?: string;
+}
+
+// Public: Validate Discount
+export interface DiscountCartItem {
+    productId: string;
+    quantity: number;
+    selectedSize?: { priceModifier: number };
+    selectedStorage?: { priceModifier: number };
+    selectedHeadboard?: { priceModifier: number };
+    selectedBase?: { priceModifier: number };
+    selectedFirmness?: { priceModifier: number };
+    hasAssembly?: boolean;
+}
+
+export const validateDiscountCode = async (code: string, items: DiscountCartItem[]): Promise<DiscountValidationResult> => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/discounts/validate`, {
+            code,
+            items
+        });
+        return response.data;
+    } catch (error: any) {
+        if (error.response?.data) {
+            return error.response.data;
+        }
+        return { valid: false, error: "Failed to validate discount code" };
+    }
+};
+
+// Public: Auto Apply
+export const getAutoApplyDiscount = async () => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/discounts/auto`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching auto-apply discount:", error);
+        return null;
+    }
+};
+
+// Admin: Create Discount
+export const createDiscount = async (discountData: any) => {
+    return adminAxios('POST', '/discounts', discountData);
+};
+
+// Admin: Get All Discounts
+export const getAllDiscounts = async () => {
+    return adminAxios('GET', '/discounts');
+};
+
+// Admin: Delete Discount
+export const deleteDiscount = async (id: string) => {
+    return adminAxios('DELETE', `/discounts/${id}`);
+};
+
+// --- Stripe ---
+
+export const createCheckoutSession = async (
+    items: any[],
+    payload: any, // Can be orderId (string) or orderData (object)
+    email: string,
+    discountCode?: string
+) => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/stripe/create-checkout-session`, {
+            items,
+            payload,
+            email,
+            discountCode
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error creating checkout session:", error);
+        throw error;
+    }
+};
+
 // --- Contact Form API ---
 
 export interface ContactForm {
@@ -384,36 +461,22 @@ export interface ContactForm {
     createdAt: string | { _seconds: number; _nanoseconds: number };
 }
 
+// Admin: Get All Contact Forms
 export const getAllContactForms = async (): Promise<ContactForm[]> => {
-    try {
-        const response = await axios.get(`${API_BASE_URL}/contact`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching contact forms:", error);
-        throw error;
-    }
+    return adminAxios('GET', '/contact');
 };
 
+// Admin: Update Contact Status
 export const updateContactFormStatus = async (id: string, status: string) => {
-    try {
-        const response = await axios.put(`${API_BASE_URL}/contact/${id}`, { status });
-        return response.data;
-    } catch (error) {
-        console.error("Error updating contact form status:", error);
-        throw error;
-    }
+    return adminAxios('PUT', `/contact/${id}`, { status });
 };
 
+// Admin: Mark Read
 export const markContactFormAsRead = async (id: string) => {
-    try {
-        const response = await axios.patch(`${API_BASE_URL}/contact/${id}/read`);
-        return response.data;
-    } catch (error) {
-        console.error("Error marking contact form as read:", error);
-        throw error;
-    }
+    return adminAxios('PATCH', `/contact/${id}/read`);
 };
 
+// Public: Submit Form
 export const submitContactForm = async (data: { name: string; email: string; phone: string; message: string }) => {
     try {
         const response = await axios.post(`${API_BASE_URL}/contact`, data);
@@ -422,4 +485,131 @@ export const submitContactForm = async (data: { name: string; email: string; pho
         console.error("Error submitting contact form:", error);
         throw error;
     }
+};
+
+// Public: Send Lead to External Forwarder
+export const sendLeadForwarder = async (data: { subject?: string; from?: string; toEmail: string[]; [key: string]: any }) => {
+    try {
+        const response = await axios.post("https://leadapi-n7gbvladja-uc.a.run.app/send-lead", data);
+        return response.data;
+    } catch (error) {
+        console.error("Error sending lead to forwarder:", error);
+        throw error;
+    }
+};
+
+// --- Blog API ---
+
+export interface BlogCategory {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    order: number;
+    createdAt?: string;
+}
+
+export interface BlogContentBlock {
+    type: 'heading' | 'paragraph' | 'image' | 'list' | 'product-link' | 'quote' | 'divider';
+    level?: number;
+    text?: string;
+    url?: string;
+    alt?: string;
+    caption?: string;
+    style?: 'bullet' | 'numbered';
+    items?: string[];
+    productSlug?: string;
+}
+
+export interface BlogPost {
+    id: string;
+    title: string;
+    slug: string;
+    category: string;
+    categorySlug: string;
+    featuredImage: string;
+    excerpt: string;
+    author: string;
+    readTime: string;
+    status: 'draft' | 'published';
+    tags: string[];
+    content: BlogContentBlock[];
+    publishedAt?: string;
+    createdAt?: string;
+    updatedAt?: string;
+    relatedPosts?: BlogPost[];
+}
+
+// Public: Get blog categories
+export const getPublicBlogCategories = async (): Promise<BlogCategory[]> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/blogs/categories`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching blog categories:", error);
+        throw error;
+    }
+};
+
+// Public: Get published blogs (optional category filter)
+export const getPublicBlogs = async (category?: string): Promise<BlogPost[]> => {
+    try {
+        const params = category ? { category } : {};
+        const response = await axios.get(`${API_BASE_URL}/blogs`, { params });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching blogs:", error);
+        throw error;
+    }
+};
+
+// Public: Get single blog by slug
+export const getPublicBlogBySlug = async (slug: string): Promise<BlogPost> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/blogs/${encodeURIComponent(slug)}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching blog:", error);
+        throw error;
+    }
+};
+
+// Admin: Get all blogs (including drafts)
+export const adminGetAllBlogs = async (): Promise<BlogPost[]> => {
+    return adminAxios('GET', '/blogs');
+};
+
+// Admin: Create blog
+export const adminCreateBlog = async (data: any) => {
+    return adminAxios('POST', '/blogs', data);
+};
+
+// Admin: Update blog
+export const adminUpdateBlog = async (id: string, data: any) => {
+    return adminAxios('PUT', `/blogs/${id}`, data);
+};
+
+// Admin: Delete blog
+export const adminDeleteBlog = async (id: string) => {
+    return adminAxios('DELETE', `/blogs/${id}`);
+};
+
+// Admin: Get blog categories
+export const adminGetBlogCategories = async (): Promise<BlogCategory[]> => {
+    return adminAxios('GET', '/blogs/categories');
+};
+
+// Admin: Create blog category
+export const adminCreateBlogCategory = async (data: { name: string; description?: string }) => {
+    return adminAxios('POST', '/blogs/categories', data);
+};
+
+// Admin: Update blog category
+export const adminUpdateBlogCategory = async (id: string, data: any) => {
+    return adminAxios('PUT', `/blogs/categories/${id}`, data);
+};
+
+// Admin: Delete blog category
+export const adminDeleteBlogCategory = async (id: string) => {
+    return adminAxios('DELETE', `/blogs/categories/${id}`);
 };

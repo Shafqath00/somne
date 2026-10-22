@@ -13,6 +13,7 @@ export interface Product {
   description: string;
   shortDescription: string;
   images: string[];
+  coverImage?: string;
   sizes: ProductSize[];
   colors?: ProductColor[];
   storageOptions?: StorageOption[];
@@ -27,6 +28,7 @@ export interface Product {
   deliveryTime: string;
   bestseller?: boolean;
   featured?: boolean;
+  active?: boolean;
   image?: string; // For admin/listing views where a single image is pre-resolved
   rating: number;
   reviewCount: number;
@@ -56,6 +58,7 @@ export interface ProductColor {
   image?: string;
   productImages?: string[];
   isDefault?: boolean;
+  disabled?: boolean;
   fabric?: string;
 }
 

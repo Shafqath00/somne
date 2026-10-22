@@ -1,5 +1,5 @@
 {
-    "name": "Somne Bed Showroom",
+    "name": "Somne",
     "short_name": "Somne",
     "start_url": "/",
     "display": "standalone",
@@ -7,7 +7,7 @@
     "theme_color": "#ffffff",
     "icons": [
         {
-            "src": "/img/favicon2.png",
+            "src": "/SOMNE.png",
             "sizes": "192x192 512x512",
             "type": "image/png"
         }

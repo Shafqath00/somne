@@ -7,16 +7,21 @@ import { getAuth } from "firebase/auth";
 // https://firebase.google.com/docs/web/setup#available-libraries
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// All values MUST be provided via environment variables (VITE_FIREBASE_*)
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyBQF5LbS7t5oQWWzEk650WqadodeNLqdac",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "somne-f5b59.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "somne-f5b59",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "somne-f5b59.firebasestorage.app",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "955169704350",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:955169704350:web:9ec9609c3b1be8a0116e8f",
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || "G-TQBW8K8X5H"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
+
+// Validate required config in development
+if (import.meta.env.DEV && !firebaseConfig.apiKey) {
+  console.error('Missing Firebase config. Create a .env file with VITE_FIREBASE_* variables.');
+}
 
 // Initialize Firebase  
 export const app = initializeApp(firebaseConfig);

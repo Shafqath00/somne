@@ -1,99 +1,102 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { categories } from '@/data';
-import categoryMattress from '@/assets/category-mattress.jpg';
+
+const categoryTiles = [
+  {
+    title: 'Divan Beds',
+    eyebrow: 'Complete bases',
+    description: 'Supportive bases with optional drawer storage.',
+    image: '/img/home/divan.png',
+    href: '/beds/divan-beds',
+    imagePosition: 'center',
+  },
+  {
+    title: 'Ottoman Beds',
+    eyebrow: 'Storage package',
+    description: 'Lift-up storage for bedrooms that work harder.',
+    image: '/img/home/otto.png',
+    href: '/beds/ottoman-divan-beds',
+    imagePosition: 'center',
+  },
+  {
+    title: 'Upholstered Beds',
+    eyebrow: 'Fabric finish',
+    description: 'Soft fabrics, clean lines and made-to-order comfort.',
+    image: '/img/home/uphost.png',
+    href: '/beds/upholstered-beds',
+    imagePosition: 'center',
+  },
+  {
+    title: 'Mattresses',
+    eyebrow: 'Comfort layer',
+    description: 'Pocket sprung, memory foam and comfort-first designs.',
+    image: '/img/home/category-mattress-premium.webp',
+    href: '/mattresses',
+    imagePosition: 'center',
+  },
+  {
+    title: 'Headboards',
+    eyebrow: 'Room finish',
+    description: 'Statement shapes to finish the whole room.',
+    image: '/img/home/headbed.png',
+    href: '/headboards',
+    imagePosition: 'center',
+  },
+  {
+    title: 'Panels',
+    eyebrow: 'Room finish',
+    description: 'Statement shapes to finish the whole room.',
+    image: '/img/home/wallpanel.png',
+    href: '/product/acoustic-wall-panel-pack-of-4',
+    imagePosition: 'center',
+  },
+];
 
 export function CategoryGrid() {
   return (
-    <section className="section-padding bg-white">
-      <div className="luxury-container">
-        <div className="text-center mb-12 md:mb-16">
-          {/* <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
-            Our Collection
-          </span> */}
-          <h2 className="luxury-heading text-foreground ">
-            Top Categories
-          </h2>
-          {/* <p className="md:luxury-body text-sm max-w-2xl mx-auto">
-            Explore our handcrafted range of luxury beds, mattresses, and headboards.
-            Each piece is made to order in our UK workshop.
-          </p> */}
-        </div>
-        <div className='grid grid-cols-2 md:grid-cols-3 gap-6'>
-          <Link to="/beds/divan-beds group">
-            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src="/img/beds/green.png" alt="bed" />
-              {/* <div className="absolute inset-0 hover:bg-black/20" /> */}
-              <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-2xl w-fit mx-auto px-2 text-white bg-primary'>Divan Beds</h2>
-            </div>
-            {/* <h2 className='text-center text-2xl mt-4'>Divan Beds</h2> */}
-          </Link>
-          <Link to="/beds/upholstered-beds">
-            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src="/img/beds/black.png" alt="bed" />
-              <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-2xl w-fit mx-auto px-2 text-white bg-primary'>Upholstered Beds</h2>
-            </div>
-            {/* <h2 className='text-center mt-4'>Upholstered Beds</h2> */}
-          </Link>
-          <Link to="/beds/ottoman-divan-beds">
-            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src="/img/beds/pink.png" alt="bed" />
-              <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-2xl w-fit mx-auto px-2 text-white bg-primary'>Ottoman Beds</h2>
-            </div>
-            {/* <h2 className='text-center mt-4'>Ottoman Beds</h2> */}
-          </Link>
-          <Link to="/mattresses">
-            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src={categoryMattress} alt="bed" />
-              <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-2xl w-fit mx-auto px-2 text-white bg-primary'>Mattresses</h2>
-            </div>
-            {/* <h2 className='text-center mt-4'>Mattresses</h2> */}
-          </Link>
-          <Link to="/headboards" >
-            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src="/img/beds/headboard.jpeg" alt="bed" />
-              <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-2xl w-fit mx-auto px-2 text-white bg-primary'>Headboards</h2>
-            </div>
-            {/* <h2 className='text-center mt-4'>Headboards</h2> */}
-          </Link>
-          <Link to="/product/acoustic-wall-panel-pack-of-4">
-            <div className='rounded-lg overflow-hidden shadow-lg hover:scale-105 transition-all relative'>
-              <img src="/img/beds/panels.webp" alt="bed" />
-              <h2 className='absolute bottom-1/2 translate-y-1/2 left-0 right-0 text-center text-2xl w-fit mx-auto px-2 text-white bg-primary'>Panels</h2>
-            </div>
-            {/* <h2 className='text-center mt-4'>Panels</h2> */}
+    <section className="bg-white py-10">
+      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="mb-6 flex flex-col justify-between gap-4 md:mb-12 md:flex-row md:items-end">
+          <div>
+            {/* <p className="mb-3 text-sm font-semibold uppercase text-black/60">Shop by package need</p> */}
+            <h2 className="max-w-2xl text-2xl font-black text-foreground md:text-5xl">
+              Choose the foundation of your bedroom package.
+            </h2>
+          </div>
+          <Link to="/beds/divan-beds" className="inline-flex items-center gap-2 text-sm font-bold text-black hover:text-zinc-600">
+            View all beds
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        {/* <div className='flex justify-center gap-6 mt-6'>
 
-        </div> */}
-
-        {/* <div className="flex flex-wrap justify-center gap-6">
-          {categories.map((category, index) => (
+        <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-2 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-3">
+          {categoryTiles.map((category) => (
             <Link
-              key={category.id}
+              key={category.title}
               to={category.href}
-              className={`group relative overflow-hidden rounded-xl hover-lift image-zoom w-full lg:w-[calc((100%-3rem)/3)] ${index === 0 ? 'md:w-full' : 'md:w-[calc(50%-0.75rem)]'
-                }`}
+              className="group relative min-h-[330px] min-w-[82%] snap-start overflow-hidden bg-black shadow-sm transition-transform duration-300 hover:-translate-y-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-black sm:min-w-[54%] md:min-h-[390px] md:min-w-0 md:rounded-none lg:min-h-[430px]"
             >
-              <div className="aspect-[4/3] relative">
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/80 via-transparent to-transparent" />
-                <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                  <h3 className="font-serif text-2xl text-cream ">{category.name}</h3>
-                  <p className="font-sans text-sm text-cream/80 mb-2">{category.description}</p>
-                  <span className="inline-flex items-center gap-2 font-sans text-sm text-accent tracking-wide uppercase group-hover:gap-3 transition-all">
-                    Shop Now <ArrowRight className="w-4 h-4" />
-                  </span>
-                </div>
+              <img
+                src={category.image}
+                alt={category.title}
+                loading="lazy"
+                decoding="async"
+                style={{ objectPosition: category.imagePosition }}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              {/* <div className="absolute inset-0 bg-gradient-to-t from-black/78 via-black/24 to-black/8 md:from-black/50 md:via-black/30" /> */}
+              <div className="absolute inset-x-0 bottom-0 p-5 text-white md:p-6">
+                {/* <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.16em] text-white/68">{category.eyebrow}</p> */}
+                <h3 className=" text-3xl font-black leading-none lg:text-[2rem]">{category.title}</h3>
+                {/* <p className="mt-2 max-w-sm text-sm leading-6 text-white/82">{category.description}</p> */}
+                {/* <span className="mt-5 inline-flex items-center gap-2 text-sm font-bold">
+                  Explore
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span> */}
               </div>
             </Link>
           ))}
-        </div> */}
+        </div>
       </div>
     </section>
   );

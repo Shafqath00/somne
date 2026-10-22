@@ -1,53 +1,54 @@
-import { Award, Hammer, Heart, Headphones } from 'lucide-react';
+import { Award, Hammer, Headphones, Heart } from 'lucide-react';
 
 const reasons = [
   {
     icon: Hammer,
     title: 'Handmade in the UK',
-    description: 'Every bed is crafted by skilled artisans in our British workshop, using traditional techniques passed down through generations.',
+    description: 'Built with care, sturdy materials and upholstery details that feel considered from the first night.',
   },
   {
     icon: Award,
-    title: 'Premium Materials',
-    description: 'We source only the finest materials – from solid hardwood frames to luxurious natural fillings and premium fabrics.',
+    title: 'Premium materials',
+    description: 'Supportive frames, soft-touch fabrics and comfort layers selected for long-term everyday use.',
   },
   {
     icon: Heart,
-    title: 'Made for You',
-    description: 'Each piece is made to order, allowing for customization of size, fabric, and features to perfectly suit your needs.',
+    title: 'Made for your room',
+    description: 'Choose sizes, storage and finishes that work for the way your bedroom is really used.',
   },
   {
     icon: Headphones,
-    title: 'Exceptional Service',
-    description: 'From first enquiry to final delivery, our dedicated team ensures a seamless and personal experience.',
+    title: 'Helpful service',
+    description: 'From first question to delivery updates, the Somne team keeps the process clear and simple.',
   },
 ];
 
 export function WhyChooseUs() {
   return (
-    <section className="section-padding bg-secondary">
+    <section className="bg-black py-10 text-white md:py-14">
       <div className="luxury-container">
-        <div className="text-center mb-12 md:mb-16">
-          <span className="font-sans text-sm tracking-[0.2em] uppercase text-accent mb-4 block">
-            Our Promise
-          </span>
-          <h2 className="luxury-heading text-foreground mb-4">
-            Why Choose Somne
-          </h2>
-          <p className="md:luxury-body text-sm max-w-2xl mx-auto">
-            We believe that exceptional sleep starts with exceptional craftsmanship.
-            Here's what sets us apart.
+        {/* <div className="mb-8 grid gap-5 md:mb-14 md:grid-cols-[0.8fr_1.2fr] md:items-end">
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-white/70 md:mb-3 md:text-sm">
+              Why choose Somne
+            </p>
+            <h2 className="text-2xl font-black text-white md:text-5xl">
+              Confidence included in every package.
+            </h2>
+          </div>
+          <p className="max-w-2xl text-sm leading-7 text-white/72 md:text-base">
+            Buying a complete bed setup online should feel straightforward. Somne keeps the essentials visible: practical options, honest comfort, careful making and support when you need it.
           </p>
-        </div>
+        </div> */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-2xl bg-white/12 md:grid-cols-2 md:rounded-lg lg:grid-cols-4">
           {reasons.map((reason) => (
-            <div key={reason.title} className="text-center group">
-              <div className="w-16 h-16 mx-auto mb-6 bg-accent/10 flex items-center rounded-full justify-center group-hover:bg-accent transition-colors duration-300">
-                <reason.icon className="w-7 h-7 text-accent group-hover:text-foreground transition-colors duration-300" />
+            <div key={reason.title} className="group bg-zinc-950 p-5 md:p-8">
+              <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-lg bg-white text-black transition-colors duration-300 group-hover:bg-zinc-200 md:mb-7 md:h-12 md:w-12">
+                <reason.icon className="h-6 w-6" />
               </div>
-              <h3 className="font-serif text-xl font-medium text-foreground mb-3">{reason.title}</h3>
-              <p className="font-sans text-sm text-muted-foreground leading-relaxed">{reason.description}</p>
+              <h3 className="text-xl font-black text-white">{reason.title}</h3>
+              <p className="mt-3 text-sm leading-6 text-white/70">{reason.description}</p>
             </div>
           ))}
         </div>
