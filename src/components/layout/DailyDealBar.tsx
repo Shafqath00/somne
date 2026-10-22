@@ -62,7 +62,7 @@ export function DailyDealBar() {
 
         {/* Message */}
         <p className="text-[11px] sm:text-[15px] uppercase tracking-[0.18em] text-white/80 font-bold whitespace-nowrap">
-          25% off sitewide — ends in
+          25% off Beds — ends in
         </p>
 
         {/* Countdown */}
