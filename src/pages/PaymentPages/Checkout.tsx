@@ -3,10 +3,11 @@ import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/contexts/CartContext';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ArrowLeft, Check, Lock, Truck, Tag, X, Loader2, Plus, Minus, Trash2, Info } from 'lucide-react';
-import { createCheckoutSession, validateDiscountCode, DiscountValidationResult, getAutoApplyDiscount } from '@/api/api';
+import { createCheckoutSession, validateDiscountCode, DiscountValidationResult } from '@/api/api';
 
 const CHECKOUT_FORM_KEY = 'somne-checkout-form';
 const checkoutPanelClass = 'rounded-lg border border-black/10 bg-white p-5 shadow-sm md:p-7';
@@ -36,6 +37,7 @@ const saveFormData = (data: object) => {
 export default function Checkout() {
     const { items, subtotal, discount, updateQuantity, removeItem } = useCart();
     const [isProcessing, setIsProcessing] = useState(false);
+    const [hasAcceptedPolicies, setHasAcceptedPolicies] = useState(false);
     const [showDeliveryTerms, setShowDeliveryTerms] = useState(false);
 
     const [formData, setFormData] = useState(() => {
@@ -56,6 +58,7 @@ export default function Checkout() {
     const [isValidatingDiscount, setIsValidatingDiscount] = useState(false);
     const [appliedDiscount, setAppliedDiscount] = useState<DiscountValidationResult | null>(null);
     const [discountError, setDiscountError] = useState<string | null>(null);
+    const [couponRequest, setCouponRequest] = useState<{ code: string } | null>(null);
 
     const formatPrice = (price: number) => `\u00a3${price.toLocaleString()}`;
 
@@ -69,86 +72,59 @@ export default function Checkout() {
     const shipping = isChargeableShipping ? 80 : 0;
     const total = subtotal + shipping - discount;
 
-    // useEffect(() => {
-    //     const checkAutoApply = async () => {
-    //         if (!appliedDiscount && !discountCode && subtotal > 0) {
-    //             const autoDiscount = await getAutoApplyDiscount();
-    //             if (autoDiscount && autoDiscount.code) {
-    //                 setDiscountCode(autoDiscount.code);
-    //                 handleApplyDiscount(autoDiscount.code);
-    //             }
-    //         }
-    //     };
-
-    //     if (subtotal > 0) {
-    //         checkAutoApply();
-    //     }
-    //     // eslint-disable-next-line react-hooks/exhaustive-deps
-    // }, [subtotal]);
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleApplyDiscount = async (codeToApply?: string) => {
-        const code = codeToApply || discountCode;
+    const handleApplyDiscount = () => {
+        const code = discountCode;
         if (!code.trim()) {
-            if (!codeToApply) setDiscountError('Please enter a discount code');
+            setDiscountError('Please enter a discount code');
             return;
         }
-
-        setIsValidatingDiscount(true);
-        setDiscountError(null);
-
-        try {
-            let bedQuantity = 0;
-            const bedsSubtotal = items.reduce((sum, item) => {
-                if (item.product.categoryId === 'beds') {
-                    const itemPrice = (item.product.discountPrice || item.product.price || 0) +
-                        (item.selectedSize?.priceModifier || 0) +
-                        (item.selectedStorage?.priceModifier || 0) +
-                        (item.selectedHeadboard?.priceModifier || 0) +
-                        (item.hasAssembly ? 49 : 0) +
-                        (item.selectedBase?.priceModifier || 0);
-
-                    bedQuantity += item.quantity;
-                    return sum + (itemPrice * item.quantity);
-                }
-                return sum;
-            }, 0);
-
-            if (bedsSubtotal === 0) {
-                setDiscountError('Discount codes are only applicable to beds');
-                setAppliedDiscount(null);
-                return;
-            }
-
-            const result = await validateDiscountCode(code.trim(), bedsSubtotal);
-
-            if (result.valid) {
-                if (result.type === 'fixed' && bedQuantity > 1) {
-                    const totalDiscount = (result.value || 0) * bedQuantity;
-                    result.discountAmount = totalDiscount;
-                    result.message = `${formatPrice(result.value || 0)} off per bed applied! (x${bedQuantity})`;
-                }
-
-                setAppliedDiscount(result);
-                setDiscountError(null);
-                if (!codeToApply) toast.success(result.message || 'Discount applied!');
-            } else {
-                setDiscountError(result.error || 'Invalid discount code');
-                setAppliedDiscount(null);
-            }
-        } catch (error) {
-            setDiscountError('Failed to validate discount code');
-            setAppliedDiscount(null);
-        } finally {
-            setIsValidatingDiscount(false);
-        }
+        setCouponRequest({ code: code.trim() });
     };
 
+    // Revalidate on cart changes and ignore responses for an older cart or coupon.
+    useEffect(() => {
+        if (!couponRequest) {
+            setIsValidatingDiscount(false);
+            return;
+        }
+        let cancelled = false;
+        setIsValidatingDiscount(true);
+        setDiscountError(null);
+        setAppliedDiscount(null);
+        const cartItems = items.map(item => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+            selectedSize: item.selectedSize,
+            selectedStorage: item.selectedStorage,
+            selectedHeadboard: item.selectedHeadboard,
+            selectedBase: item.selectedBase,
+            selectedFirmness: item.selectedFirmness,
+            hasAssembly: item.hasAssembly,
+        }));
+        validateDiscountCode(couponRequest.code, cartItems).then(result => {
+            if (cancelled) return;
+            if (result.valid) {
+                setAppliedDiscount(result);
+                setDiscountError(null);
+            } else {
+                setDiscountError(result.error || 'Invalid discount code');
+            }
+        }).catch(() => {
+            if (cancelled) return;
+            setDiscountError('Failed to validate discount code');
+        }).finally(() => {
+            if (!cancelled) setIsValidatingDiscount(false);
+        });
+        return () => { cancelled = true; };
+    }, [items, couponRequest]);
+
     const handleRemoveDiscount = () => {
+        setCouponRequest(null);
         setAppliedDiscount(null);
         setDiscountCode('');
         setDiscountError(null);
@@ -156,11 +132,15 @@ export default function Checkout() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!hasAcceptedPolicies) {
+            toast.error('Please accept our policies before placing your order.');
+            return;
+        }
         setIsProcessing(true);
 
         try {
             const orderItems = items.map(item => {
-                const fallbackColor = item.product.colors?.find((color: any) => !color.disabled);
+                const fallbackColor = item.product.colors?.find(color => !color.disabled);
                 return {
                     productId: item.product.id,
                     name: item.product.name,
@@ -179,6 +159,7 @@ export default function Checkout() {
                     selectedStorage: item.selectedStorage,
                     selectedHeadboard: item.selectedHeadboard,
                     selectedBase: item.selectedBase,
+                    selectedFirmness: item.selectedFirmness,
                 };
             });
 
@@ -208,7 +189,7 @@ export default function Checkout() {
             }
         } catch (error) {
             console.error('Checkout error:', error);
-            toast.error('Failed to process checkout. Please try again.');
+            toast.error(error?.response?.data?.error || 'Failed to process checkout. Please try again.');
             setIsProcessing(false);
         }
     };
@@ -464,9 +445,10 @@ export default function Checkout() {
                                                 (item.selectedStorage?.priceModifier || 0) +
                                                 (item.selectedHeadboard?.priceModifier || 0) +
                                                 (item.hasAssembly ? 49 : 0) +
-                                                (item.selectedBase?.priceModifier || 0);
+                                                (item.selectedBase?.priceModifier || 0) +
+                                                (item.selectedFirmness?.priceModifier || 0);
 
-                                            const fallbackColor = item.product.colors?.find((color: any) => !color.disabled);
+                                            const fallbackColor = item.product.colors?.find(color => !color.disabled);
                                             const displayImage = item.selectedColor?.image || item.selectedColor?.productImages?.[0] || fallbackColor?.image || item.product.images[0];
 
                                             return (
@@ -508,17 +490,12 @@ export default function Checkout() {
                                                         </button>
                                                     </div>
 
-                                                    {appliedDiscount && item.product.categoryId === 'beds' && (
+                                                    {appliedDiscount?.eligibleProductIds?.includes(item.product.id) && (
                                                         <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">
                                                             <Tag className="h-3.5 w-3.5" />
                                                             <span>
                                                                 {appliedDiscount.code} applied
                                                                 {appliedDiscount.type === 'percentage' ? ` - ${appliedDiscount.value}% off` : ''}
-                                                                {' '}(-{formatPrice(
-                                                                    (appliedDiscount.type === 'percentage'
-                                                                        ? (itemPrice * appliedDiscount.value / 100)
-                                                                        : appliedDiscount.value) * item.quantity
-                                                                )})
                                                             </span>
                                                         </div>
                                                     )}
@@ -606,9 +583,26 @@ export default function Checkout() {
                                         </div>
                                     </div>
 
+                                    <div className="mt-6 flex items-start gap-3">
+                                        <Checkbox
+                                            id="accept-policies"
+                                            name="acceptPolicies"
+                                            required
+                                            checked={hasAcceptedPolicies}
+                                            onCheckedChange={(checked) => setHasAcceptedPolicies(checked === true)}
+                                            className="mt-1"
+                                        />
+                                        <label htmlFor="accept-policies" className="text-sm leading-6 text-black/70">
+                                            I have read and agree to the{' '}
+                                            <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="font-semibold text-black underline underline-offset-2">Privacy Policy</Link>
+                                            {' '}and{' '}
+                                            <Link to="/returns" target="_blank" rel="noopener noreferrer" className="font-semibold text-black underline underline-offset-2">Returns &amp; Refunds policy</Link>.
+                                        </label>
+                                    </div>
+
                                     <button
                                         type="submit"
-                                        disabled={isProcessing}
+                                        disabled={isProcessing || isValidatingDiscount || !hasAcceptedPolicies}
                                         className="mt-7 flex h-14 w-full items-center justify-center rounded-full bg-[#C0392B] text-base font-black text-white shadow-lg shadow-[#C0392B]/20 transition-all hover:bg-[#a93226] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         {isProcessing ? (

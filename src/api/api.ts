@@ -365,16 +365,30 @@ export interface DiscountValidationResult {
     type?: 'percentage' | 'fixed';
     value?: number;
     discountAmount?: number;
+    eligibleQuantity?: number;
+    eligibleTotal?: number;
+    eligibleProductIds?: string[];
     message?: string;
     error?: string;
 }
 
 // Public: Validate Discount
-export const validateDiscountCode = async (code: string, orderTotal: number): Promise<DiscountValidationResult> => {
+export interface DiscountCartItem {
+    productId: string;
+    quantity: number;
+    selectedSize?: { priceModifier: number };
+    selectedStorage?: { priceModifier: number };
+    selectedHeadboard?: { priceModifier: number };
+    selectedBase?: { priceModifier: number };
+    selectedFirmness?: { priceModifier: number };
+    hasAssembly?: boolean;
+}
+
+export const validateDiscountCode = async (code: string, items: DiscountCartItem[]): Promise<DiscountValidationResult> => {
     try {
         const response = await axios.post(`${API_BASE_URL}/discounts/validate`, {
             code,
-            orderTotal
+            items
         });
         return response.data;
     } catch (error: any) {

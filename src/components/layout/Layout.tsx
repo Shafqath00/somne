@@ -6,6 +6,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
 import { cn } from '@/lib/utils';
 import { DailyDealBar } from './DailyDealBar';
+import { WhatsAppButton } from './WhatsAppButton';
 
 interface LayoutProps {
   children: ReactNode;
@@ -29,6 +30,7 @@ export function Layout({ children }: LayoutProps) {
           {children}
         </main>
         <Footer />
+        <WhatsAppButton />
         <CartDrawer />
       </div>
     </MobileMenuProvider>

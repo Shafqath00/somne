@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { createDiscount, getAllDiscounts, deleteDiscount } from "@/api/api";
+import { createDiscount, getAllDiscounts, deleteDiscount, getAllProducts } from "@/api/api";
 import { Loader2, Trash2, Tag, Percent, PoundSterling, Calendar, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -46,6 +46,7 @@ const discountSchema = z.object({
     maxUses: z.coerce.number().optional(),
     expiresAt: z.string().optional(),
     autoApply: z.boolean().default(false),
+    excludedProductIds: z.array(z.string()).default([]),
 });
 
 type DiscountFormValues = z.infer<typeof discountSchema>;
@@ -67,6 +68,10 @@ export default function DiscountPage() {
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [discountToDelete, setDiscountToDelete] = useState<{ id: string; code: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
+    const [productSearch, setProductSearch] = useState('');
+    const [productsLoading, setProductsLoading] = useState(true);
+    const [productsError, setProductsError] = useState(false);
 
     const form = useForm<DiscountFormValues>({
         resolver: zodResolver(discountSchema),
@@ -76,6 +81,7 @@ export default function DiscountPage() {
             value: 0,
             minOrderAmount: 0,
             autoApply: false,
+            excludedProductIds: [],
         },
     });
 
@@ -92,6 +98,10 @@ export default function DiscountPage() {
 
     useEffect(() => {
         fetchDiscounts();
+        getAllProducts({ category: 'beds' })
+            .then(data => setProducts(data.sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name))))
+            .catch(() => setProductsError(true))
+            .finally(() => setProductsLoading(false));
     }, []);
 
     const onSubmit = async (data: DiscountFormValues) => {
@@ -103,6 +113,7 @@ export default function DiscountPage() {
             });
             toast.success("Discount code created successfully!");
             form.reset();
+            setProductSearch('');
             fetchDiscounts(); // Refresh list
         } catch (error: any) {
             toast.error(error.error || "Failed to create discount code");
@@ -266,6 +277,49 @@ export default function DiscountPage() {
 
                                                 <FormField
                                                     control={form.control}
+                                                    name="excludedProductIds"
+                                                    render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Excluded products</FormLabel>
+                                                            <FormDescription className="text-xs">
+                                                                Select beds this coupon must not apply to, including all their sizes and options. Other product categories are already excluded.
+                                                            </FormDescription>
+                                                            <Input
+                                                                aria-label="Search products to exclude"
+                                                                placeholder="Search beds..."
+                                                                value={productSearch}
+                                                                onChange={event => setProductSearch(event.target.value)}
+                                                                disabled={productsLoading || productsError}
+                                                            />
+                                                            <div className="max-h-52 overflow-y-auto rounded-md border p-2 space-y-1">
+                                                                {productsLoading ? (
+                                                                    <p className="p-2 text-sm text-muted-foreground" role="status">Loading products...</p>
+                                                                ) : productsError ? (
+                                                                    <p className="p-2 text-sm text-red-600" role="alert">Could not load products. Reload this page to select exclusions.</p>
+                                                                ) : products.filter(product => product.name.toLowerCase().includes(productSearch.toLowerCase())).length === 0 ? (
+                                                                    <p className="p-2 text-sm text-muted-foreground">No matching beds.</p>
+                                                                ) : products.filter(product => product.name.toLowerCase().includes(productSearch.toLowerCase())).map(product => (
+                                                                    <label key={product.id} className="flex cursor-pointer items-center gap-3 rounded p-2 hover:bg-slate-50">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            className="h-4 w-4 rounded accent-black"
+                                                                            checked={field.value.includes(product.id)}
+                                                                            onChange={event => field.onChange(event.target.checked
+                                                                                ? [...field.value, product.id]
+                                                                                : field.value.filter(id => id !== product.id))}
+                                                                        />
+                                                                        <span className="text-sm">{product.name}</span>
+                                                                    </label>
+                                                                ))}
+                                                            </div>
+                                                            <p className="text-xs text-muted-foreground" aria-live="polite">{field.value.length} products excluded</p>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )}
+                                                />
+
+                                                <FormField
+                                                    control={form.control}
                                                     name="autoApply"
                                                     render={({ field }) => (
                                                         <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-slate-50">
@@ -335,6 +389,12 @@ export default function DiscountPage() {
                                                         <span>Used: <span className="font-medium">{discount.usedCount || 0}</span>{discount.maxUses ? ` / ${discount.maxUses}` : ''}</span>
                                                         {discount.expiresAt && <span className="flex items-center gap-1 text-orange-600"><Calendar className="w-3 h-3" /> Exp: {formatDate(discount.expiresAt)}</span>}
                                                     </div>
+                                                    {discount.excludedProductIds?.length > 0 && (
+                                                        <p className="mt-2 text-sm text-slate-600">
+                                                            <span className="font-medium">Excluded products: </span>
+                                                            {discount.excludedProductIds.map((id: string) => products.find(product => product.id === id)?.name || id).join(', ')}
+                                                        </p>
+                                                    )}
                                                 </div>
                                                 {/* Actions */}
                                                 <div className="flex items-center gap-2">
