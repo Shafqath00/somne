@@ -25,8 +25,8 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { toast } from "sonner";
-import { createDiscount, getAllDiscounts, deleteDiscount, getAllProducts } from "@/api/api";
-import { Loader2, Trash2, Tag, Percent, PoundSterling, Calendar, AlertCircle } from "lucide-react";
+import { createDiscount, updateDiscount, getAllDiscounts, deleteDiscount, getAllProducts } from "@/api/api";
+import { Loader2, Trash2, Pencil, Tag, Percent, PoundSterling, Calendar, AlertCircle } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
     Dialog,
@@ -65,6 +65,7 @@ export default function DiscountPage() {
     const [discounts, setDiscounts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [discountToDelete, setDiscountToDelete] = useState<{ id: string; code: string } | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -107,19 +108,36 @@ export default function DiscountPage() {
     const onSubmit = async (data: DiscountFormValues) => {
         setIsSubmitting(true);
         try {
-            await createDiscount({
+            const payload = {
                 ...data,
+                maxUses: data.maxUses || null,
                 expiresAt: data.expiresAt ? new Date(data.expiresAt).toISOString() : null
-            });
-            toast.success("Discount code created successfully!");
-            form.reset();
+            };
+            if (editingId) await updateDiscount(editingId, payload);
+            else await createDiscount(payload);
+            toast.success(editingId ? "Discount code updated successfully!" : "Discount code created successfully!");
+            setEditingId(null);
+            form.reset({ code: "", type: "percentage", value: 0, minOrderAmount: 0, maxUses: undefined, expiresAt: "", autoApply: false, excludedProductIds: [] });
             setProductSearch('');
             fetchDiscounts(); // Refresh list
         } catch (error: any) {
-            toast.error(error.error || "Failed to create discount code");
+            toast.error(error.response?.data?.error || error.error || "Failed to save discount code");
         } finally {
             setIsSubmitting(false);
         }
+    };
+
+    const handleEdit = (discount: any) => {
+        setEditingId(discount.id);
+        setProductSearch('');
+        form.reset({ code: discount.code, type: discount.type, value: discount.value, minOrderAmount: discount.minOrderAmount || 0, maxUses: discount.maxUses ?? undefined, expiresAt: discount.expiresAt ? discount.expiresAt.slice(0, 10) : "", autoApply: !!discount.autoApply, excludedProductIds: discount.excludedProductIds || [] });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const cancelEdit = () => {
+        setEditingId(null);
+        setProductSearch('');
+        form.reset({ code: "", type: "percentage", value: 0, minOrderAmount: 0, maxUses: undefined, expiresAt: "", autoApply: false, excludedProductIds: [] });
     };
 
     const handleDeleteClick = (id: string, code: string) => {
@@ -163,9 +181,9 @@ export default function DiscountPage() {
                                     <CardHeader className="bg-white pb-4">
                                         <CardTitle className="text-xl flex items-center gap-2">
                                             <Tag className="w-5 h-5 text-accent" />
-                                            New Discount Code
+                                            {editingId ? "Edit Discount Code" : "New Discount Code"}
                                         </CardTitle>
-                                        <CardDescription>Create a new promotional code</CardDescription>
+                                        <CardDescription>{editingId ? "Update this promotional code" : "Create a new promotional code"}</CardDescription>
                                     </CardHeader>
                                     <Separator />
                                     <CardContent className="pt-6 bg-white rounded-b-lg">
@@ -195,7 +213,7 @@ export default function DiscountPage() {
                                                         render={({ field }) => (
                                                             <FormItem>
                                                                 <FormLabel>Type</FormLabel>
-                                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                <Select onValueChange={field.onChange} value={field.value}>
                                                                     <FormControl>
                                                                         <SelectTrigger>
                                                                             <SelectValue placeholder="Select type" />
@@ -344,8 +362,9 @@ export default function DiscountPage() {
                                                 />
 
                                                 <Button type="submit" className="w-full" disabled={isSubmitting}>
-                                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Create Discount Code"}
+                                                    {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : editingId ? "Save Changes" : "Create Discount Code"}
                                                 </Button>
+                                                {editingId && <Button type="button" variant="outline" className="w-full" onClick={cancelEdit} disabled={isSubmitting}>Cancel Edit</Button>}
                                             </form>
                                         </Form>
                                     </CardContent>
@@ -398,9 +417,11 @@ export default function DiscountPage() {
                                                 </div>
                                                 {/* Actions */}
                                                 <div className="flex items-center gap-2">
+                                                    <Button variant="outline" size="sm" aria-label={`Edit ${discount.code}`} onClick={() => handleEdit(discount)}><Pencil className="w-4 h-4" /></Button>
                                                     <Button
                                                         variant="outline"
                                                         size="sm"
+                                                        aria-label={`Delete ${discount.code}`}
                                                         className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
                                                         onClick={() => handleDeleteClick(discount.id, discount.code)}
                                                     >

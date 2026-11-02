@@ -18,13 +18,13 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <MobileMenuProvider>
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-background">
         <DailyDealBar />
         <Header />
         <main
           className={cn(
             'flex-1',
-            !isHomePage && 'pt-[calc(var(--daily-deal-bar-height)+6rem)]',
+            !isHomePage && 'pt-[calc(var(--daily-deal-bar-height)+4.5rem)]',
           )}
         >
           {children}

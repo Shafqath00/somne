@@ -14,7 +14,7 @@ export function CartDrawer() {
       {/* Overlay */}
       <div
         className={cn(
-          'fixed inset-0 bg-stone-900/60 z-50 transition-opacity duration-300 backdrop-blur-sm',
+          'fixed inset-0 bg-ink/50 z-[80] transition-opacity duration-300 backdrop-blur-sm',
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         )}
         onClick={closeCart}
@@ -23,7 +23,7 @@ export function CartDrawer() {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 h-full w-full max-w-md bg-white z-50 shadow-2xl transition-transform duration-300 flex flex-col',
+          'fixed top-0 right-0 h-full w-full max-w-md bg-background z-[90] shadow-2xl transition-transform duration-300 flex flex-col',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
       >
@@ -52,7 +52,7 @@ export function CartDrawer() {
               <Link
                 to="/beds"
                 onClick={closeCart}
-                className="h-12 px-8 flex items-center justify-center bg-stone-900 text-white font-bold text-sm hover:bg-stone-800 transition-colors rounded-xl"
+                className="h-12 px-8 flex items-center justify-center bg-ink text-white font-bold text-sm hover:bg-terracotta transition-colors rounded-full"
               >
                 Continue Shopping
               </Link>
@@ -71,7 +71,7 @@ export function CartDrawer() {
 
                 return (
                   <div key={item.cartItemId} className="flex gap-5 pb-8 border-b border-stone-100 last:border-0 last:pb-0">
-                    <div className="w-28 h-28 md:w-32 md:h-32 bg-stone-100 rounded-xl overflow-hidden flex-shrink-0">
+                    <div className="w-28 h-28 md:w-32 md:h-32 bg-secondary rounded-2xl overflow-hidden flex-shrink-0">
                       <img
                         src={displayImage}
                         alt={item.product.name}
@@ -160,13 +160,13 @@ export function CartDrawer() {
               <Link
                 to="/checkout"
                 onClick={closeCart}
-                className="w-full h-14 bg-[#ef4444] hover:bg-[#d92626] text-white font-bold text-base flex items-center justify-center rounded-xl transition-all active:scale-[0.99] shadow-lg shadow-stone-900/10"
+                className="w-full h-14 bg-terracotta hover:bg-ink text-white font-extrabold uppercase tracking-[0.14em] text-sm flex items-center justify-center rounded-full transition-all active:scale-[0.99] shadow-gold"
               >
                 Go to Checkout
               </Link>
               <button
                 onClick={closeCart}
-                className="w-full h-14 bg-white border-2 border-stone-200 hover:border-stone-300 hover:bg-stone-50 text-stone-900 font-bold text-base flex items-center justify-center rounded-xl transition-all active:scale-[0.99]"
+                className="w-full h-14 bg-white border-2 border-ink/10 hover:border-ink text-ink font-bold text-sm uppercase tracking-[0.14em] flex items-center justify-center rounded-full transition-all active:scale-[0.99]"
               >
                 Continue Shopping
               </button>

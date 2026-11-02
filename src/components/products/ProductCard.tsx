@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link } from 'react-router-dom';
 import { Star, ShoppingBag, Eye, EyeOff, Palette } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Product } from '@/types';
 import { useCart } from '@/contexts/CartContext';
 import { toast } from 'sonner';
@@ -81,96 +80,94 @@ export function ProductCard({ product, selectedColor }: ProductCardProps) {
     return `£${price.toLocaleString()}`;
   };
 
+  const productHref = `/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`;
+  const hoverImage = !selectedColor ? product.images?.find((img) => img && img !== displayImage) : undefined;
+  const saving = product.basePrice > product.price ? product.basePrice - product.price : 0;
+  const swatches = enabledColors.filter((c: any) => c.hex).slice(0, 5);
+
   return (
-    <div className="group flex flex-col h-full bg-white border border-border/50 hover:border-accent/40 rounded-xl sm:rounded-2xl overflow-hidden transition-all shadow-md duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1">
+    <div className="group flex h-full flex-col">
       {/* Image */}
-      <Link
-        to={`/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`}
-        className="block relative aspect-[4/3] overflow-hidden bg-secondary/20"
-      >
+      <Link to={productHref} className="relative block aspect-square overflow-hidden rounded-[1.75rem] bg-secondary">
         <img
           src={displayImage}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+          loading="lazy"
+          className={`h-full w-full object-cover transition-all duration-700 ease-out group-hover:scale-[1.04] ${hoverImage ? 'group-hover:opacity-0' : ''}`}
         />
+        {hoverImage && (
+          <img
+            src={hoverImage}
+            alt=""
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-700 group-hover:opacity-100"
+          />
+        )}
 
-        {/* Badges Overlay */}
-        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-2">
+        <div className="absolute left-3 top-3 flex flex-col gap-2">
           {isTestUrl && (
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-sm border border-black/5 text-[10px] font-bold tracking-wider uppercase ${product.active !== false ? 'text-green-600' : 'text-red-600'}`}>
-              {product.active !== false ? (
-                <>
-                  <Eye className="w-3 h-3 mr-1" />
-                  Live
-                </>
-              ) : (
-                <>
-                  <EyeOff className="w-3 h-3 mr-1" />
-                  Not Live
-                </>
-              )}
+            <span className={`inline-flex items-center rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm ${product.active !== false ? 'text-green-600' : 'text-red-600'}`}>
+              {product.active !== false ? (<><Eye className="mr-1 h-3 w-3" />Live</>) : (<><EyeOff className="mr-1 h-3 w-3" />Not Live</>)}
+            </span>
+          )}
+          {saving > 0 && (
+            <span className="inline-flex items-center rounded-full bg-terracotta px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-white">
+              Save £{saving.toLocaleString()}
             </span>
           )}
           {product.bestseller && (
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-sm border border-black/5 text-[10px] font-bold tracking-wider uppercase text-foreground">
-              <Star className="w-3 h-3 mr-1 fill-accent text-accent" />
+            <span className="inline-flex items-center rounded-full bg-saffron px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.12em] text-ink">
+              <Star className="mr-1 h-3 w-3 fill-ink" />
               Bestseller
             </span>
           )}
         </div>
 
-        {/* Selected Color Badge */}
         {displayColorName && (
-          <div className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/95 backdrop-blur-sm shadow-sm border border-black/5 text-[10px] font-bold tracking-wider uppercase text-foreground">
-              <Palette className="w-3 h-3 mr-1 text-accent" />
-              {displayColorName}
-            </span>
-          </div>
+          <span className="absolute bottom-3 left-3 inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-ink">
+            <Palette className="mr-1 h-3 w-3 text-terracotta" />
+            {displayColorName}
+          </span>
         )}
+
+        <span className="absolute bottom-3 right-3 flex h-11 w-11 translate-y-3 items-center justify-center rounded-full bg-ink text-white opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+          <ShoppingBag className="h-4 w-4" />
+        </span>
       </Link>
 
       {/* Content */}
-      <div className="p-3 sm:p-5 flex flex-col flex-1">
-        <Link
-          to={`/product/${product.slug || product.name}${displayColorName ? `?variant=${encodeURIComponent(displayColorName)}` : ''}`}
-          className="block mb-2 sm:mb-3"
-        >
-          <h3 className="font-serif text-base sm:text-xl font-medium text-foreground group-hover:text-accent transition-colors">
-            {product.name}
-          </h3>
-          {product.shortDescription && (
-            <p className="font-sans text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-2 min-h-[32px] sm:min-h-[40px]">
-              {product.shortDescription}
-            </p>
-          )}
-        </Link>
-
-        {/* Bottom Section: Price & Action */}
-        <div className="mt-auto pt-3 sm:pt-4 flex items-end justify-between gap-2 border-t border-border/40">
-          <div className="flex flex-col">
-            <div className="flex items-baseline gap-1.5 sm:gap-2">
-              <span className="font-serif text-base sm:text-xl font-medium text-foreground">
-                {formatPrice(product.price)}
-              </span>
-              {product.basePrice > product.price && (
-                <span className="text-sm text-muted-foreground line-through decoration-muted-foreground/40 decoration-1">
-                  {formatPrice(product.basePrice)}
-                </span>
-              )}
-            </div>
-            {product.basePrice > product.price && (
-              <span className="text-[10px] sm:text-xs font-semibold text-emerald-600">
-                Save £{(product.basePrice - product.price).toLocaleString()}
-              </span>
+      <div className="flex flex-1 flex-col px-1 pt-4">
+        <div className="flex items-start justify-between gap-3">
+          <Link to={productHref} className="min-w-0">
+            <h3 className="font-display text-lg leading-tight text-ink transition-colors group-hover:text-terracotta sm:text-xl">
+              {product.name}
+            </h3>
+          </Link>
+          <div className="shrink-0 text-right">
+            <span className="block text-base font-extrabold text-ink sm:text-lg">{formatPrice(product.price)}</span>
+            {saving > 0 && (
+              <span className="text-xs text-ink/45 line-through">{formatPrice(product.basePrice)}</span>
             )}
           </div>
-
-          <div className="hidden items-center gap-1.5 rounded-lg border border-border/50 bg-secondary/50 px-2 py-1 text-[10px] font-medium text-muted-foreground transition-colors group-hover:border-accent/20 group-hover:bg-accent/5 group-hover:text-accent sm:flex sm:px-3 sm:py-1.5 sm:text-xs">
-            <Palette className="w-3.5 h-3.5" />
-            <span>{enabledColors.length} Colors</span>
-          </div>
         </div>
+        {product.shortDescription && (
+          <p className="mt-1 line-clamp-1 text-sm text-ink/55">{product.shortDescription}</p>
+        )}
+        {enabledColors.length > 0 && (
+          <div className="mt-3 flex items-center gap-1.5">
+            {swatches.map((c: any) => (
+              <span
+                key={c.name}
+                title={c.name}
+                className="h-4 w-4 rounded-full ring-1 ring-ink/10 ring-offset-1"
+                style={{ backgroundColor: c.hex }}
+              />
+            ))}
+            <span className="ml-1 text-xs font-semibold text-ink/55">
+              {enabledColors.length} colours
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
