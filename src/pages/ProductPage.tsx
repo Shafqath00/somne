@@ -9,7 +9,8 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Layout } from '@/components/layout/Layout';
-import { USPStrip } from '@/components/home/USPStrip';
+import { TrustStrip } from '@/components/home/revamp/HomeSections';
+import { featuredBeds, scenes } from '@/data/revamp';
 import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
 import { ProductSize, ProductColor, StorageOption } from '@/types';
@@ -82,13 +83,13 @@ const ColourSwatch = ({ color, isSelected, onClick }: { color: ProductColor; isS
   return (
     <button onClick={onClick} title={color.name}
       className={cn(
-        'relative flex flex-col transition-all duration-200 flex-shrink-0 w-22 rounded overflow-hidden border',
+        'relative flex flex-col transition-all duration-200 flex-shrink-0 w-22 rounded-2xl overflow-hidden border-2',
         isSelected
-          ? 'border-black bg-[#021526] shadow-md ring-1 ring-black/50 scale-105'
-          : 'border-white/20 bg-white text-black hover:border-black hover:shadow-sm'
+          ? 'border-terracotta bg-ink shadow-gold'
+          : 'border-transparent bg-white text-ink shadow-soft hover:border-ink/20'
       )}
     >
-      <div className="w-full h-[90px] bg-stone-100">
+      <div className="w-full h-[84px] bg-secondary">
         {color.image
           ? <img src={color.image} alt={color.name} className="w-full h-full object-cover" />
           : <div className="w-full h-full" style={{ backgroundColor: color.hex || '#d4c4b0' }} />}
@@ -134,6 +135,13 @@ const sizeDisplayNames: Record<string, string> = {
 
 const getSizeDisplayName = (size: ProductSize) => sizeDisplayNames[size.name] || size.name;
 
+const lookbook = [
+  { ...featuredBeds.ambassador, image: scenes.heroAmbassador },
+  { ...featuredBeds.amara, image: scenes.amaraEmerald },
+  { ...featuredBeds.knightsbridge, image: scenes.knightsbridgeStorage },
+  { ...featuredBeds.liora, image: scenes.lioraMorning },
+];
+
 const getPriceLabel = (price?: number | string, isIncluded?: boolean) => {
   if (isIncluded || !price || price === 0 || price === 'Included' || price === 'Free') return 'Included';
   return typeof price === 'number' ? `+£${price}` : price;
@@ -161,15 +169,15 @@ const OptionBox = ({
     onClick={onClick}
     disabled={disabled}
     className={cn(
-      'relative min-h-[64px] rounded-xl border px-3 py-3 text-center transition-all duration-200 backdrop-blur-md',
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2',
-      isSelected 
-        ? 'border-stone-900 bg-[#021526] shadow-md ring-1 ring-stone-900 scale-[1.02]' 
-        : 'border-white/60 bg-white/40 shadow-sm hover:bg-white/60 hover:border-white/80 hover:shadow-md hover:scale-[1.02]',
+      'relative min-h-[64px] rounded-2xl border-2 px-3 py-3 text-center transition-all duration-200',
+      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-terracotta focus-visible:ring-offset-2',
+      isSelected
+        ? 'border-ink bg-ink shadow-medium'
+        : 'border-transparent bg-white shadow-soft hover:border-ink/20',
       disabled && 'cursor-not-allowed opacity-45 hover:border-white/60 hover:bg-white/40 hover:shadow-sm hover:scale-100',
     )}
   >
-    <span className={`block text-[15px] font-bold leading-tight ${isSelected ? 'text-white' : 'text-stone-900'}`}>{label}</span>
+    <span className={`block text-[15px] font-bold leading-tight ${isSelected ? 'text-white' : 'text-ink'}`}>{label}</span>
     {(detail || price !== undefined || isIncluded) && (
       <span className={`mt-1 block text-[11px] font-medium leading-tight ${isSelected ? 'text-stone-400' : 'text-stone-500'}`}>
         {[detail, getPriceLabel(price, isIncluded)].filter(Boolean).join(' · ')}
@@ -472,16 +480,16 @@ const ProductPage = () => {
   // ── guards ──
   if (loading) return (
     <Layout>
-      <div className="min-h-screen bg-[#f4f3f0] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-stone-400" />
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-6 h-6 animate-spin text-terracotta" />
       </div>
     </Layout>
   );
 
   if (!product) return (
     <Layout>
-      <div className="min-h-screen bg-[#f4f3f0] flex items-center justify-center">
-        <h1 className="font-serif text-3xl text-stone-100 mb-4">Product Not Found</h1>
+      <div className="min-h-screen flex items-center justify-center">
+        <h1 className="font-display text-4xl text-ink mb-4">Product not found</h1>
       </div>
     </Layout>
   );
@@ -513,7 +521,6 @@ const ProductPage = () => {
     : galleryImages[0] || product.images?.[0] || '/img/logo.png';
   const productImageUrl = productImage?.startsWith('http') ? productImage : `${window.location.origin}${productImage}`;
   const currentGalleryImage = heroImage || galleryImages[activeImageIndex] || galleryImages[0] || product.coverImage || product.images?.[0] || '/placeholder.jpg';
-  console.log("product.subcategoryId", product.subcategoryId);
   return (
     <>
       <Helmet>
@@ -529,32 +536,32 @@ const ProductPage = () => {
 
       <Layout>
         {/* Breadcrumb */}
-        <div className="bg-white border-b border-white/10 top-[56px] md:top-[72px] z-10">
-          <div className="luxury-container">
-            <nav className="flex items-center gap-2 py-3 text-xs text-stone-400 overflow-x-auto whitespace-nowrap scrollbar-hide">
-              <Link to="/" className="hover:text-stone-200 transition-colors">Home</Link>
+        <div>
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
+            <nav className="flex items-center gap-2 overflow-x-auto whitespace-nowrap py-4 text-xs font-semibold uppercase tracking-[0.14em] text-ink/45 scrollbar-hide">
+              <Link to="/" className="transition-colors hover:text-terracotta">Home</Link>
               <ChevronRight className="w-3 h-3" />
-              <Link to={`/${product.categoryId}/${product.subcategoryId}`} className={cn('hover:text-stone-200 transition-colors capitalize', product.categoryId === 'panels' && 'hidden')}>{product.subcategoryId}</Link>
+              <Link to={`/${product.categoryId}/${product.subcategoryId}`} className={cn('transition-colors hover:text-terracotta', product.categoryId === 'panels' && 'hidden')}>{String(product.subcategoryId || '').replace(/-/g, ' ')}</Link>
               <ChevronRight className={cn('w-3 h-3', product.categoryId === 'panels' && 'hidden')} />
-              <span className="text-stone-200 font-medium truncate max-w-[200px]">{product.name}</span>
+              <span className="max-w-[240px] truncate text-ink">{product.name}</span>
             </nav>
           </div>
         </div>
 
         {/* ══ MAIN TWO-COLUMN LAYOUT ══ */}
-        <section className="min-h-[calc(100vh-120px)] bg-[#edede9] pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0">
-          <div className="mx-auto max-w-[1600px] px-4 md:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:min-h-[calc(100vh-120px)] lg:grid-cols-[1fr_460px] xl:grid-cols-[1fr_500px]">
+        <section className="pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-12">
+          <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-10">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1.2fr_1fr] xl:gap-14">
 
               {/* ══ LEFT: Title + 3-D Carousel + Price ══ */}
-              <div className="relative z-0 flex flex-col justify-between pt-3 pb-4 lg:sticky lg:top-[88px] lg:self-start lg:py-8 lg:pr-8">
+              <div className="relative z-0 flex flex-col pb-4 lg:sticky lg:top-[calc(var(--daily-deal-bar-height)+5.5rem)] lg:self-start">
 
-                {/* Title */}
-                <div className="mb-2 lg:mb-0">
+                {/* Title (mobile; desktop title sits in the config panel) */}
+                <div className="mb-4 lg:hidden">
 
                   <div className='flex items-start justify-between gap-4'>
                     <div className='flex items-end gap-4'>
-                      <h1 className="font-serif text-[2rem] leading-none tracking-normal text-stone-900 sm:text-4xl md:text-5xl">
+                      <h1 className="font-display text-[2.2rem] leading-none tracking-[-0.03em] text-ink sm:text-5xl">
                         {product.name}
                       </h1>
                       <div className='flex flex-col gap-2 text-center'>
@@ -568,7 +575,7 @@ const ProductPage = () => {
                             key={selectedColor.name}
                             initial={{ opacity: 0, y: 4 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="text-sm text-stone-400  font-medium"
+                            className="text-sm font-semibold text-ink/55"
                           >
                             {selectedColor.name}{selectedFabric ? ` · ${selectedFabric}` : ''}
                           </motion.p>
@@ -583,7 +590,7 @@ const ProductPage = () => {
                       <Share className="w-4 h-4" />
                     </button>
                   </div>
-                  <div className="hidden lg:flex items-baseline gap-2 mb-2">
+                  <div className="hidden">
                     <motion.span
                       key={totalPrice}
                       initial={{ opacity: 0, y: 8 }}
@@ -607,7 +614,7 @@ const ProductPage = () => {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.25 }}
-                      className="font-serif text-3xl text-stone-900 sm:text-4xl"
+                      className="font-display text-3xl text-ink sm:text-4xl"
                     >
                       £{totalPrice.toLocaleString()}
                     </motion.span>
@@ -623,7 +630,7 @@ const ProductPage = () => {
                   <div className="relative flex flex-col items-center">
                     <Dialog>
                       <DialogTrigger asChild>
-                        <button type="button" className="relative block w-full max-w-[640px] overflow-hidden rounded-2xl bg-stone-100 aspect-[4/3] cursor-zoom-in group lg:max-w-[600px] xl:max-w-[640px]">
+                        <button type="button" className="group relative block aspect-square w-full cursor-zoom-in overflow-hidden rounded-[2rem] bg-secondary lg:aspect-[5/4]">
                           <img
                             src={currentGalleryImage}
                             alt={product.name}
@@ -643,7 +650,7 @@ const ProductPage = () => {
                         <button
                           type="button"
                           onClick={() => stepGalleryImage(-1)}
-                          className="absolute left-2 top-[calc(50%-1.5rem)] z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-stone-900 shadow-md transition hover:bg-white md:left-4"
+                          className="absolute left-3 top-[calc(50%-2.5rem)] z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-ink shadow-medium backdrop-blur transition hover:bg-terracotta hover:text-white md:left-5"
                           aria-label="Previous product image"
                         >
                           <ChevronLeft className="h-5 w-5" />
@@ -651,7 +658,7 @@ const ProductPage = () => {
                         <button
                           type="button"
                           onClick={() => stepGalleryImage(1)}
-                          className="absolute right-2 top-[calc(50%-1.5rem)] z-20 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-stone-900 shadow-md transition hover:bg-white md:right-4"
+                          className="absolute right-3 top-[calc(50%-2.5rem)] z-20 flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-ink shadow-medium backdrop-blur transition hover:bg-terracotta hover:text-white md:right-5"
                           aria-label="Next product image"
                         >
                           <ChevronRight className="h-5 w-5" />
@@ -660,17 +667,17 @@ const ProductPage = () => {
                     )}
 
                     {galleryImages.length > 1 && (
-                      <div className="flex gap-2 mt-6 z-10 max-w-full overflow-x-auto pb-1 scrollbar-hide">
+                      <div className="z-10 mt-4 flex w-full max-w-full gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
                         {galleryImages.map((img, i) => (
                           <button
                             key={`${img}-${i}`}
                             type="button"
                             onClick={() => showGalleryImage(i)}
                             className={cn(
-                              'w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-200 flex-shrink-0',
+                              'h-[4.5rem] w-[4.5rem] flex-shrink-0 overflow-hidden rounded-2xl border-2 transition-all duration-200',
                               activeImageIndex === i
-                                ? 'border-stone-900 scale-105 shadow-md'
-                                : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-300',
+                                ? 'border-terracotta shadow-gold'
+                                : 'border-transparent opacity-60 hover:opacity-100',
                             )}
                           >
                             <img src={img} alt="" className="w-full h-full object-cover" />
@@ -680,8 +687,8 @@ const ProductPage = () => {
                     )}
                   </div>
 
-                {/* Desktop price + CTA */}
-                <div className="hidden lg:flex items-center justify-between mt-4">
+                {/* Desktop price + CTA moved into the config panel */}
+                <div className="hidden">
                   <div>
                     <div className="flex items-baseline gap-2">
                       <motion.span
@@ -706,7 +713,7 @@ const ProductPage = () => {
                       <span className="w-10 text-center font-bold text-stone-900 text-sm">{quantity}</span>
                       <button onClick={() => setQuantity(quantity + 1)} className="w-11 h-11 flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-700"><Plus className="w-4 h-4" /></button>
                     </div>
-                    <Button onClick={handleAddToCart} className="h-11 px-6 rounded-xl bg-[#021526] text-white font-semibold text-sm flex items-center gap-2 transition-all active:scale-[0.98] border-0">
+                    <Button onClick={handleAddToCart} className="h-11 px-6 rounded-xl bg-ink text-white font-semibold text-sm flex items-center gap-2 transition-all active:scale-[0.98] border-0">
                       Add to bag
                     </Button>
                   </div>
@@ -714,8 +721,44 @@ const ProductPage = () => {
               </div>
 
               {/* ══ RIGHT: Config panel ══ */}
-              <div className="flex flex-col border-stone-100 lg:min-h-full lg:border-l ">
-                <div className="-mx-4 flex flex-col gap-5 rounded-t-[28px] px-4 pb-6 pt-5 shadow-[0_-12px_30px_rgba(0,0,0,0.05)] md:mx-0 md:rounded-2xl md:px-5 lg:rounded-none lg:bg-transparent lg:p-8 lg:shadow-none min-h-full">
+              <div className="flex flex-col">
+                <div className="flex flex-col gap-7 rounded-[2rem] bg-secondary/70 p-5 sm:p-7 lg:p-9">
+                  {/* Desktop title + price */}
+                  <div className="hidden lg:block">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="mb-3 flex flex-wrap items-center gap-2">
+                          {product.bestseller && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-saffron px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-ink">
+                              <Star className="h-3 w-3 fill-ink" /> Bestseller
+                            </span>
+                          )}
+                          <span className="rounded-full bg-jade/10 px-3 py-1 text-[10px] font-extrabold uppercase tracking-[0.14em] text-jade">Made to order</span>
+                        </div>
+                        <h1 className="font-display text-5xl leading-[0.95] tracking-[-0.03em] text-ink xl:text-6xl">{product.name}</h1>
+                        {selectedColor?.name && (
+                          <p className="mt-2 text-sm font-semibold text-ink/55">{selectedColor.name}{selectedFabric ? ` · ${selectedFabric}` : ''}</p>
+                        )}
+                      </div>
+                      <button onClick={handleShare} className="rounded-full bg-white p-3 text-ink shadow-soft transition-colors hover:bg-ink hover:text-white" title="Share product">
+                        <Share className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <div className="mt-5 flex items-baseline gap-3">
+                      <motion.span key={totalPrice} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }} className="font-display text-5xl text-ink">
+                        £{totalPrice.toLocaleString()}
+                      </motion.span>
+                      {product.discountPercentage > 0 && (
+                        <>
+                          <span className="text-lg text-ink/40 line-through">
+                            £{(Number(product.basePrice || 0) + (selectedSize?.priceModifier || 0)).toLocaleString()}
+                          </span>
+                          <span className="rounded-full bg-terracotta px-3 py-1 text-xs font-extrabold text-white">-{Math.round(product.discountPercentage)}%</span>
+                        </>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm text-ink/60">or 3 interest-free payments of <b className="text-ink">£{(totalPrice / 3).toFixed(2)}</b> with Klarna</p>
+                  </div>
 
                   {/* Price (right panel, hidden on mobile since it's now under the title) */}
                   {/* <div className="hidden lg:flex items-baseline gap-2">
@@ -740,8 +783,8 @@ const ProductPage = () => {
                     <div className="">
                       {/* {uniqueFabrics.length  && ( */}
                         <div className=" flex items-center">
-                          <p className="text-[12px] uppercase tracking-[0.18em] text-black font-bold mr-2">
-                            Fabric - Plush
+                          <p className="mr-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">
+                            Colour <span className="ml-1 font-semibold normal-case tracking-normal text-ink/55">{selectedColor?.name || 'Plush velvet'}</span>
                           </p>
                           {/* <div className="flex flex-wrap gap-2 ">
                             {uniqueFabrics.map(f => (
@@ -767,7 +810,7 @@ const ProductPage = () => {
                           Color {selectedColor && <span className="text-stone-100 ml-1 normal-case tracking-normal font-bold">— {selectedColor.name}</span>}
                         </p> */}
 
-                        <div className="grid grid-cols-4 gap-2 pt-2 pb-2">
+                        <div className="grid grid-cols-3 gap-2.5 pt-3 sm:grid-cols-4">
                           {visibleColors.map((c: ProductColor) => (
                             <ColourSwatch
                               key={c.name}
@@ -787,7 +830,7 @@ const ProductPage = () => {
                       {product.sizes?.length > 0 && (
                         <div>
                           <div className="mb-4 flex items-center justify-between gap-3">
-                            <p className="text-base font-normal uppercase tracking-normal text-stone-900">Size</p>
+                            <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Size</p>
                             {product.categoryId === 'beds' && (
                               <Sheet>
                                 <SheetTrigger asChild>
@@ -812,7 +855,7 @@ const ProductPage = () => {
                               </Sheet>
                             )}
                           </div>
-                          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 bg-white/60 backdrop-blur-md border border-white/60 p-3 rounded-xl shadow-sm">
+                          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 ">
                             {([...product.sizes].sort((a: any, b: any) => ['Small Single', 'Single', 'Small Double', 'Double', 'King', 'Queen', 'Super King'].indexOf(a.name) - ['Small Single', 'Single', 'Small Double', 'Double', 'King', 'Queen', 'Super King'].indexOf(b.name))).map((o: ProductSize) => (
                               <OptionBox
                                 key={o.name}
@@ -831,8 +874,8 @@ const ProductPage = () => {
 
                       {product.firmnessOptions?.length > 0 && (
                         <div>
-                          <p className="mb-4 text-base font-normal uppercase tracking-normal text-stone-900">Firmness</p>
-                          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 bg-white/60 backdrop-blur-md border border-white/60 p-3 rounded-2xl shadow-sm">
+                          <p className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Firmness</p>
+                          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 ">
                             {product.firmnessOptions.map((o: any) => (
                               <OptionBox
                                 key={o.name}
@@ -849,8 +892,8 @@ const ProductPage = () => {
 
                       {product.storageOptions?.length > 0 && (
                         <div>
-                          <p className="mb-4 text-base font-normal uppercase tracking-normal text-stone-900">Storage</p>
-                          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 bg-white/60 backdrop-blur-md border border-white/60 p-3 rounded-2xl shadow-sm">
+                          <p className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Storage</p>
+                          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 ">
                             {product.storageOptions.map((o: any) => (
                               <OptionBox
                                 key={o.name}
@@ -868,8 +911,8 @@ const ProductPage = () => {
 
                       {product.headboardOptions?.length > 0 && (
                         <div>
-                          <p className="mb-4 text-base font-normal uppercase tracking-normal text-stone-900">Headboard</p>
-                          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 bg-white/60 backdrop-blur-md border border-white/60 p-3 rounded-2xl shadow-sm">
+                          <p className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Headboard</p>
+                          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 ">
                             {product.headboardOptions.map((o: any) => {
                               const price = getHeadboardPrice(o, selectedSize?.name);
                               return (
@@ -890,8 +933,8 @@ const ProductPage = () => {
 
                       {product.baseOptions?.length > 0 && (
                         <div>
-                          <p className="mb-4 text-base font-normal uppercase tracking-normal text-stone-900">Base</p>
-                          <div className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2 sm:grid-cols-3 bg-white/60 backdrop-blur-md border border-white/60 p-3 rounded-2xl shadow-sm">
+                          <p className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Base</p>
+                          <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 ">
                             {product.baseOptions.map((o: any) => (
                               <OptionBox
                                 key={o.name}
@@ -1020,10 +1063,10 @@ const ProductPage = () => {
                   {/* Mattress add-on */}
                   {product.categoryId === 'beds' && (
                     <div>
-                      <p className="text-[10px] uppercase tracking-[0.18em] text-stone-400 font-semibold mb-3">Add Mattress</p>
+                      <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Complete the bed</p>
                       {selectedUpsellMattress ? (
-                        <div className="flex items-center gap-3 p-3 rounded-xl border-2 border-stone-900 bg-stone-50">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#021526] flex-shrink-0">
+                        <div className="flex items-center gap-3 rounded-2xl border-2 border-ink bg-white p-3">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden bg-ink flex-shrink-0">
                             <img src={selectedUpsellMattress.images?.[0] || '/placeholder.jpg'} alt={selectedUpsellMattress.name} className="w-full h-full object-cover" />
                           </div>
                           <div className="flex-1 min-w-0">
@@ -1032,7 +1075,7 @@ const ProductPage = () => {
                           </div>
                           <Dialog open={isMattressModalOpen} onOpenChange={setIsMattressModalOpen}>
                             <DialogTrigger asChild>
-                              <button className="text-xs font-bold px-3 py-1.5 rounded-lg bg-stone-900 text-white">Change</button>
+                              <button className="rounded-full bg-ink px-4 py-2 text-xs font-bold text-white">Change</button>
                             </DialogTrigger>
                             <DialogContent className={mattressDialogClassName}>
                               <DialogHeader className="px-6 py-5 border-b"><DialogTitle className="font-serif text-xl font-light">Select Mattress</DialogTitle><DialogDescription className="sr-only">Choose a mattress</DialogDescription></DialogHeader>
@@ -1049,8 +1092,8 @@ const ProductPage = () => {
                       ) : (
                         <Dialog open={isMattressModalOpen} onOpenChange={setIsMattressModalOpen}>
                           <DialogTrigger asChild>
-                            <button className="w-full flex items-center gap-3 p-3 rounded-xl border-2 border-dashed border-stone-400 hover:border-stone-400 transition-all text-left group">
-                              <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center"><BedDouble className="w-5 h-5 text-stone-700" /></div>
+                            <button className="group flex w-full items-center gap-3 rounded-2xl border-2 border-dashed border-terracotta/50 bg-white p-3.5 text-left transition-all hover:border-terracotta">
+                              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blush"><BedDouble className="h-5 w-5 text-terracotta" /></div>
                               <div><p className="text-xs font-bold text-stone-700">Bundle with a mattress</p><p className="text-[10px] text-stone-400">Save more when you add a mattress</p></div>
                               <Plus className="w-4 h-4 text-stone-400 ml-auto group-hover:text-stone-700 transition-colors" />
                             </button>
@@ -1068,15 +1111,34 @@ const ProductPage = () => {
                   {/* Assembly */}
                   {(product.categoryId === 'mattresses' || product.categoryId === 'beds') && (
                     <button onClick={() => setAssemblyAdded(!assemblyAdded)}
-                      className={cn('w-full flex items-center gap-3 rounded-xl border-2 p-3.5 text-left transition-all duration-200',
-                        assemblyAdded ? 'border-white bg-white' : 'border-stone-200 bg-white hover:border-stone-400')}>
-                      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', assemblyAdded ? 'bg-[#021526]' : 'bg-[#021526]')}><Wrench className={cn('w-5 h-5', assemblyAdded ? 'text-white' : 'text-white')} /></div>
-                      <div className="flex-1"><p className={cn('text-sm font-bold', assemblyAdded ? 'text-[#021526]' : 'text-[#021526]')}>Professional Assembly</p><p className={cn('text-xs mt-0.5', assemblyAdded ? 'text-black/60' : 'text-stone-400')}>By trained technicians · +£49</p></div>
-                      <div className={cn('w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0', assemblyAdded ? 'bg-[#021526] border-black' : 'border-stone-300')}>{assemblyAdded && <Check className="w-3.5 h-3.5 text-white" />}</div>
+                      className={cn('w-full flex items-center gap-3 rounded-2xl border-2 bg-white p-3.5 text-left transition-all duration-200',
+                        assemblyAdded ? 'border-jade' : 'border-transparent shadow-soft hover:border-ink/20')}>
+                      <div className={cn('w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0', assemblyAdded ? 'bg-ink' : 'bg-ink')}><Wrench className={cn('w-5 h-5', assemblyAdded ? 'text-white' : 'text-white')} /></div>
+                      <div className="flex-1"><p className={cn('text-sm font-bold', assemblyAdded ? 'text-ink' : 'text-ink')}>Professional Assembly</p><p className={cn('text-xs mt-0.5', assemblyAdded ? 'text-black/60' : 'text-stone-400')}>By trained technicians · +£49</p></div>
+                      <div className={cn('w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0', assemblyAdded ? 'bg-ink border-black' : 'border-stone-300')}>{assemblyAdded && <Check className="w-3.5 h-3.5 text-white" />}</div>
                     </button>
                   )}
 
-                  {/* Mobile price + CTA */}
+                  {/* Desktop CTA */}
+                  <div className="hidden border-t border-ink/10 pt-6 lg:block">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center overflow-hidden rounded-full bg-white shadow-soft">
+                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="flex h-14 w-12 items-center justify-center text-ink hover:bg-secondary" aria-label="Decrease quantity"><Minus className="h-4 w-4" /></button>
+                        <span className="w-8 text-center font-bold text-ink">{quantity}</span>
+                        <button onClick={() => setQuantity(quantity + 1)} className="flex h-14 w-12 items-center justify-center text-ink hover:bg-secondary" aria-label="Increase quantity"><Plus className="h-4 w-4" /></button>
+                      </div>
+                      <button onClick={handleAddToCart} className="flex h-14 flex-1 items-center justify-center gap-2 rounded-full bg-terracotta text-sm font-extrabold uppercase tracking-[0.14em] text-white shadow-gold transition-all hover:bg-ink active:scale-[0.98]">
+                        Add to bag · £{(totalPrice * quantity).toLocaleString()}
+                      </button>
+                    </div>
+                    <div className="mt-5 grid grid-cols-3 gap-2 text-center text-[11px] font-bold uppercase tracking-[0.1em] text-ink/70">
+                      <span className="rounded-2xl bg-white px-2 py-3">Free delivery</span>
+                      <span className="rounded-2xl bg-white px-2 py-3">Made in UK</span>
+                      <span className="rounded-2xl bg-white px-2 py-3">5-yr warranty</span>
+                    </div>
+                  </div>
+
+                  {/* Legacy mobile price + CTA (sticky bar used instead) */}
                   <div className="hidden">
                     <div className="flex items-center justify-between mb-4">
                       <div><p className="text-[10px] text-stone-400 uppercase tracking-widest">Price</p><p className="font-serif text-3xl font-light text-white">£{totalPrice.toLocaleString()}</p></div>
@@ -1135,8 +1197,36 @@ const ProductPage = () => {
           </div>
         )}
 
-        {/* Trust banner */}
-        <USPStrip />
+        {/* Styled at home: lifestyle scenes of real Somne beds */}
+        <section className="px-4 py-16 sm:px-6 md:py-24 lg:px-10">
+          <div className="mx-auto max-w-[1440px]">
+            <div className="mb-10 flex flex-col justify-between gap-4 md:flex-row md:items-end">
+              <div>
+                <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.26em] text-terracotta">Styled at home</p>
+                <h2 className="font-display text-4xl leading-[0.98] text-ink md:text-6xl">
+                  Get the <em className="italic text-terracotta">look.</em>
+                </h2>
+              </div>
+              <p className="max-w-sm text-ink/65">Real Somne designs, dressed by our stylists. Tap a room to shop the bed.</p>
+            </div>
+            <div className="scrollbar-hide -mx-4 flex snap-x gap-4 overflow-x-auto px-4 md:mx-0 md:grid md:grid-cols-4 md:px-0">
+              {lookbook.map((look) => (
+                <Link key={look.slug} to={`/product/${look.slug}`} className="group relative aspect-[3/4] w-[72%] shrink-0 snap-start overflow-hidden rounded-[2rem] md:w-auto">
+                  <img src={look.image} alt={look.name} loading="lazy" className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                  <div className="absolute inset-x-5 bottom-5 text-white">
+                    <p className="font-display text-2xl">{look.name}</p>
+                    <p className="text-sm text-white/80">from £{look.from}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <div className="pb-16">
+          <TrustStrip />
+        </div>
 
         {/* Category sections */}
         {product.categoryId === 'mattresses' ? <MattressDetails /> : product.categoryId === 'beds' ? (product.subcategoryId?.includes('ottoman') ? <OttomanBedDetails /> : product.subcategoryId?.includes('upholstered') ? <UpholsteredBedDetails /> : <BedDetails />) : product.categoryId === 'headboards' ? <HeadBoardDetails /> : null}
@@ -1144,12 +1234,12 @@ const ProductPage = () => {
         {/* Mobile sticky bar */}
         <div className="fixed inset-x-0 bottom-0 z-30 border-t border-stone-100 bg-white/95 px-4 py-3 shadow-[0_-10px_30px_rgba(0,0,0,0.08)] backdrop-blur-md md:hidden" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom))' }}>
           <div className="flex items-center gap-3 max-w-lg mx-auto">
-            <div className="flex items-center border-2 border-stone-200 rounded-xl overflow-hidden">
+            <div className="flex items-center overflow-hidden rounded-full border-2 border-ink/10">
               <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="w-11 h-11 flex items-center justify-center"><Minus className="w-3.5 h-3.5" /></button>
               <span className="w-8 text-center font-bold text-sm">{quantity}</span>
               <button onClick={() => setQuantity(quantity + 1)} className="w-11 h-11 flex items-center justify-center"><Plus className="w-3.5 h-3.5" /></button>
             </div>
-            <button onClick={handleAddToCart} className="flex-1 h-11 rounded-xl bg-red-500 text-white font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-all">
+            <button onClick={handleAddToCart} className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full bg-terracotta text-sm font-bold text-white transition-all active:scale-[0.98]">
               Add to bag · £{(totalPrice * quantity).toLocaleString()}
             </button>
           </div>

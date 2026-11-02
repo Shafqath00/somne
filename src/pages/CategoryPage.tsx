@@ -1,7 +1,8 @@
-import { useState, useMemo, useEffect } from 'react';
+import { Fragment, useState, useMemo, useEffect } from 'react';
 import { useParams, Link, Navigate, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
-import { SlidersHorizontal, X, Loader2 } from 'lucide-react';
+import { SlidersHorizontal, X, ArrowUpRight } from 'lucide-react';
+import { scenes } from '@/data/revamp';
 import { Layout } from '@/components/layout/Layout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { Button } from '@/components/ui/button';
@@ -125,6 +126,25 @@ const categoryInfo: Record<string, { title: string; description: string; seoTitl
   },
 };
 
+const CATEGORY_BANNERS: Record<string, { image: string; position: string; chip: string }> = {
+  beds: { image: scenes.heroAmbassador, position: 'object-[60%_center]', chip: 'bg-terracotta text-white' },
+  'upholstered-beds': { image: scenes.glasgowMidnight, position: 'object-[60%_center]', chip: 'bg-saffron text-ink' },
+  'divan-beds': { image: scenes.amaraEmerald, position: 'object-[center_60%]', chip: 'bg-jade text-white' },
+  'ottoman-divan-beds': { image: scenes.lioraMorning, position: 'object-[center_60%]', chip: 'bg-lilac text-ink' },
+  'upholstered-ottoman-bed': { image: scenes.knightsbridgeStorage, position: 'object-[55%_center]', chip: 'bg-royal text-white' },
+  headboards: { image: scenes.heroAmbassador, position: 'object-[62%_30%]', chip: 'bg-terracotta text-white' },
+};
+const MATTRESS_BANNER = { image: scenes.mattressCloud, position: 'object-center', chip: 'bg-blush text-ink' };
+
+const BED_LINKS = [
+  { label: 'Divan', href: '/beds/divan-beds' },
+  { label: 'Upholstered', href: '/beds/upholstered-beds' },
+  { label: 'Ottoman Divan', href: '/beds/ottoman-divan-beds' },
+  { label: 'Upholstered Ottoman', href: '/beds/upholstered-ottoman-bed' },
+  { label: 'Headboards', href: '/headboards' },
+  { label: 'Mattresses', href: '/mattresses' },
+];
+
 const getCleanColorName = (name: string): string => {
   let cleaned = name.replace(/\s*plush\s*/i, '').trim();
   if (cleaned.toLowerCase() === 'cream') return 'Beige';
@@ -199,6 +219,8 @@ const CategoryPage = () => {
   const info = categoryInfo[currentCategory] || categoryInfo.beds;
   console.log(currentCategory);
   const isComingSoonCategory = shouldShowOttomanComingSoon(currentCategory);
+  const banner = category === 'mattresses' ? MATTRESS_BANNER : CATEGORY_BANNERS[currentCategory] || CATEGORY_BANNERS.beds;
+  const siblingLinks = BED_LINKS;
   console.log(isComingSoonCategory,"sss")
 
   // React Query Fetch Data
@@ -364,20 +386,48 @@ const CategoryPage = () => {
           </div>
         </div> */}
 
-        {/* Header */}
-        <div className="bg-black py-9 text-white">
-          <div className="luxury-container">
-            {/* <p className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-white/50">
-              Somne collection
-            </p> */}
-            <h1 className="max-w-4xl text-3xl font-black leading-tight text-white md:text-5xl">
-              {info.title}
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-white/68 md:text-base">
-              {info.description}
-            </p>
+        {/* Immersive category banner */}
+        <section className="px-4 pt-4 sm:px-6 lg:px-10">
+          <div className="relative mx-auto min-h-[340px] max-w-[1440px] overflow-hidden rounded-[2.5rem] bg-ink text-white md:min-h-[420px]">
+            <img
+              src={banner.image}
+              alt=""
+              className={cn('absolute inset-0 h-full w-full object-cover animate-ken-burns', banner.position)}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/40 to-black/5" />
+            <div className="relative flex min-h-[340px] flex-col justify-end p-7 sm:p-10 md:min-h-[420px] md:p-14">
+              <nav className="mb-5 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-white/70">
+                <Link to="/" className="hover:text-white">Home</Link>
+                <span>/</span>
+                <span className="text-white">{info.title}</span>
+              </nav>
+              <h1 className="max-w-3xl font-display text-5xl leading-[0.95] tracking-[-0.03em] md:text-7xl">
+                {info.title}
+              </h1>
+              <p className="mt-4 max-w-xl text-base leading-relaxed text-white/80 md:text-lg">{info.description}</p>
+              <div className="mt-7 flex flex-wrap gap-2">
+                {siblingLinks.map((link) => {
+                  const isActive = link.href === `/${category}${subcategory ? `/${subcategory}` : ''}`;
+                  return (
+                    <Link
+                      key={link.href}
+                      to={link.href}
+                      className={cn(
+                        'rounded-full px-4 py-2 text-[13px] font-bold backdrop-blur-md transition-colors',
+                        isActive ? 'bg-white text-ink' : 'border border-white/30 bg-white/10 text-white hover:bg-white/25'
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+            <span className={cn('absolute right-6 top-6 hidden rounded-full px-4 py-2 text-[11px] font-extrabold uppercase tracking-[0.16em] md:inline-flex', banner.chip)}>
+              Made to order · Free delivery
+            </span>
           </div>
-        </div>
+        </section>
 
         {isComingSoonCategory ? (
           <ComingSoon
@@ -385,188 +435,132 @@ const CategoryPage = () => {
             description="We are putting the finishing touches on this collection. Explore our available beds while we prepare these new storage designs."
           />
         ) : (
-        /* Content */
-        <div className="bg-[#f4f4f4] py-7 md:py-12">
-          <div className="luxury-container">
-            {/* Toolbar */}
-            <div className="mb-7 flex items-center justify-between gap-3 border-b border-black/10 pb-5 md:mb-10 md:pb-6">
-              <div className="flex min-w-0 items-center gap-3">
-                <Button
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="h-10 rounded-full border border-black/20 bg-transparent px-4 text-xs font-bold uppercase tracking-[0.08em] text-black shadow-none hover:bg-black hover:text-white lg:hidden"
-                >
-                  <SlidersHorizontal className="h-4 w-4" />
-                  Filters
-                </Button>
-                {loading ? (
-                  <div className="h-4 w-24 animate-pulse rounded-full bg-black/10" aria-hidden="true" />
-                ) : (
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-black/55 md:text-sm">
-                    {filteredProducts.length} products
-                  </p>
-                )}
-              </div>
-              <label className="flex items-center gap-2">
-                <span className="hidden text-xs font-bold uppercase tracking-[0.12em] text-black/45 sm:inline">
-                  Sort
-                </span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  disabled={loading}
-                  className="h-10 rounded-full border border-black/20 bg-white px-4 text-sm font-semibold text-black shadow-sm outline-none transition-colors focus:border-black focus:ring-2 focus:ring-black/10"
-                >
-                  <option value="featured">Featured</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                </select>
-              </label>
-            </div>
-
-            {loading ? <CatalogueSkeleton /> : (
-            <div className="flex gap-5 lg:gap-8">
-              {/* Filters Sidebar */}
-              <aside
-                className={cn(
-                  'fixed inset-0 z-[70] w-full flex-shrink-0 bg-white transition-transform duration-300 lg:sticky lg:inset-auto lg:top-[calc(var(--daily-deal-bar-height)+7rem)] lg:z-10 lg:h-fit lg:max-h-[calc(100vh-var(--daily-deal-bar-height)-8rem)] lg:w-64 lg:self-start lg:overflow-hidden lg:rounded-3xl lg:border lg:border-black/5 lg:bg-white lg:shadow-[0_14px_40px_rgba(0,0,0,0.07)] lg:transition-none',
-                  showFilters ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-                )}
-              >
-                <div className="h-full overflow-y-auto p-6 lg:max-h-[calc(100vh-var(--daily-deal-bar-height)-8rem)] lg:p-6">
-                  {/* Mobile header */}
-                  <div className="mb-8 flex items-center justify-between lg:hidden">
-                    <h2 className="text-2xl font-black text-black">Filters</h2>
-                    <button
-                      onClick={() => setShowFilters(false)}
-                      className="flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-black transition-colors hover:bg-black hover:text-white"
-                      aria-label="Close filters"
-                    >
-                      <X className="h-5 w-5" />
-                    </button>
-                  </div>
-
-                  {/* Color filter - hide for mattresses */}
-                  {availableColors.length > 0 && category !== 'mattresses' && (
-                    <div className=" border-b border-black/10 lg:border-b-0">
-                      <div className="mb-4 flex items-baseline justify-between gap-4">
-                        <h3 className="text-lg font-black text-black">Color</h3>
-                        {selectedColor && (
-                          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-black/50">
-                            {selectedColor}
-                          </p>
-                        )}
-                      </div>
-                      <div className="flex flex-col gap-2">
-                        {availableColors.map((color) => (
-                          <div
+        <div className="px-4 py-8 sm:px-6 md:py-12 lg:px-10">
+          <div className="mx-auto max-w-[1440px]">
+            {/* Toolbar: filters as chips + sort */}
+            <div className="sticky top-[calc(var(--daily-deal-bar-height)+4.5rem)] z-20 -mx-4 mb-8 border-b border-ink/10 bg-[hsl(var(--background)/0.92)] px-4 py-4 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10">
+              <div className="mx-auto flex max-w-[1440px] flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="scrollbar-hide -mx-1 flex items-center gap-2 overflow-x-auto px-1">
+                  {category === 'mattresses' ? (
+                    [
+                      { label: 'All', href: '/mattresses' },
+                      { label: 'Memory Foam', href: '/mattresses/memory-foam' },
+                      { label: 'Orthopaedic', href: '/mattresses/orthopaedic-mattress' },
+                      { label: 'Pocket Sprung', href: '/mattresses/pocket-sprung-mattress' },
+                      { label: 'Pillow Top', href: '/mattresses/pillow-top-mattress' },
+                    ].map((type) => {
+                      const isActive =
+                        (type.href === '/mattresses' && !subcategory) ||
+                        (subcategory && type.href.includes(subcategory));
+                      return (
+                        <Link
+                          key={type.label}
+                          to={type.href}
+                          className={cn(
+                            'shrink-0 rounded-full px-4 py-2.5 text-sm font-bold transition-colors',
+                            isActive ? 'bg-ink text-white' : 'bg-white text-ink/70 ring-1 ring-ink/10 hover:text-ink'
+                          )}
+                        >
+                          {type.label}
+                        </Link>
+                      );
+                    })
+                  ) : (
+                    <>
+                      <span className="mr-1 shrink-0 text-[11px] font-bold uppercase tracking-[0.2em] text-ink/50">Colour</span>
+                      {availableColors.map((color) => {
+                        const active = selectedColor === color.name;
+                        return (
+                          <button
                             key={color.name}
+                            onClick={() => setSelectedColor(active ? null : color.name)}
                             className={cn(
-                              'flex cursor-pointer items-center gap-3 rounded-full px-2 py-1.5 transition-colors',
-                              selectedColor === color.name ? 'bg-black text-white' : 'text-black hover:bg-white'
+                              'flex shrink-0 items-center gap-2 rounded-full py-1.5 pl-1.5 pr-4 text-sm font-bold transition-all',
+                              active ? 'bg-ink text-white' : 'bg-white text-ink/75 ring-1 ring-ink/10 hover:ring-ink/30'
                             )}
-                            onClick={() => setSelectedColor(selectedColor === color.name ? null : color.name)}
+                            aria-pressed={active}
                           >
-                            <button
-
-                              className={cn(
-                                'group relative h-8 w-8 rounded-full border-2 transition-all duration-200 hover:scale-110',
-                                selectedColor === color.name
-                                  ? 'scale-110 border-white ring-2 ring-black ring-offset-2'
-                                  : 'border-black/15 hover:border-black/45'
-                              )}
-                              style={{ backgroundColor: color.hex }}
-                              title={color.name}
-                              aria-label={`Filter by ${color.name}`}
-                            >
-                              {selectedColor === color.name && (
-                                <span className="absolute inset-0 flex items-center justify-center">
-                                  <svg className="h-4 w-4 text-white drop-shadow-md" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </span>
-                              )}
-                            </button>
-                            <p className="text-sm font-semibold">{color.name}</p>
-                          </div>
-                        ))}
-                      </div>
-
-                    </div>
-                  )}
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearFilters}
-                      className="mb-8 inline-flex text-xs font-bold uppercase tracking-[0.12em] text-black/55 underline-offset-4 transition-colors hover:text-black hover:underline"
-                    >
-                      Clear all
-                    </button>
-                  )}
-
-                  {/* Mattress Type filter (for mattresses) */}
-                  {category === 'mattresses' && (
-                    <div className="mb-8">
-                      <h3 className="mb-4 text-lg font-black text-black">Mattress Type</h3>
-                      <div className="space-y-2">
-                        {[
-                          { label: 'All Mattresses', href: '/mattresses' },
-                          { label: 'Memory Foam', href: '/mattresses/memory-foam' },
-                          { label: 'Orthopaedic', href: '/mattresses/orthopaedic-mattress' },
-                          { label: 'Pocket Sprung', href: '/mattresses/pocket-sprung-mattress' },
-                          { label: 'Pillow Top', href: '/mattresses/pillow-top-mattress' },
-                        ].map((type) => {
-                          const isActive =
-                            (type.href === '/mattresses' && !subcategory) ||
-                            (subcategory && type.href.includes(subcategory));
-                          return (
-                            <Link
-                              key={type.label}
-                              to={type.href}
-                              className={cn(
-                                'block w-full rounded-full px-4 py-2.5 text-left text-sm font-semibold transition-colors',
-                                isActive
-                                  ? 'bg-black text-white'
-                                  : 'text-black/60 hover:bg-white hover:text-black'
-                              )}
-                            >
-                              {type.label}
-                            </Link>
-                          );
-                        })}
-                      </div>
-                    </div>
+                            <span className="h-6 w-6 rounded-full ring-2 ring-white" style={{ backgroundColor: color.hex }} />
+                            {color.name}
+                          </button>
+                        );
+                      })}
+                      {hasActiveFilters && (
+                        <button
+                          onClick={clearFilters}
+                          className="flex shrink-0 items-center gap-1 rounded-full px-3 py-2 text-sm font-bold text-terracotta hover:bg-terracotta/10"
+                        >
+                          <X className="h-4 w-4" /> Clear
+                        </button>
+                      )}
+                    </>
                   )}
                 </div>
-              </aside>
-              {/* Products Grid */}
-              <div className="flex-1">
-                {loading ? (
-                  <div className="flex min-h-[420px] items-center justify-center bg-white">
-                    <Loader2 className="h-8 w-8 animate-spin text-black/35" />
-                  </div>
-                ) : filteredProducts.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-3 md:gap-5 xl:grid-cols-3">
-                    {filteredProducts.map((product: any) => (
-                      <ProductCard key={product.id} product={product} selectedColor={selectedColor} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="bg-white px-4 py-20 text-center">
-                    <p className="mb-5 text-2xl font-black text-black">
-                      No products match your filters
-                    </p>
-                    <Button
-                      onClick={clearFilters}
-                      className="rounded-full border border-black bg-transparent px-7 text-xs font-bold uppercase tracking-[0.08em] text-black shadow-none hover:bg-black hover:text-white"
-                    >
-                      Clear Filters
-                    </Button>
-                  </div>
-                )}
 
+                <div className="flex shrink-0 items-center justify-between gap-4">
+                  {loading ? (
+                    <div className="h-4 w-24 animate-pulse rounded-full bg-ink/10" aria-hidden="true" />
+                  ) : (
+                    <p className="text-sm font-semibold text-ink/60">
+                      <span className="font-extrabold text-ink">{filteredProducts.length}</span> designs
+                    </p>
+                  )}
+                  <label className="flex items-center gap-2">
+                    <SlidersHorizontal className="h-4 w-4 text-ink/50" />
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      disabled={loading}
+                      className="h-11 rounded-full border-0 bg-white px-4 text-sm font-bold text-ink shadow-soft outline-none ring-1 ring-ink/10 focus:ring-2 focus:ring-terracotta"
+                    >
+                      <option value="featured">Featured</option>
+                      <option value="price-low">Price: Low to High</option>
+                      <option value="price-high">Price: High to Low</option>
+                      <option value="rating">Highest Rated</option>
+                    </select>
+                  </label>
+                </div>
               </div>
             </div>
+
+            {loading ? (
+              <CatalogueSkeleton />
+            ) : filteredProducts.length > 0 ? (
+              <div className="grid grid-cols-2 gap-x-3 gap-y-10 md:gap-x-5 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredProducts.map((product: any, i: number) => (
+                  <Fragment key={product.id}>
+                    <ProductCard product={product} selectedColor={selectedColor} />
+                    {i === 4 && filteredProducts.length > 7 && (
+                      <Link
+                        to="/beds/divan-beds"
+                        className="group relative col-span-2 flex min-h-[320px] flex-col justify-between overflow-hidden rounded-[1.75rem] bg-saffron p-7 md:p-9"
+                      >
+                        <div className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-terracotta/40 blur-2xl transition-transform duration-700 group-hover:scale-125" />
+                        <p className="relative w-fit rounded-full bg-ink px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.2em] text-saffron">Today only</p>
+                        <div className="relative">
+                          <p className="font-display text-6xl leading-[0.9] text-ink md:text-7xl">
+                            25% <em className="italic">off</em>
+                          </p>
+                          <p className="mt-3 max-w-xs text-ink/75">Every bed, every fabric. Use code <b>SOMNE25</b> at checkout.</p>
+                        </div>
+                        <span className="relative inline-flex w-fit items-center gap-2 rounded-full bg-ink px-5 py-3 text-xs font-bold uppercase tracking-[0.14em] text-white">
+                          Shop the sale <ArrowUpRight className="h-4 w-4" />
+                        </span>
+                      </Link>
+                    )}
+                  </Fragment>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-[2rem] bg-white px-4 py-20 text-center">
+                <p className="mb-5 font-display text-3xl text-ink">No designs match your filters</p>
+                <Button
+                  onClick={clearFilters}
+                  className="rounded-full bg-ink px-7 text-xs font-bold uppercase tracking-[0.12em] text-white hover:bg-terracotta"
+                >
+                  Clear filters
+                </Button>
+              </div>
             )}
           </div>
         </div>
