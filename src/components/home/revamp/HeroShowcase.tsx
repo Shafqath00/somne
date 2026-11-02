@@ -85,13 +85,13 @@ export function HeroShowcase() {
             }}
             className="max-w-2xl"
           >
-            <motion.p
+            {/* <motion.p
               variants={{ hidden: { opacity: 0, y: 14 }, show: { opacity: 1, y: 0 } }}
               className="mb-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.24em] backdrop-blur-md"
             >
               <span className={cn('h-2 w-2 rounded-full', slide.accent)} />
               {slide.eyebrow}
-            </motion.p>
+            </motion.p> */}
             <h1 className="font-display text-[3.4rem] font-normal leading-[0.92] tracking-[-0.04em] sm:text-7xl lg:text-[6.5rem]">
               {slide.title.map((word, i) => (
                 <motion.span
@@ -150,7 +150,7 @@ export function HeroShowcase() {
         </Link>
 
         {/* Slide progress + rating */}
-        <div className="absolute inset-x-5 bottom-8 flex items-center justify-between gap-6 sm:inset-x-8 lg:inset-x-12">
+        <div className="absolute inset-x-5 bottom-16 flex items-center justify-between gap-6 sm:inset-x-8 sm:bottom-14 lg:inset-x-12">
           <div className="flex flex-1 gap-2 md:max-w-xs">
             {SLIDES.map((s, i) => (
               <button
@@ -172,7 +172,7 @@ export function HeroShowcase() {
               </button>
             ))}
           </div>
-          <div className="hidden items-center gap-2 text-sm text-white/85 sm:flex">
+          <div className="flex items-center gap-2 text-sm text-white/85">
             <span className="flex">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-saffron text-saffron" />

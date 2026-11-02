@@ -757,7 +757,7 @@ const ProductPage = () => {
                         </>
                       )}
                     </div>
-                    <p className="mt-2 text-sm text-ink/60">or 3 interest-free payments of <b className="text-ink">£{(totalPrice / 3).toFixed(2)}</b> with Klarna</p>
+                    {/* <p className="mt-2 text-sm text-ink/60">or 3 interest-free payments of <b className="text-ink">£{(totalPrice / 3).toFixed(2)}</b> with Klarna</p> */}
                   </div>
 
                   {/* Price (right panel, hidden on mobile since it's now under the title) */}

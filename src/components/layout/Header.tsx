@@ -165,7 +165,7 @@ export function Header() {
                 <div className="col-span-3 flex flex-col justify-end gap-4 border-l border-ink/10 pl-10 text-sm text-ink/70">
                   <p className="flex items-center gap-3"><Truck className="h-5 w-5 text-jade" /> Free UK mainland delivery</p>
                   <p className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-royal" /> 5-year frame warranty</p>
-                  <p className="font-display text-xl italic text-ink">Handmade in the UK, in 19 fabrics.</p>
+                  <p className="font-display text-xl italic text-ink">Handmade in the UK.</p>
                 </div>
                 {navFeatures[item.label] && (
                   <Link

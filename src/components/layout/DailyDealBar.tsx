@@ -61,7 +61,7 @@ export function DailyDealBar() {
     'Handmade in Britain',
     '5-year frame warranty',
     'Spread the cost with Klarna',
-    '19 velvet & chenille fabrics',
+    // '19 velvet & chenille fabrics',
   ];
 
   return (
