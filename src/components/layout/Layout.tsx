@@ -6,6 +6,7 @@ import { CartDrawer } from '@/components/cart/CartDrawer';
 import { MobileMenuProvider } from '@/contexts/MobileMenuContext';
 import { cn } from '@/lib/utils';
 import { DailyDealBar } from './DailyDealBar';
+import { WhatsAppButton } from './WhatsAppButton';
 
 interface LayoutProps {
   children: ReactNode;
@@ -17,18 +18,19 @@ export function Layout({ children }: LayoutProps) {
 
   return (
     <MobileMenuProvider>
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-background">
         <DailyDealBar />
         <Header />
         <main
           className={cn(
             'flex-1',
-            !isHomePage && 'pt-[calc(var(--daily-deal-bar-height)+6rem)]',
+            !isHomePage && 'pt-[calc(var(--daily-deal-bar-height)+4.5rem)]',
           )}
         >
           {children}
         </main>
         <Footer />
+        <WhatsAppButton />
         <CartDrawer />
       </div>
     </MobileMenuProvider>

@@ -56,43 +56,50 @@ export function DailyDealBar() {
     }
   };
 
+  const messages = [
+    'Free UK mainland delivery',
+    'Handmade in Britain',
+    '5-year frame warranty',
+    // 'Spread the cost with Klarna',
+    // '19 velvet & chenille fabrics',
+  ];
+
   return (
-    <div className="fixed inset-x-0 top-0 z-[60] h-[var(--daily-deal-bar-height)] bg-black border-b border-white/10 flex items-center">
-      <div className="mx-auto flex w-full max-w-7xl items-center justify-center gap-3 px-4 flex-wrap sm:flex-nowrap sm:gap-5">
-
-        {/* Message */}
-        <p className="text-[11px] sm:text-[15px] uppercase tracking-[0.18em] text-white/80 font-bold whitespace-nowrap">
-          25% off sitewide — ends in
-        </p>
-
-        {/* Countdown */}
-        <div className="flex items-center gap-1 font-mono tabular-nums text-[13px] sm:text-[15px] text-white font-bold" aria-label="Offer ends in">
-          <span>{pad(timeLeft.hours)}</span>
-          <span className="text-white/30 mx-0.5">:</span>
-          <span>{pad(timeLeft.minutes)}</span>
-          <span className="text-white/30 mx-0.5">:</span>
-          <span>{pad(timeLeft.seconds)}</span>
-        </div>
-
-        {/* Separator */}
-        <span className="hidden sm:block h-3.5 w-px bg-white/15" />
-
-        {/* Code */}
+    <div className="fixed inset-x-0 top-0 z-[60] flex h-[var(--daily-deal-bar-height)] items-center overflow-hidden bg-gradient-to-r from-plum via-terracotta-deep to-terracotta text-white">
+      {/* Offer + countdown + code */}
+      <div className="relative z-10 flex h-full shrink-0 items-center gap-2.5 bg-ink px-3 sm:gap-4 sm:px-5">
+        <span className="hidden text-[11px] font-bold uppercase tracking-[0.18em] text-saffron sm:inline">25% off beds</span>
+        <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-saffron sm:hidden">25% off</span>
+        <span className="flex items-center gap-0.5 font-mono text-[12px] font-bold tabular-nums" aria-label="Offer ends in">
+          {[timeLeft.hours, timeLeft.minutes, timeLeft.seconds].map((v, i) => (
+            <span key={i} className="flex items-center">
+              {i > 0 && <span className="mx-0.5 text-white/40">:</span>}
+              <span className="rounded bg-white/10 px-1 py-0.5">{pad(v)}</span>
+            </span>
+          ))}
+        </span>
         <button
           type="button"
           onClick={copyDealCode}
-          className="inline-flex items-center gap-1.5 text-[11px] sm:text-[15px] uppercase tracking-[0.18em] font-bold transition-colors duration-150 focus:outline-none"
+          className="inline-flex items-center gap-1.5 rounded-full bg-saffron px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-ink transition-transform hover:scale-105"
           aria-label={`Copy deal code ${DEAL_CODE}`}
         >
-          <span className={copied ? 'text-white/50' : 'text-white'}>
-            {DEAL_CODE}
-          </span>
-          {copied
-            ? <Check className="h-3 w-3 text-white/50" />
-            : <Copy className="h-3 w-3 text-white/40" />
-          }
+          {DEAL_CODE}
+          {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
         </button>
+        <span className="absolute -right-3 top-0 h-full w-3 bg-gradient-to-r from-ink to-transparent" aria-hidden />
+      </div>
 
+      {/* Scrolling USPs */}
+      <div className="relative flex-1 overflow-hidden">
+        <div className="flex w-max animate-marquee items-center motion-reduce:animate-none">
+          {[...messages, ...messages, ...messages, ...messages].map((m, i) => (
+            <span key={i} className="flex items-center gap-6 px-6 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/90">
+              {m}
+              <span className="h-1 w-1 rounded-full bg-saffron" aria-hidden />
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );

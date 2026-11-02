@@ -14,8 +14,9 @@ export default {
     },
     extend: {
       fontFamily: {
-        serif: ["Inter", "system-ui", "sans-serif"],
-        sans: ["Inter", "system-ui", "sans-serif"],
+        serif: ["Fraunces", "Georgia", "serif"],
+        display: ["Fraunces", "Georgia", "serif"],
+        sans: ["Manrope", "system-ui", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -75,6 +76,24 @@ export default {
           dark: "hsl(var(--gold-dark))",
         },
         charcoal: "hsl(var(--charcoal))",
+        ink: {
+          DEFAULT: "hsl(var(--ink))",
+          soft: "hsl(var(--ink-soft))",
+        },
+        terracotta: {
+          DEFAULT: "hsl(var(--terracotta))",
+          deep: "hsl(var(--terracotta-deep))",
+        },
+        jade: {
+          DEFAULT: "hsl(var(--emerald))",
+          bright: "hsl(var(--emerald-bright))",
+        },
+        saffron: "hsl(var(--saffron))",
+        blush: "hsl(var(--blush))",
+        royal: "hsl(var(--royal))",
+        lilac: "hsl(var(--lilac))",
+        sage: "hsl(var(--sage))",
+        plum: "hsl(var(--plum))",
         "warm-white": "hsl(var(--warm-white))",
       },
       borderRadius: {
@@ -103,6 +122,18 @@ export default {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
+        "ken-burns": {
+          from: { transform: "scale(1.08)" },
+          to: { transform: "scale(1)" },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -110,6 +141,9 @@ export default {
         "slide-in-right": "slide-in-right 0.3s ease-out",
         "slide-out-right": "slide-out-right 0.3s ease-out",
         shimmer: "shimmer 2s infinite linear",
+        marquee: "marquee 38s linear infinite",
+        "ken-burns": "ken-burns 9s ease-out forwards",
+        float: "float 5s ease-in-out infinite",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

@@ -1,5 +1,5 @@
-/* Inter (clean, bold) - include common weights */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
+/* Fraunces (display serif) + Manrope (UI/body); Inter kept for legacy admin screens */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..800;1,9..144,300..800&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap');
 /* Great Vibes for Spring Sale */
 @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
 
@@ -9,72 +9,78 @@
 
 @layer base {
   :root {
-    /* Luxury Color Palette */
-    --background: 40 33% 96%;
-    --foreground: 220 30% 15%;
+    /* Somne jewel palette: warm ivory canvas, deep ink type, saturated accents */
+    --background: 36 50% 97%;
+    --foreground: 252 32% 12%;
 
-    --card: 40 30% 98%;
-    --card-foreground: 220 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 252 32% 12%;
 
-    --popover: 40 30% 98%;
-    --popover-foreground: 220 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 252 32% 12%;
 
-    /* Deep Navy Primary */
-    --primary: 225 35% 18%;
-    --primary-foreground: 40 30% 96%;
+    --primary: 252 32% 12%;
+    --primary-foreground: 36 50% 97%;
 
-    /* Warm Cream Secondary */
-    --secondary: 35 30% 92%;
-    --secondary-foreground: 220 30% 15%;
+    --secondary: 30 45% 93%;
+    --secondary-foreground: 252 32% 12%;
 
-    /* Muted Tones */
-    --muted: 35 20% 90%;
-    --muted-foreground: 220 15% 45%;
+    --muted: 30 30% 92%;
+    --muted-foreground: 252 10% 40%;
 
-    /* Gold Accent */
-    --accent: 42 55% 58%;
-    --accent-foreground: 220 30% 15%;
+    --accent: 12 76% 56%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 40 30% 96%;
+    --destructive: 0 78% 52%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 35 20% 85%;
-    --input: 35 20% 85%;
-    --ring: 42 55% 58%;
+    --border: 30 22% 86%;
+    --input: 30 22% 84%;
+    --ring: 12 76% 56%;
 
-    --radius: 0.25rem;
+    --radius: 1rem;
 
-    /* Custom Luxury Colors */
-    --navy: 225 35% 18%;
-    --navy-light: 225 30% 25%;
-    --cream: 40 33% 96%;
-    --cream-dark: 35 25% 90%;
-    --gold: 42 55% 58%;
-    --gold-light: 42 60% 70%;
-    --gold-dark: 42 50% 45%;
-    --charcoal: 220 20% 25%;
-    --warm-white: 40 40% 98%;
-    --daily-deal-bar-height: 5.75rem;
+    --ink: 252 32% 12%;
+    --ink-soft: 252 18% 28%;
+    --terracotta: 12 76% 56%;
+    --terracotta-deep: 10 68% 44%;
+    --emerald: 163 72% 24%;
+    --emerald-bright: 160 64% 38%;
+    --saffron: 40 92% 58%;
+    --blush: 14 78% 92%;
+    --royal: 226 66% 40%;
+    --lilac: 262 60% 92%;
+    --sage: 110 18% 72%;
+    --plum: 318 38% 26%;
 
-    /* Gradients */
-    --gradient-hero: linear-gradient(180deg, hsl(var(--navy)) 0%, hsl(225 30% 22%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(var(--gold)) 0%, hsl(var(--gold-light)) 100%);
+    /* Legacy tokens still referenced by older screens */
+    --navy: 252 32% 12%;
+    --navy-light: 252 18% 28%;
+    --cream: 36 50% 97%;
+    --cream-dark: 30 35% 90%;
+    --gold: 40 92% 58%;
+    --gold-light: 40 92% 72%;
+    --gold-dark: 36 80% 42%;
+    --charcoal: 252 18% 22%;
+    --warm-white: 36 60% 98%;
+    --daily-deal-bar-height: 2.5rem;
+
+    --gradient-hero: linear-gradient(180deg, hsl(var(--ink)) 0%, hsl(252 30% 18%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(var(--saffron)) 0%, hsl(var(--terracotta)) 100%);
     --gradient-cream: linear-gradient(180deg, hsl(var(--cream)) 0%, hsl(var(--cream-dark)) 100%);
 
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -2px hsl(220 30% 15% / 0.08);
-    --shadow-medium: 0 8px 30px -4px hsl(220 30% 15% / 0.12);
-    --shadow-gold: 0 4px 20px -2px hsl(42 55% 58% / 0.3);
+    --shadow-soft: 0 6px 24px -8px hsl(252 32% 12% / 0.12);
+    --shadow-medium: 0 18px 40px -16px hsl(252 32% 12% / 0.22);
+    --shadow-gold: 0 10px 30px -10px hsl(12 76% 56% / 0.45);
 
-    /* Sidebar */
-    --sidebar-background: 40 30% 98%;
-    --sidebar-foreground: 220 30% 15%;
-    --sidebar-primary: 225 35% 18%;
-    --sidebar-primary-foreground: 40 30% 96%;
-    --sidebar-accent: 35 30% 92%;
-    --sidebar-accent-foreground: 220 30% 15%;
-    --sidebar-border: 35 20% 85%;
-    --sidebar-ring: 42 55% 58%;
+    --sidebar-background: 36 50% 98%;
+    --sidebar-foreground: 252 32% 12%;
+    --sidebar-primary: 252 32% 12%;
+    --sidebar-primary-foreground: 36 50% 97%;
+    --sidebar-accent: 30 45% 93%;
+    --sidebar-accent-foreground: 252 32% 12%;
+    --sidebar-border: 30 22% 86%;
+    --sidebar-ring: 12 76% 56%;
   }
 
   .dark {
@@ -127,7 +133,7 @@
   html {
     scroll-behavior: smooth;
     /* make Inter the default on the root as well */
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    font-family: 'Manrope', ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   }
 
   body {
@@ -140,13 +146,13 @@
 
   @media (min-width: 640px) {
     :root {
-      --daily-deal-bar-height: 3.5rem;
+      --daily-deal-bar-height: 2.5rem;
     }
   }
 
   @media (min-width: 768px) {
     :root {
-      --daily-deal-bar-height: 3rem;
+      --daily-deal-bar-height: 2.5rem;
     }
   }
 
@@ -157,11 +163,11 @@
   h4,
   h5,
   h6 {
-    font-family: inherit;
-    font-weight: 800;
-    /* very bold headings */
-    letter-spacing: -0.02em;
-    line-height: 1.05;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
+    font-variation-settings: 'opsz' 96;
+    letter-spacing: -0.025em;
+    line-height: 1.04;
   }
 
   /* strong text & buttons */
@@ -187,8 +193,8 @@
 
   /* use Inter with bold / medium weights depending on role */
   .luxury-heading {
-    font-family: inherit;
-    font-weight: 800;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
     /* big & bold */
     font-size: 2.25rem;
     /* 36px */
@@ -197,8 +203,8 @@
   }
 
   .luxury-subheading {
-    font-family: inherit;
-    font-weight: 700;
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 500;
     font-size: 1.5rem;
     /* 24px */
     letter-spacing: -0.01em;
@@ -210,7 +216,7 @@
     font-size: 1rem;
     /* 16px */
     line-height: 1.6;
-    color: black;
+    color: hsl(var(--ink));
   }
 
   .gold-underline {

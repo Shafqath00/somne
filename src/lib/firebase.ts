@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+import { getAnalytics, type Analytics } from "firebase/analytics";
 import { getStorage } from "firebase/storage";
 import { getAuth } from "firebase/auth";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -25,6 +25,7 @@ if (import.meta.env.DEV && !firebaseConfig.apiKey) {
 
 // Initialize Firebase  
 export const app = initializeApp(firebaseConfig);
-export const analytics = getAnalytics(app);
+// Analytics throws without a projectId, so only start it when config is present
+export const analytics: Analytics | null = firebaseConfig.projectId ? getAnalytics(app) : null;
 export const storage = getStorage(app);
 export const auth = getAuth(app);

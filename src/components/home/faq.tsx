@@ -59,34 +59,40 @@ const faqs = [
 
 export function FAQSection() {
     return (
-        <section className="bg-white py-10 md:py-14">
-            <div className="luxury-container">
-                <div className="mb-8 text-center md:mb-16">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-black/60 md:mb-3 md:text-sm">Need to know</p>
-                    <h2 className="text-2xl font-black text-foreground md:text-5xl">Frequently asked questions</h2>
-                    <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground md:mt-4 md:text-base">
-                        Everything you need to know about our products and delivery.
+        <section className="bg-lilac/50 px-4 py-20 sm:px-6 md:py-28 lg:px-10">
+            <div className="mx-auto grid max-w-[1440px] gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+                <div className="lg:sticky lg:top-40 lg:self-start">
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-[0.26em] text-terracotta">Need to know</p>
+                    <h2 className="font-display text-4xl leading-[0.98] text-ink md:text-6xl">
+                        Questions, <em className="italic text-terracotta">answered.</em>
+                    </h2>
+                    <p className="mt-5 max-w-sm text-ink/65">
+                        Everything you need to know about our beds, delivery and warranty. Still curious? We're one message away.
                     </p>
+                    <a
+                        href="mailto:contact@somne.co.uk"
+                        className="mt-8 inline-flex rounded-full bg-ink px-7 py-4 text-sm font-bold uppercase tracking-[0.12em] text-white transition-colors hover:bg-terracotta"
+                    >
+                        Ask the team
+                    </a>
                 </div>
 
-                <div className="max-w-3xl mx-auto">
-                    <Accordion type="single" collapsible className="w-full space-y-3 md:space-y-4">
-                        {faqs.map((faq, index) => (
-                            <AccordionItem
-                                key={index}
-                                value={`item-${index}`}
-                                className="rounded-2xl border border-gray-300 bg-white px-5 shadow-sm transition-all data-[state=open]:ring-2 data-[state=open]:ring-gray-100 md:rounded-lg md:px-6"
-                            >
-                                <AccordionTrigger className="py-5 text-left text-base font-semibold text-foreground/90 hover:no-underline md:py-6 md:text-lg">
-                                    {faq.question}
-                                </AccordionTrigger>
-                                <AccordionContent className="pb-5 text-sm leading-relaxed text-muted-foreground md:pb-6 md:text-base">
-                                    {faq.answer}
-                                </AccordionContent>
-                            </AccordionItem>
-                        ))}
-                    </Accordion>
-                </div>
+                <Accordion type="single" collapsible className="w-full space-y-3">
+                    {faqs.map((faq, index) => (
+                        <AccordionItem
+                            key={index}
+                            value={`item-${index}`}
+                            className="rounded-3xl border-0 bg-white px-6 shadow-soft transition-all data-[state=open]:shadow-medium md:px-8"
+                        >
+                            <AccordionTrigger className="py-6 text-left font-display text-lg text-ink hover:no-underline md:text-xl">
+                                {faq.question}
+                            </AccordionTrigger>
+                            <AccordionContent className="pb-6 text-[15px] leading-relaxed text-ink/70">
+                                {faq.answer}
+                            </AccordionContent>
+                        </AccordionItem>
+                    ))}
+                </Accordion>
             </div>
         </section>
     )

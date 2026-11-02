@@ -44,7 +44,7 @@ export const navigationItems: NavItem[] = [
 ];
 
 export const navigationItems2: NavItem[] = [
-  { label: 'Headboards', href: '/headboards' },
+  // { label: 'Headboards', href: '/headboards' },
   {
     label: 'Panels', href: '/product/bathroom-pvc-wall-panels-pack-of-4', children: [
       { label: 'Bathroom Panels', href: '/product/bathroom-pvc-wall-panels-pack-of-4' },

@@ -1,422 +1,283 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Menu, X, ShoppingBag, ChevronDown } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { createPortal } from 'react-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, ShoppingBag, ChevronDown, Search, User, Heart, ArrowUpRight, Truck, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
 import { useMobileMenu } from '@/contexts/MobileMenuContext';
 import { navigationItems, navigationItems2 } from '@/data';
+import { navFeatures } from '@/data/revamp';
 import { cn } from '@/lib/utils';
+
+const LOGO_DOTS = ['bg-terracotta', 'bg-saffron', 'bg-jade', 'bg-royal', 'bg-plum'];
+
+export function SomneLogo({ className, light }: { className?: string; light?: boolean }) {
+  return (
+    <span className={cn('inline-flex items-end gap-1.5 leading-none', className)}>
+      <span
+        className={cn(
+          'font-display text-[1.9rem] font-semibold italic tracking-[-0.04em] transition-colors md:text-[3.15rem]',
+          light ? 'text-white' : 'text-ink'
+        )}
+      >
+        somne
+      </span>
+      <span className="mb-[0.42rem] flex gap-[3px]" aria-hidden>
+        {LOGO_DOTS.map((c) => (
+          <span key={c} className={cn('h-[8px] w-[8px] rounded-full', c)} />
+        ))}
+      </span>
+    </span>
+  );
+}
 
 export function Header() {
   const { isMenuOpen, setIsMenuOpen } = useMobileMenu();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [expandedItem, setExpandedItem] = useState<string | null>(null);
   const { toggleCart, itemCount } = useCart();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
 
-  // Logo rotation state
-  const logos = [
-    '/img/logo/logo1.png',
-    '/img/logo/logo2.png',
-    '/img/logo/logo3.png',
-    '/img/logo/logo4.png', // Placeholder for Gold
-    '/img/logo/logo5.png', // Placeholder for Black
-  ];
-  const [currentLogoIndex, setCurrentLogoIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-
-  // Rotate logos every 10 seconds
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      setTimeout(() => {
-        setCurrentLogoIndex((prevIndex) => (prevIndex + 1) % logos.length);
-        setIsAnimating(false);
-      }, 300); // Duration of exit animation
-    }, 10000); // 10 seconds
-
-    return () => clearInterval(interval);
-  }, [logos.length]);
-
-  // Scroll detection
   const [hasScrolled, setHasScrolled] = useState(false);
-
   useEffect(() => {
-    const handleScroll = () => {
-      setHasScrolled(window.scrollY > 0);
-    };
-
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => setHasScrolled(window.scrollY > 24);
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    setActiveDropdown(null);
+    setIsMenuOpen(false);
+  }, [location.pathname, setIsMenuOpen]);
+
+  // Over the homepage hero the header is transparent with light text
+  const solid = !isHome || hasScrolled || activeDropdown !== null;
+  const allItems = [...navigationItems, ...navigationItems2];
+
   return (
-    <header className={cn(
-      "fixed left-3 right-3 top-[calc(var(--daily-deal-bar-height)+0.75rem)] z-50 rounded-full border bg-white transition-all duration-300 md:left-1/2 md:right-auto md:top-[calc(var(--daily-deal-bar-height)+1rem)] md:w-[95%] md:max-w-7xl md:-translate-x-1/2",
-      hasScrolled ? "top-[calc(var(--daily-deal-bar-height)+0.5rem)] shadow-lg md:top-[calc(var(--daily-deal-bar-height)+0.75rem)]" : "shadow-md"
-    )}>
-      {/* Main header */}
-      <div className="px-6 md:px-8 relative">
-        <div className="flex items-center justify-between h-16 md:h-20 w-full">
-          {/* Mobile menu button */}
+    <header
+      className={cn(
+        'fixed inset-x-0 top-[var(--daily-deal-bar-height)] transition-all duration-500',
+        isMenuOpen ? 'z-[70]' : 'z-50',
+        solid
+          ? 'border-b border-ink/5 bg-[hsl(var(--background)/0.92)] shadow-[0_8px_30px_-20px_rgba(20,16,40,0.35)] backdrop-blur-xl'
+          : 'bg-gradient-to-b from-black/45 to-transparent'
+      )}
+      onMouseLeave={() => setActiveDropdown(null)}
+    >
+      <div className="mx-auto grid h-[4.5rem] max-w-[1440px] grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:px-6 lg:grid-cols-[auto_1fr_auto] lg:px-10">
+        {/* Left: menu toggle (mobile) / logo (desktop) */}
+        <div className="flex items-center">
           <button
-            className="lg:hidden p-2 -ml-2"
+            className={cn('-ml-2 rounded-full p-2 lg:hidden', solid ? 'text-ink' : 'text-white')}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
           >
-            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            <Menu className="h-6 w-6" />
           </button>
-
-          {/* Logo (Left) */}
-          <Link to="/" className="flex-shrink-0 flex items-center flex-col relative overflow-hidden translate-y-1">
-            <h1
-              key={currentLogoIndex}
-              className={`text-4xl font-black transition-all duration-300  ease-out ${isAnimating
-                ? 'opacity-0 translate-y-full'
-                : 'opacity-100 translate-y-0 animate-slide-down-logo'
-                }`}
-              style={
-                {
-                  color: [
-                    'hsl(var(--primary))', // 0
-                    '#C0C0C0',             // 1
-                    '#0466c8',                    // 2 (Handled above)
-                    '#F5E7C6',             // 3
-                    '#005F02'              // 4
-                  ][currentLogoIndex] || 'hsl(var(--primary))'
-                }
-              }
-            >
-              SOMNE
-            </h1>
-            <div className="flex justify-between items-start w-full h-6 ">
-              {[
-                'bg-primary', // 0
-                'bg-[#C0C0C0]', // 1
-                'bg-[#0466c8]', // 2
-                'bg-[#F5E7C6]', // 3
-                'bg-[#005F02]'  // 4
-              ].map((colorClass, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center flex-1 group cursor-pointer"
-                  onClick={(e) => {
-                    e.preventDefault(); // Prevent link navigation
-                    if (currentLogoIndex === index) return;
-                    setIsAnimating(true);
-                    setTimeout(() => {
-                      setCurrentLogoIndex(index);
-                      setIsAnimating(false);
-                    }, 300);
-                  }}
-                >
-                  <div className={`w-full h-2 ${colorClass} transition-all duration-300 rounded-sm`} />
-                  <div className={`w-1 h-1 ${colorClass} rounded-full mt-1 transition-all duration-300 ${currentLogoIndex === index ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`} />
-                </div>
-              ))}
-            </div>
+          <Link to="/" aria-label="Somne home" className="hidden lg:block">
+            <SomneLogo light={!solid} />
           </Link>
-          {/* Desktop navigation (Center) */}
-          <nav className="hidden lg:flex items-center justify-center gap-6 absolute left-1/2 -translate-x-1/2">
-            {[...navigationItems, ...navigationItems2].map((item) => (
-              <div
-                key={item.href}
-                className="relative group"
-                onMouseEnter={() => setActiveDropdown(item.label)}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                {item.children ? (
-                  <span className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-gray-500 transition-colors cursor-pointer py-2">
-                    {item.label}
-                    <ChevronDown className="h-3 w-3" />
-                  </span>
-                ) : (
-                  <Link
-                    to={item.href}
-                    className="flex items-center gap-1 text-sm font-sans tracking-wide text-foreground hover:text-gray-500 transition-colors py-2"
-                  >
-                    {item.label}
-                  </Link>
-                )}
+        </div>
 
-                {/* Dropdown */}
-                {item.children && activeDropdown === item.label && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 pt-4 animate-fade-in">
-                    <div className="bg-white shadow-xl rounded-2xl overflow-hidden min-w-[200px] border border-gray-100 p-2">
-                      {item.children.map((child) => (
-                        <Link
-                          key={child.href}
-                          to={child.href}
-                          className="block px-4 py-2 text-sm font-sans text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                        >
-                          {child.label}
-                        </Link>
-                      ))}
-                    </div>
-                  </div>
-                )}
+        {/* Centre: logo (mobile) / primary nav (desktop) */}
+        <div className="flex justify-center">
+          <Link to="/" aria-label="Somne home" className="lg:hidden">
+            <SomneLogo light={!solid} />
+          </Link>
+          <nav className="hidden items-center gap-0.5 lg:flex">
+            {allItems.map((item) => (
+              <div key={item.href} onMouseEnter={() => setActiveDropdown(item.children ? item.label : null)}>
+                <Link
+                  to={item.href}
+                  className={cn(
+                    'group relative flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-2 text-[13px] font-semibold tracking-wide transition-colors xl:px-3.5',
+                    solid ? 'text-ink hover:bg-ink/5' : 'text-white hover:bg-white/10',
+                    activeDropdown === item.label && (solid ? 'bg-ink/5' : 'bg-white/10')
+                  )}
+                >
+                  {item.label}
+                  {item.children && (
+                    <ChevronDown
+                      className={cn('h-3.5 w-3.5 transition-transform duration-300', activeDropdown === item.label && 'rotate-180')}
+                    />
+                  )}
+                </Link>
               </div>
             ))}
           </nav>
+        </div>
 
-
-          {/* Mobile Cart button */}
-          <button
-            onClick={toggleCart}
-            className="relative block lg:hidden p-2 hover:text-gray-500 transition-colors"
-            aria-label="Open cart"
+        {/* Right: utilities */}
+        <div className={cn('flex items-center justify-end gap-0.5', solid ? 'text-ink' : 'text-white')}>
+          <Link
+            to="/beds/divan-beds"
+            className={cn(
+              'mr-2 hidden items-center gap-2 whitespace-nowrap rounded-full px-4 py-2 text-[12px] font-bold uppercase tracking-[0.14em] transition-all xl:inline-flex',
+              solid ? 'bg-ink text-white hover:bg-terracotta' : 'bg-white text-ink hover:bg-saffron'
+            )}
           >
-            <ShoppingBag className="h-6 w-6" />
+            Shop the sale
+            <ArrowUpRight className="h-3.5 w-3.5" />
+          </Link>
+          <button className="hidden rounded-full p-2.5 transition-colors hover:bg-current/10 sm:block" aria-label="Search">
+            <Search className="h-[19px] w-[19px]" />
+          </button>
+          {/* <Link to="/track-order" className="hidden rounded-full p-2.5 sm:block" aria-label="Track your order">
+            <User className="h-[19px] w-[19px]" />
+          </Link> */}
+          {/* <button className="hidden rounded-full p-2.5 md:block" aria-label="Wishlist">
+            <Heart className="h-[19px] w-[19px]" />
+          </button> */}
+          <button onClick={toggleCart} className="relative rounded-full p-2.5" aria-label="Open cart">
+            <ShoppingBag className="h-[21px] w-[21px]" />
             {itemCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-black text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+              <span className="absolute right-0.5 top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-terracotta px-1 text-[10px] font-bold text-white ring-2 ring-background">
                 {itemCount}
               </span>
             )}
           </button>
         </div>
-
-        {/* Desktop Right Icons */}
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 n hidden lg:flex items-center gap-4">
-          <button className="p-2 hover:text-gray-500 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-          </button>
-          <button className="p-2 hover:text-gray-500 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-          </button>
-          <button className="p-2 hover:text-gray-500 transition-colors relative">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg>
-            <span className="absolute 1 top-0 right-0 bg-black text-white text-[10px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
-              0
-            </span>
-          </button>
-          <button
-            onClick={toggleCart}
-            className="relative p-2 hover:text-gray-500 transition-colors"
-            aria-label="Open cart"
-          >
-            <ShoppingBag className="h-5 w-5" />
-            <span className="absolute 1 top-0 right-0 bg-black text-white text-[10px] font-bold w-3.5 h-3.5 rounded-full flex items-center justify-center">
-              {itemCount}
-            </span>
-          </button>
-        </div>
       </div>
 
-      {/* Mobile navigation - Full screen overlay */}
-      <div
+      {/* Desktop mega menu */}
+      {allItems.map((item) =>
+        item.children && activeDropdown === item.label ? (
+          <div key={item.label} className="absolute inset-x-0 top-full hidden animate-fade-in lg:block">
+            <div className="border-t border-ink/5 bg-background shadow-[0_30px_60px_-30px_rgba(20,16,40,0.35)]">
+              <div className="mx-auto grid max-w-[1440px] grid-cols-12 gap-10 px-10 py-10">
+                <div className="col-span-4">
+                  <p className="mb-5 text-[11px] font-bold uppercase tracking-[0.22em] text-terracotta">{item.label}</p>
+                  <ul className="space-y-1">
+                    {item.children.map((child) => (
+                      <li key={child.href}>
+                        <Link
+                          to={child.href}
+                          className="group flex items-center justify-between rounded-xl px-3 py-3 font-display text-2xl text-ink transition-colors hover:bg-white"
+                        >
+                          {child.label}
+                          <ArrowUpRight className="h-5 w-5 -translate-x-2 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="col-span-3 flex flex-col justify-end gap-4 border-l border-ink/10 pl-10 text-sm text-ink/70">
+                  <p className="flex items-center gap-3"><Truck className="h-5 w-5 text-jade" /> Free UK mainland delivery</p>
+                  <p className="flex items-center gap-3"><ShieldCheck className="h-5 w-5 text-royal" /> 5-year frame warranty</p>
+                  <p className="font-display text-xl italic text-ink">Handmade in the UK.</p>
+                </div>
+                {navFeatures[item.label] && (
+                  <Link
+                    to={navFeatures[item.label].href}
+                    className="group relative col-span-5 overflow-hidden rounded-3xl"
+                  >
+                    <img
+                      src={navFeatures[item.label].image}
+                      alt={navFeatures[item.label].title}
+                      className="h-64 w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                    <div className="absolute bottom-5 left-6 right-6 text-white">
+                      <p className="font-display text-3xl">{navFeatures[item.label].title}</p>
+                      <p className="mt-1 text-sm text-white/80">{navFeatures[item.label].caption}</p>
+                    </div>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null
+      )}
+
+      {/* Mobile navigation */}
+      {isMenuOpen && createPortal(<div
+        id="mobile-navigation"
         className={cn(
-          'lg:hidden fixed inset-0 z-[100] transition-all duration-300',
-          isMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          'fixed inset-0 z-[100] transition-all duration-300 lg:hidden',
+          isMenuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
         )}
       >
-        {/* Backdrop */}
+        <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
         <div
           className={cn(
-            "absolute inset-0 z-[100] bg-black/20 backdrop-blur-sm transition-opacity duration-300",
-            isMenuOpen ? 'opacity-100' : 'opacity-0'
-          )}
-          onClick={() => setIsMenuOpen(false)}
-        />
-
-        {/* Menu Panel */}
-        <div
-          className={cn(
-            'absolute inset-y-0 left-0 w-full z-[101] bg-background shadow-2xl transition-transform duration-300 ease-out flex flex-col',
+            'absolute inset-y-0 left-0 z-10 flex w-full max-w-md flex-col bg-background shadow-2xl transition-transform duration-500 ease-out',
             isMenuOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          {/* Header with close button */}
-          <div className="flex items-center justify-between px-6 py-5 border-b border-border">
-            <Link to="/" className="flex-shrink-0 flex items-center flex-col relative overflow-hidden translate-y-1">
-              <h1
-                key={currentLogoIndex}
-                className={`text-6xl font-black transition-all duration-300  ease-out ${isAnimating
-                  ? 'opacity-0 translate-y-full'
-                  : 'opacity-100 translate-y-0 animate-slide-down-logo'
-                  }`}
-                style={
-                  {
-                    color: [
-                      'hsl(var(--primary))', // 0
-                      '#C0C0C0',             // 1
-                      '#0466c8',                    // 2 (Handled above)
-                      '#F5E7C6',             // 3
-                      '#005F02'              // 4
-                    ][currentLogoIndex] || 'hsl(var(--primary))'
-                  }
-                }
-              >
-                SOMNE
-              </h1>
-              <div className="flex justify-between items-start w-full h-6 ">
-                {[
-                  'bg-primary', // 0
-                  'bg-[#C0C0C0]', // 1
-                  'bg-[#0466c8]', // 2
-                  'bg-[#F5E7C6]', // 3
-                  'bg-[#005F02]'  // 4
-                ].map((colorClass, index) => (
-                  <div
-                    key={index}
-                    className="flex flex-col items-center flex-1 group cursor-pointer"
-                    onClick={(e) => {
-                      e.preventDefault(); // Prevent link navigation
-                      if (currentLogoIndex === index) return;
-                      setIsAnimating(true);
-                      setTimeout(() => {
-                        setCurrentLogoIndex(index);
-                        setIsAnimating(false);
-                      }, 300);
-                    }}
-                  >
-                    <div className={`w-full h-2 ${colorClass} transition-all duration-300 rounded-sm`} />
-                    <div className={`w-1 h-1 ${colorClass} rounded-full mt-1 transition-all duration-300 ${currentLogoIndex === index ? 'opacity-100 scale-100' : 'opacity-0 scale-0'}`} />
-                  </div>
-                ))}
-              </div>
-            </Link>
-            <button
-              onClick={() => setIsMenuOpen(false)}
-              className="p-2 -mr-2 hover:bg-secondary rounded-full transition-colors"
-              aria-label="Close menu"
-            >
-              <X className="h-6 w-6" />
+          {/* Header row — always visible, never scrolls */}
+          <div className="flex shrink-0 items-center justify-between border-b border-ink/10 px-5 py-4">
+            <SomneLogo />
+            <button onClick={() => setIsMenuOpen(false)} className="rounded-full bg-ink p-2 text-white" aria-label="Close menu">
+              <X className="h-5 w-5" />
             </button>
           </div>
 
-          {/* Scrollable menu content */}
-          <nav className="flex-1 overflow-y-auto px-6 py-4">
-            {navigationItems.map((item, index) => (
-              <div
-                key={item.href}
-                className={cn(
-                  "border-b border-border/50 animate-in slide-in-from-left duration-300",
-                )}
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
+          {/* Scrollable nav — takes all remaining space between header and promo card */}
+          <nav className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+            {allItems.map((item) => (
+              <div key={item.href} className="border-b border-ink/10">
                 {item.children ? (
-                  // Parent item with children - clickable to toggle dropdown
                   <>
                     <button
                       onClick={() => setExpandedItem(expandedItem === item.label ? null : item.label)}
-                      className="flex items-center justify-between py-4 w-full text-left text-2xl font-serif text-foreground hover:text-primary transition-colors"
+                      className="flex w-full items-center justify-between py-4 font-display text-[1.65rem] text-ink"
                     >
                       {item.label}
-                      <ChevronDown
-                        className={cn(
-                          "h-5 w-5 text-muted-foreground transition-transform duration-200",
-                          expandedItem === item.label && "rotate-180"
-                        )}
-                      />
+                      <ChevronDown className={cn('h-5 w-5 transition-transform', expandedItem === item.label && 'rotate-180')} />
                     </button>
                     <div
                       className={cn(
-                        "overflow-hidden transition-all duration-300",
-                        expandedItem === item.label ? "max-h-96 pb-4" : "max-h-0"
+                        'grid transition-all duration-300',
+                        expandedItem === item.label ? 'grid-rows-[1fr] pb-4 opacity-100' : 'grid-rows-[0fr] opacity-0'
                       )}
                     >
-                      <div className="space-y-1">
+                      <div className="overflow-hidden">
+                        {navFeatures[item.label] && (
+                          <Link to={navFeatures[item.label].href} className="relative mb-3 block overflow-hidden rounded-2xl">
+                            <img src={navFeatures[item.label].image} alt="" className="h-36 w-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                            <p className="absolute bottom-3 left-4 font-display text-xl text-white">{navFeatures[item.label].title}</p>
+                          </Link>
+                        )}
                         {item.children.map((child) => (
                           <Link
                             key={child.href}
                             to={child.href}
                             onClick={() => setIsMenuOpen(false)}
-                            className="flex items-center gap-3 py-2.5 pl-4 text-xl font-sans text-muted-foreground hover:text-primary hover:bg-secondary/50 rounded-lg transition-all"
+                            className="flex items-center justify-between py-2.5 text-[15px] font-semibold text-ink/75"
                           >
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary/30" />
                             {child.label}
+                            <ArrowUpRight className="h-4 w-4 text-terracotta" />
                           </Link>
                         ))}
                       </div>
                     </div>
                   </>
                 ) : (
-                  // Simple link without children
                   <Link
                     to={item.href}
                     onClick={() => setIsMenuOpen(false)}
-                    className="flex items-center justify-between py-4 text-2xl font-serif text-foreground hover:text-primary transition-colors"
+                    className="block py-4 font-display text-[1.65rem] text-ink"
                   >
                     {item.label}
                   </Link>
                 )}
               </div>
             ))}
-
-            {/* Secondary navigation items */}
-            <div className="border-border">
-              {navigationItems2.map((item) => (
-                <div
-                  key={item.href}
-                  className="border-b border-border/50 last:border-b-0"
-                >
-                  {item.children ? (
-                    // Parent item with children - clickable to toggle dropdown
-                    <>
-                      <button
-                        onClick={() => setExpandedItem(expandedItem === item.label ? null : item.label)}
-                        className="flex items-center justify-between py-4 w-full text-left text-2xl font-serif text-foreground hover:text-primary transition-colors"
-                      >
-                        {item.label}
-                        <ChevronDown
-                          className={cn(
-                            "h-5 w-5 text-muted-foreground transition-transform duration-200",
-                            expandedItem === item.label && "rotate-180"
-                          )}
-                        />
-                      </button>
-                      <div
-                        className={cn(
-                          "overflow-hidden transition-all duration-300",
-                          expandedItem === item.label ? "max-h-96 pb-4" : "max-h-0"
-                        )}
-                      >
-                        <div className="space-y-1">
-                          {item.children.map((child) => (
-                            <Link
-                              key={child.href}
-                              to={child.href}
-                              onClick={() => setIsMenuOpen(false)}
-                              className="flex items-center gap-3 py-2.5 pl-4 text-xl font-sans text-muted-foreground hover:text-primary hover:bg-secondary/50 rounded-lg transition-all"
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full bg-primary/30" />
-                              {child.label}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    // Simple link without children
-                    <Link
-                      to={item.href}
-                      onClick={() => setIsMenuOpen(false)}
-                      className="flex items-center justify-between py-4 text-2xl font-serif text-foreground hover:text-primary transition-colors"
-                    >
-                      {item.label}
-                    </Link>
-                  )}
-                </div>
-              ))}
-            </div>
           </nav>
 
-          {/* Bottom CTA */}
-          <div className="p-6 border-t border-border bg-secondary/30">
-            <Button
-              variant="hero"
-              size="xl"
-              className="w-full"
-              onClick={() => {
-                setIsMenuOpen(false);
-                toggleCart();
-              }}
-            >
-              <ShoppingBag className="h-5 w-5 mr-2" />
-              View Cart {itemCount > 0 && `(${itemCount})`}
-            </Button>
+          {/* Promo card — always pinned at the bottom, never scrolls away */}
+          <div className="m-5 shrink-0 rounded-3xl bg-gradient-to-br from-terracotta to-plum p-5 text-white">
+            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/80">Today only</p>
+            <p className="mt-1 font-display text-2xl">25% off every bed</p>
+            <p className="mt-1 text-sm text-white/80">Use code <b>SOMNE25</b> at checkout</p>
           </div>
         </div>
-      </div>
+      </div>, document.body)}
     </header>
   );
 }
