@@ -368,7 +368,7 @@ const ProductPage = () => {
           const fr = data.storageOptions.find((s: any) => !s.priceModifier || s.priceModifier === 0);
           setSelectedStorage(nd || fr || data.storageOptions[0]);
         }
-        if (data.headboardOptions?.length > 0) { const fr = data.headboardOptions.find((h: any) => !h.priceModifier || h.priceModifier === 0); setSelectedHeadboard(fr || data.headboardOptions[0]); }
+        // if (data.headboardOptions?.length > 0) { const fr = data.headboardOptions.find((h: any) => !h.priceModifier || h.priceModifier === 0); setSelectedHeadboard(fr || data.headboardOptions[0]); }
         if (data.baseOptions?.length > 0) { const fr = data.baseOptions.find((b: any) => !b.priceModifier || b.priceModifier === 0); setSelectedBase(fr || data.baseOptions[0]); }
         if (data.firmnessOptions?.length > 0) setSelectedFirmness(data.firmnessOptions[0]);
         if (data.coverImage || data.images?.length > 0) setHeroImage(data.coverImage || data.images[0]);
@@ -472,7 +472,7 @@ const ProductPage = () => {
     if (product.sizes?.length > 0) s.push({ key: 'size', label: 'Size', icon: <Ruler className="w-5 h-5 text-stone-200" /> });
     if (product.firmnessOptions?.length > 0) s.push({ key: 'firmness', label: 'Firmness', icon: <Moon className="w-5 h-5 text-stone-200" /> });
     if (product.storageOptions?.length > 0) s.push({ key: 'storage', label: 'Storage', icon: <Archive className="w-5 h-5 text-stone-200" /> });
-    if (product.headboardOptions?.length > 0) s.push({ key: 'headboard', label: 'Headboard', icon: <BedDouble className="w-5 h-5 text-stone-200" /> });
+    // if (product.headboardOptions?.length > 0) s.push({ key: 'headboard', label: 'Headboard', icon: <BedDouble className="w-5 h-5 text-stone-200" /> });
     if (product.baseOptions?.length > 0) s.push({ key: 'base', label: 'Base', icon: <Wrench className="w-5 h-5 text-stone-200" /> });
     return s;
   }, [product]);
@@ -909,7 +909,7 @@ const ProductPage = () => {
                         </div>
                       )}
 
-                      {product.headboardOptions?.length > 0 && (
+                      {/* {product.headboardOptions?.length > 0 && (
                         <div>
                           <p className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.2em] text-ink">Headboard</p>
                           <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 ">
@@ -929,7 +929,7 @@ const ProductPage = () => {
                             })}
                           </div>
                         </div>
-                      )}
+                      )} */}
 
                       {product.baseOptions?.length > 0 && (
                         <div>
@@ -1031,7 +1031,7 @@ const ProductPage = () => {
                         </motion.div>
                       )}
 
-                      {activeAcc === 'headboard' && product.headboardOptions?.length > 0 && (
+                      {/* {activeAcc === 'headboard' && product.headboardOptions?.length > 0 && (
                         <motion.div key="headboard" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
                           <p className="text-[10px] uppercase tracking-[0.18em] text-stone-400 font-semibold mb-3">Headboard</p>
                           <div className="flex flex-wrap gap-4 pt-2 pb-4">
@@ -1043,7 +1043,7 @@ const ProductPage = () => {
                             })}
                           </div>
                         </motion.div>
-                      )}
+                      )} */}
 
                       {activeAcc === 'base' && product.baseOptions?.length > 0 && (
                         <motion.div key="base" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>

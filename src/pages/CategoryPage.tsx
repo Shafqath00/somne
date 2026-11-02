@@ -141,7 +141,7 @@ const BED_LINKS = [
   { label: 'Upholstered', href: '/beds/upholstered-beds' },
   { label: 'Ottoman Divan', href: '/beds/ottoman-divan-beds' },
   { label: 'Upholstered Ottoman', href: '/beds/upholstered-ottoman-bed' },
-  { label: 'Headboards', href: '/headboards' },
+  // { label: 'Headboards', href: '/headboards' },
   { label: 'Mattresses', href: '/mattresses' },
 ];
 

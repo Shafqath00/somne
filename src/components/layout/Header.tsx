@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, ShoppingBag, ChevronDown, Search, User, Heart, ArrowUpRight, Truck, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/contexts/CartContext';
@@ -14,7 +15,7 @@ export function SomneLogo({ className, light }: { className?: string; light?: bo
     <span className={cn('inline-flex items-end gap-1.5 leading-none', className)}>
       <span
         className={cn(
-          'font-display text-[1.9rem] font-semibold italic tracking-[-0.04em] transition-colors md:text-[2.15rem]',
+          'font-display text-[1.9rem] font-semibold italic tracking-[-0.04em] transition-colors md:text-[3.15rem]',
           light ? 'text-white' : 'text-ink'
         )}
       >
@@ -22,7 +23,7 @@ export function SomneLogo({ className, light }: { className?: string; light?: bo
       </span>
       <span className="mb-[0.42rem] flex gap-[3px]" aria-hidden>
         {LOGO_DOTS.map((c) => (
-          <span key={c} className={cn('h-[5px] w-[5px] rounded-full', c)} />
+          <span key={c} className={cn('h-[8px] w-[8px] rounded-full', c)} />
         ))}
       </span>
     </span>
@@ -72,6 +73,8 @@ export function Header() {
             className={cn('-ml-2 rounded-full p-2 lg:hidden', solid ? 'text-ink' : 'text-white')}
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
           >
             <Menu className="h-6 w-6" />
           </button>
@@ -123,12 +126,12 @@ export function Header() {
           <button className="hidden rounded-full p-2.5 transition-colors hover:bg-current/10 sm:block" aria-label="Search">
             <Search className="h-[19px] w-[19px]" />
           </button>
-          <Link to="/track-order" className="hidden rounded-full p-2.5 sm:block" aria-label="Track your order">
+          {/* <Link to="/track-order" className="hidden rounded-full p-2.5 sm:block" aria-label="Track your order">
             <User className="h-[19px] w-[19px]" />
-          </Link>
-          <button className="hidden rounded-full p-2.5 md:block" aria-label="Wishlist">
+          </Link> */}
+          {/* <button className="hidden rounded-full p-2.5 md:block" aria-label="Wishlist">
             <Heart className="h-[19px] w-[19px]" />
-          </button>
+          </button> */}
           <button onClick={toggleCart} className="relative rounded-full p-2.5" aria-label="Open cart">
             <ShoppingBag className="h-[21px] w-[21px]" />
             {itemCount > 0 && (
@@ -191,7 +194,8 @@ export function Header() {
       )}
 
       {/* Mobile navigation */}
-      <div
+      {isMenuOpen && createPortal(<div
+        id="mobile-navigation"
         className={cn(
           'fixed inset-0 z-[100] transition-all duration-300 lg:hidden',
           isMenuOpen ? 'pointer-events-auto opacity-100' : 'pointer-events-none opacity-0'
@@ -200,18 +204,20 @@ export function Header() {
         <div className="absolute inset-0 bg-ink/40 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
         <div
           className={cn(
-            'absolute inset-y-0 left-0 flex w-full max-w-md flex-col bg-background shadow-2xl transition-transform duration-500 ease-out',
+            'absolute inset-y-0 left-0 z-10 flex w-full max-w-md flex-col bg-background shadow-2xl transition-transform duration-500 ease-out',
             isMenuOpen ? 'translate-x-0' : '-translate-x-full'
           )}
         >
-          <div className="flex items-center justify-between border-b border-ink/10 px-5 py-4">
+          {/* Header row — always visible, never scrolls */}
+          <div className="flex shrink-0 items-center justify-between border-b border-ink/10 px-5 py-4">
             <SomneLogo />
             <button onClick={() => setIsMenuOpen(false)} className="rounded-full bg-ink p-2 text-white" aria-label="Close menu">
               <X className="h-5 w-5" />
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-5 py-4">
+          {/* Scrollable nav — takes all remaining space between header and promo card */}
+          <nav className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
             {allItems.map((item) => (
               <div key={item.href} className="border-b border-ink/10">
                 {item.children ? (
@@ -264,13 +270,14 @@ export function Header() {
             ))}
           </nav>
 
-          <div className="m-5 rounded-3xl bg-gradient-to-br from-terracotta to-plum p-5 text-white">
+          {/* Promo card — always pinned at the bottom, never scrolls away */}
+          <div className="m-5 shrink-0 rounded-3xl bg-gradient-to-br from-terracotta to-plum p-5 text-white">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-white/80">Today only</p>
             <p className="mt-1 font-display text-2xl">25% off every bed</p>
             <p className="mt-1 text-sm text-white/80">Use code <b>SOMNE25</b> at checkout</p>
           </div>
         </div>
-      </div>
+      </div>, document.body)}
     </header>
   );
 }

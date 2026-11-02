@@ -415,6 +415,10 @@ export const createDiscount = async (discountData: any) => {
     return adminAxios('POST', '/discounts', discountData);
 };
 
+export const updateDiscount = async (id: string, discountData: any) => {
+    return adminAxios('PUT', `/discounts/${id}`, discountData);
+};
+
 // Admin: Get All Discounts
 export const getAllDiscounts = async () => {
     return adminAxios('GET', '/discounts');

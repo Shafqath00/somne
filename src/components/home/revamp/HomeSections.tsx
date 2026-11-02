@@ -44,13 +44,13 @@ const TRUST = [
   { icon: Truck, title: 'Free delivery', text: 'Across UK mainland', tone: 'bg-jade/10 text-jade' },
   { icon: Factory, title: 'Handmade in UK', text: 'Built to order', tone: 'bg-terracotta/10 text-terracotta' },
   { icon: ShieldCheck, title: '5-year warranty', text: 'On every frame', tone: 'bg-royal/10 text-royal' },
-  { icon: CreditCard, title: 'Pay in 3', text: 'Interest-free with Klarna', tone: 'bg-plum/10 text-plum' },
+ // { icon: CreditCard, title: 'Pay in 3', text: 'Interest-free with Klarna', tone: 'bg-plum/10 text-plum' },
 ];
 
 export function TrustStrip() {
   return (
     <section className="relative z-10 -mt-10 px-4 sm:px-6 lg:px-10">
-      <div className="mx-auto grid max-w-[1440px] grid-cols-2 gap-px overflow-hidden rounded-3xl bg-ink/5 shadow-medium lg:grid-cols-4">
+      <div className="mx-auto grid max-w-[1440px]  gap-px overflow-hidden rounded-3xl bg-ink/5 shadow-medium lg:grid-cols-3">
         {TRUST.map(({ icon: Icon, title, text, tone }) => (
           <div key={title} className="flex items-center gap-3 bg-white px-4 py-5 sm:gap-4 sm:px-6 sm:py-6">
             <span className={cn('flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl', tone)}>

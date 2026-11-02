@@ -8,7 +8,7 @@ const footerLinks = {
     { label: 'Upholstered Beds', href: '/beds/upholstered-beds' },
     { label: 'Ottoman Beds', href: '/beds/ottoman-divan-beds' },
     { label: 'Mattresses', href: '/mattresses' },
-    { label: 'Headboards', href: '/headboards' },
+    // { label: 'Headboards', href: '/headboards' },
     { label: 'Panels', href: '/product/acoustic-wall-panel-pack-of-4' },
   ],
   help: [
@@ -48,7 +48,7 @@ export function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-[1440px] px-4 py-16 sm:px-6 md:py-20 lg:px-10">
+      <div className="mx-auto max-w-[1440px] px-4 py-16 sm:px-6 md:py-20 lg:px-10 pb-0">
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <p className="max-w-sm text-white/65">
@@ -113,7 +113,7 @@ export function Footer() {
 
       {/* Giant wordmark */}
       <div className="overflow-hidden px-4 sm:px-6 lg:px-10" aria-hidden>
-        <p className="mx-auto max-w-[1440px] select-none bg-gradient-to-r from-terracotta via-saffron to-lilac bg-clip-text font-display text-[24vw] font-semibold italic leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[19rem]">
+        <p className="mx-auto text-center max-w-[1440px] select-none bg-gradient-to-r from-terracotta via-saffron to-lilac bg-clip-text font-display text-[24vw] font-semibold italic leading-[0.8] tracking-[-0.06em] text-transparent lg:text-[19rem]">
           somne
         </p>
       </div>

@@ -60,7 +60,7 @@ export function DailyDealBar() {
     'Free UK mainland delivery',
     'Handmade in Britain',
     '5-year frame warranty',
-    'Spread the cost with Klarna',
+    // 'Spread the cost with Klarna',
     // '19 velvet & chenille fabrics',
   ];
 
