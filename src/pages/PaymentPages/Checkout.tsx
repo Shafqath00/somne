@@ -373,7 +373,7 @@ export default function Checkout() {
                                             </div>
                                             <div>
                                                 <p className="font-bold text-black">Standard Delivery</p>
-                                                <p className="text-sm text-black/55">3-5 weeks</p>
+                                                <p className="text-sm text-black/55">3-10 days</p>
                                             </div>
                                         </div>
                                         <span className="text-sm font-black text-black">{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
@@ -393,9 +393,9 @@ export default function Checkout() {
                                                     icon: '/img/icons/delivered1.png',
                                                     date: (() => {
                                                         const start = new Date();
-                                                        start.setDate(start.getDate() + 4);
+                                                        start.setDate(start.getDate() + 2);
                                                         const end = new Date();
-                                                        end.setDate(end.getDate() + 8);
+                                                        end.setDate(end.getDate() + 5);
                                                         return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
                                                     })(),
                                                 },
@@ -404,9 +404,9 @@ export default function Checkout() {
                                                     icon: '/img/icons/shipped1.png',
                                                     date: (() => {
                                                         const start = new Date();
-                                                        start.setDate(start.getDate() + 9);
+                                                        start.setDate(start.getDate() + 3);
                                                         const end = new Date();
-                                                        end.setDate(end.getDate() + 18);
+                                                        end.setDate(end.getDate() + 10);
                                                         return `${start.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${end.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
                                                     })(),
                                                 },
