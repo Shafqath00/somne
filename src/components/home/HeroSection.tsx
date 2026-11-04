@@ -1,17 +1,17 @@
-import { motion, useReducedMotion } from 'framer-motion';
+import { motion, useReducedMotion, type Variants } from 'framer-motion';
 
 const LETTERS = 'SOMNE'.split('');
 
 const TAPE_ITEMS = Array(20).fill(null); // duplicate for seamless loop
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.08, delayChildren: 0.3 },
   },
 };
 
-const letterVariants = {
+const letterVariants: Variants = {
   hidden: { opacity: 0, y: 48, filter: 'blur(12px)' },
   visible: {
     opacity: 1,
@@ -21,7 +21,7 @@ const letterVariants = {
   },
 };
 
-const taglineVariants = {
+const taglineVariants: Variants = {
   hidden: { opacity: 0, y: 16 },
   visible: {
     opacity: 1,
@@ -30,12 +30,12 @@ const taglineVariants = {
   },
 };
 
-const overlayVariants = {
+const overlayVariants: Variants = {
   hidden: { opacity: 0 },
   visible: { opacity: 1, transition: { duration: 1.2, ease: 'easeOut' } },
 };
 
-const tapeVariants = {
+const tapeVariants: Variants = {
   hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
