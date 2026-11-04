@@ -134,6 +134,26 @@ export default {
           "0%, 100%": { transform: "translateY(0)" },
           "50%": { transform: "translateY(-8px)" },
         },
+        "dot-hop": {
+          "0%, 62%, 100%": { transform: "translateY(0) scale(1, 1)" },
+          "10%": { transform: "translateY(0) scale(1.35, 0.62)" },
+          "28%": { transform: "translateY(-1.15em) scale(0.84, 1.22)" },
+          "44%": { transform: "translateY(0) scale(1.28, 0.72)" },
+          "53%": { transform: "translateY(-0.18em) scale(0.96, 1.04)" },
+        },
+        "dot-ring": {
+          "0%, 8%": { transform: "scale(0.6)", opacity: "0" },
+          "14%": { opacity: "0.55" },
+          "50%, 100%": { transform: "scale(2.6)", opacity: "0" },
+        },
+        "loader-breathe": {
+          "0%, 100%": { opacity: "0.55" },
+          "50%": { opacity: "1" },
+        },
+        "loader-in": {
+          from: { opacity: "0", transform: "translateY(8px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -144,6 +164,10 @@ export default {
         marquee: "marquee 38s linear infinite",
         "ken-burns": "ken-burns 9s ease-out forwards",
         float: "float 5s ease-in-out infinite",
+        "dot-hop": "dot-hop 1.5s cubic-bezier(0.33, 0, 0.2, 1) infinite",
+        "dot-ring": "dot-ring 1.5s ease-out infinite",
+        "loader-breathe": "loader-breathe 1.8s ease-in-out infinite",
+        "loader-in": "loader-in 0.5s ease-out both",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",

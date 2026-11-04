@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { Layout } from '@/components/layout/Layout';
+import { SomneLoader } from '@/components/ui/SomneLoader';
 import { HeroShowcase } from '@/components/home/revamp/HeroShowcase';
 import {
   CategoryBento,
@@ -16,11 +17,7 @@ import {
 const TrendingProducts = lazy(() => import('@/components/home/trending').then(module => ({ default: module.TrendingProducts })));
 const FAQSection = lazy(() => import('@/components/home/faq').then(module => ({ default: module.FAQSection })));
 
-const SectionLoader = () => (
-  <div className="flex h-72 items-center justify-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-ink border-t-transparent" />
-  </div>
-);
+const SectionLoader = () => <SomneLoader size="md" className="h-72" />;
 
 const TITLE = 'Somne® Beds & Mattresses UK | Divan & Ottoman Beds Online';
 const DESCRIPTION =
