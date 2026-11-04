@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { SomneLoader } from '@/components/ui/SomneLoader';
 import { useQuery } from '@tanstack/react-query';
 import { ProductCard } from '@/components/products/ProductCard';
 import { getTrendingProducts } from '@/api/api';
@@ -30,9 +31,7 @@ export function TrendingProducts() {
   if (isLoading) {
     return (
       <section className="py-20">
-        <div className="flex justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-ink/30" />
-        </div>
+        <SomneLoader size="md" label="Loading bestsellers" />
       </section>
     );
   }

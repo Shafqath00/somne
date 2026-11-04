@@ -7,8 +7,7 @@ import { useMobileMenu } from '@/contexts/MobileMenuContext';
 import { navigationItems, navigationItems2 } from '@/data';
 import { navFeatures } from '@/data/revamp';
 import { cn } from '@/lib/utils';
-
-const LOGO_DOTS = ['bg-terracotta', 'bg-saffron', 'bg-jade', 'bg-royal', 'bg-plum'];
+import { LOGO_DOTS } from '@/components/ui/SomneLoader';
 
 export function SomneLogo({ className, light }: { className?: string; light?: boolean }) {
   return (

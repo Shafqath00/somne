@@ -10,7 +10,7 @@ import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import ScrollToTop from "./components/layout/ScrollToTop";
-import { Loader2 } from "lucide-react";
+import { SomneLoader } from "@/components/ui/SomneLoader";
 
 // Lazy load pages
 const LoginPage = lazy(() => import("./pages/admin/LoginPage"));
@@ -54,14 +54,7 @@ const queryClient = new QueryClient({
   },
 });
 
-const PageLoader = () => (
-  <div className="h-screen w-full flex items-center justify-center bg-white">
-    <div className="flex flex-col items-center gap-4">
-      <Loader2 className="w-10 h-10 text-primary animate-spin" />
-      <p className="font-serif text-lg text-gray-500">Loading Somne...</p>
-    </div>
-  </div>
-);
+const PageLoader = () => <SomneLoader fullscreen label="Loading" />;
 
 const IS_MAINTENANCE = false; // Set to false to disable maintenance mode
 

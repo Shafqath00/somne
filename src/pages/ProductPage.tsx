@@ -4,10 +4,11 @@ import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import {
   Star, Truck, Shield, Wrench, Minus, Plus, Check,
-  Loader2, Ruler, ChevronLeft, ChevronRight, Sparkles,
+  Ruler, ChevronLeft, ChevronRight, Sparkles,
   Moon, Archive, BedDouble, Maximize, Layers, Share
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SomneLoader } from '@/components/ui/SomneLoader';
 import { Layout } from '@/components/layout/Layout';
 import { TrustStrip } from '@/components/home/revamp/HomeSections';
 import { featuredBeds, scenes } from '@/data/revamp';
@@ -480,9 +481,7 @@ const ProductPage = () => {
   // ── guards ──
   if (loading) return (
     <Layout>
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-6 h-6 animate-spin text-terracotta" />
-      </div>
+      <SomneLoader size="md" label="Fetching your bed" className="min-h-screen" />
     </Layout>
   );
 

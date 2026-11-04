@@ -1,8 +1,15 @@
-import { X, Plus, Minus, ShoppingBag } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, Truck, ShieldCheck, Lock, Tag, ArrowRight, Sparkles } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { useCart } from '@/contexts/CartContext';
+import { LOGO_DOTS } from '@/components/ui/SomneLoader';
 import { cn } from '@/lib/utils';
+
+const SUGGESTIONS = [
+  { label: 'Upholstered beds', href: '/beds/upholstered-beds', tone: 'bg-terracotta/10 text-terracotta-deep' },
+  { label: 'Ottoman storage', href: '/beds/ottoman-divan-beds', tone: 'bg-royal/10 text-royal' },
+  { label: 'Mattresses', href: '/mattresses', tone: 'bg-jade/10 text-jade' },
+  { label: 'Headboards', href: '/headboards', tone: 'bg-plum/10 text-plum' },
+];
 
 export function CartDrawer() {
   const { isOpen, closeCart, items, subtotal, shipping, discount, total, updateQuantity, removeItem, itemCount } = useCart();
@@ -23,106 +30,146 @@ export function CartDrawer() {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed top-0 right-0 h-full w-full max-w-md bg-background z-[90] shadow-2xl transition-transform duration-300 flex flex-col',
+          'fixed top-0 right-0 h-full w-full max-w-md bg-background z-[90] shadow-2xl transition-transform duration-500 [transition-timing-function:cubic-bezier(0.16,1,0.3,1)] flex flex-col',
           isOpen ? 'translate-x-0' : 'translate-x-full'
         )}
+        role="dialog"
+        aria-label="Your bag"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 md:p-8 border-b border-stone-100">
-          <div className="flex items-center gap-3 text-stone-900">
-            <ShoppingBag className="h-5 w-5" />
-            <h2 className="font-serif text-2xl">Your Bag ({itemCount})</h2>
+        <div className="relative overflow-hidden bg-ink px-6 py-5 text-white md:px-8">
+          <span aria-hidden className="pointer-events-none absolute -right-10 -top-16 h-40 w-40 rounded-full bg-terracotta/40 blur-3xl" />
+          <span aria-hidden className="pointer-events-none absolute -left-10 -bottom-16 h-32 w-32 rounded-full bg-royal/40 blur-3xl" />
+          <div className="relative flex items-center justify-between">
+            <div>
+              <div className="mb-1.5 flex gap-1" aria-hidden>
+                {LOGO_DOTS.map((c) => (
+                  <span key={c} className={cn('h-1.5 w-1.5 rounded-full', c)} />
+                ))}
+              </div>
+              <h2 className="font-display text-3xl leading-none">
+                Your bag{' '}
+                <span className="align-middle text-base font-sans font-bold text-saffron">
+                  ({itemCount})
+                </span>
+              </h2>
+            </div>
+            <button
+              onClick={closeCart}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white hover:text-ink"
+              aria-label="Close cart"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
-          <button
-            onClick={closeCart}
-            className="w-10 h-10 flex items-center justify-center rounded-full bg-stone-100 hover:bg-stone-200 transition-colors text-stone-600"
-            aria-label="Close cart"
-          >
-            <X className="h-4 w-4" />
-          </button>
+          <div className="relative mt-4 flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-2 text-xs font-semibold backdrop-blur">
+            <Truck className="h-4 w-4 text-saffron" />
+            Free UK mainland delivery on every order
+          </div>
         </div>
 
         {/* Items */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-8">
+        <div className="flex-1 overflow-y-auto px-5 py-6 md:px-7">
           {items.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center">
-              <ShoppingBag className="h-12 w-12 text-stone-200 mb-6" />
-              <p className="font-serif text-2xl font-light text-stone-900 mb-2">Your bag is empty</p>
-              <p className="text-stone-500 mb-8">Ready to add something beautiful?</p>
+            <div className="flex h-full flex-col items-center justify-center text-center">
+              <div className="relative mb-7">
+                <span aria-hidden className="absolute inset-0 -m-3 rounded-full bg-gradient-to-br from-terracotta/25 via-saffron/20 to-royal/25 blur-xl" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-white shadow-medium">
+                  <ShoppingBag className="h-10 w-10 text-terracotta" />
+                </div>
+              </div>
+              <p className="mb-2 font-display text-3xl text-ink">Your bag is empty</p>
+              <p className="mb-8 max-w-xs text-sm text-ink/60">Beds, mattresses and headboards in 19 colourful fabrics are waiting.</p>
+              <div className="mb-8 flex flex-wrap justify-center gap-2">
+                {SUGGESTIONS.map((s) => (
+                  <Link
+                    key={s.href}
+                    to={s.href}
+                    onClick={closeCart}
+                    className={cn('rounded-full px-4 py-2 text-xs font-bold transition-transform hover:-translate-y-0.5', s.tone)}
+                  >
+                    {s.label}
+                  </Link>
+                ))}
+              </div>
               <Link
-                to="/beds"
+                to="/beds/upholstered-beds"
                 onClick={closeCart}
-                className="h-12 px-8 flex items-center justify-center bg-ink text-white font-bold text-sm hover:bg-terracotta transition-colors rounded-full"
+                className="group inline-flex h-12 items-center gap-2 rounded-full bg-terracotta px-8 text-sm font-extrabold uppercase tracking-[0.12em] text-white shadow-gold transition-colors hover:bg-ink"
               >
-                Continue Shopping
+                Start shopping
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
           ) : (
-            <div className="space-y-8">
+            <div className="space-y-4">
               {items.map((item) => {
                 const itemPrice = (item.product.discountPrice || item.product.price || 0) +
                   (item.selectedSize?.priceModifier || 0) +
                   (item.selectedStorage?.priceModifier || 0) +
                   (item.selectedHeadboard?.priceModifier || 0) +
-                  (item.selectedBase?.priceModifier || 0);
+                  (item.hasAssembly ? 49 : 0) +
+                  (item.selectedBase?.priceModifier || 0) +
+                  (item.selectedFirmness?.priceModifier || 0);
 
                 const fallbackColor = item.product.colors?.find((color: any) => !color.disabled);
                 const displayImage = item.selectedColor?.image || item.selectedColor?.productImages?.[0] || item.product.images[0] || fallbackColor?.image;
 
+                const options = [
+                  item.selectedSize?.name,
+                  item.selectedColor?.name,
+                  item.selectedHeadboard?.name,
+                  item.selectedBase?.name,
+                  item.selectedStorage?.name,
+                  item.selectedFirmness?.name,
+                  item.hasAssembly ? 'Assembly' : null,
+                ].filter(Boolean) as string[];
+
                 return (
-                  <div key={item.cartItemId} className="flex gap-5 pb-8 border-b border-stone-100 last:border-0 last:pb-0">
-                    <div className="w-28 h-28 md:w-32 md:h-32 bg-secondary rounded-2xl overflow-hidden flex-shrink-0">
-                      <img
-                        src={displayImage}
-                        alt={item.product.name}
-                        className="w-full h-full object-cover"
-                      />
+                  <div key={item.cartItemId} className="flex gap-4 rounded-3xl border border-ink/5 bg-white p-3 shadow-soft">
+                    <div className="h-28 w-28 flex-shrink-0 overflow-hidden rounded-2xl bg-secondary md:h-32 md:w-32">
+                      <img src={displayImage} alt={item.product.name} className="h-full w-full object-cover" />
                     </div>
-                    <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                    <div className="flex min-w-0 flex-1 flex-col justify-between py-1 pr-1">
                       <div>
                         <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-serif text-lg font-medium text-stone-900 truncate leading-none">
-                            {item.product.name}
-                          </h3>
+                          <h3 className="font-display text-lg leading-tight text-ink line-clamp-2">{item.product.name}</h3>
                           <button
                             onClick={() => removeItem(item.cartItemId)}
-                            className="p-1 hover:text-red-500 transition-colors text-stone-400"
+                            className="-mr-1 -mt-1 rounded-full p-1.5 text-ink/35 transition-colors hover:bg-terracotta/10 hover:text-terracotta"
                             aria-label="Remove item"
                           >
                             <X className="h-4 w-4" />
                           </button>
                         </div>
-                        <p className="text-sm text-stone-500 mt-2 leading-relaxed">
-                          {item.selectedSize?.name}
-                          {item.selectedColor && ` • ${item.selectedColor.name}`}
-                          {item.selectedHeadboard && ` • ${item.selectedHeadboard.name}`}
-                          {item.selectedBase && ` • ${item.selectedBase.name}`}
-                          {item.selectedStorage && ` • ${item.selectedStorage.name}`}
-                          {item.selectedFirmness && ` • ${item.selectedFirmness.name}`}
-                        </p>
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {options.map((o) => (
+                            <span key={o} className="rounded-full bg-background px-2 py-0.5 text-[11px] font-semibold text-ink/60">
+                              {o}
+                            </span>
+                          ))}
+                        </div>
                       </div>
 
-                      <div className="flex items-end justify-between mt-4">
-                        <div className="flex items-center border border-stone-200 rounded-lg overflow-hidden bg-white">
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="flex items-center overflow-hidden rounded-full bg-background">
                           <button
                             onClick={() => updateQuantity(item.cartItemId, item.quantity - 1)}
-                            className="w-8 h-8 flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-600"
+                            className="flex h-8 w-8 items-center justify-center text-ink/60 transition-colors hover:bg-ink hover:text-white"
                             aria-label="Decrease quantity"
                           >
                             <Minus className="h-3 w-3" />
                           </button>
-                          <span className="w-8 text-center text-sm font-bold text-stone-900">{item.quantity}</span>
+                          <span className="w-7 text-center text-sm font-extrabold text-ink">{item.quantity}</span>
                           <button
                             onClick={() => updateQuantity(item.cartItemId, item.quantity + 1)}
-                            className="w-8 h-8 flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-600"
+                            className="flex h-8 w-8 items-center justify-center text-ink/60 transition-colors hover:bg-ink hover:text-white"
                             aria-label="Increase quantity"
                           >
                             <Plus className="h-3 w-3" />
                           </button>
                         </div>
-                        <p className="font-serif text-xl font-light text-stone-900">
-                          {formatPrice(itemPrice * item.quantity)}
-                        </p>
+                        <p className="font-display text-xl text-ink">{formatPrice(itemPrice * item.quantity)}</p>
                       </div>
                     </div>
                   </div>
@@ -134,42 +181,49 @@ export function CartDrawer() {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="p-6 md:p-8 border-t border-stone-100 bg-stone-50/50">
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm text-stone-500">
+          <div className="border-t border-ink/5 bg-white px-6 pb-6 pt-5 md:px-8">
+            <div className="mb-5 space-y-2.5">
+              <div className="flex justify-between text-sm text-ink/60">
                 <span>Subtotal</span>
-                <span className="text-stone-900 font-medium">{formatPrice(subtotal)}</span>
+                <span className="font-semibold text-ink">{formatPrice(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-sm text-stone-500">
+              <div className="flex justify-between text-sm text-ink/60">
                 <span>Delivery</span>
-                <span className="text-stone-900 font-medium">{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
+                <span className="font-semibold text-jade">{shipping === 0 ? 'Free' : formatPrice(shipping)}</span>
               </div>
               {discount > 0 && (
-                <div className="flex justify-between text-sm text-red-500">
-                  <span>Discount</span>
-                  <span className="font-medium">-{formatPrice(discount)}</span>
+                <div className="flex justify-between text-sm text-terracotta">
+                  <span className="inline-flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" /> Discount</span>
+                  <span className="font-semibold">-{formatPrice(discount)}</span>
                 </div>
               )}
-              <div className="flex justify-between font-serif text-2xl pt-4 border-t border-stone-200 text-stone-900 mt-2">
+              <div className="flex items-baseline justify-between border-t border-dashed border-ink/15 pt-3.5 font-display text-3xl text-ink">
                 <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
-            
-            <div className="flex flex-col gap-3">
+
+            <div className="flex flex-col gap-2.5">
               <Link
                 to="/checkout"
                 onClick={closeCart}
-                className="w-full h-14 bg-terracotta hover:bg-ink text-white font-extrabold uppercase tracking-[0.14em] text-sm flex items-center justify-center rounded-full transition-all active:scale-[0.99] shadow-gold"
+                className="group flex h-14 w-full items-center justify-center gap-2 rounded-full bg-terracotta text-sm font-extrabold uppercase tracking-[0.14em] text-white shadow-gold transition-all hover:bg-ink active:scale-[0.99]"
               >
-                Go to Checkout
+                <Lock className="h-4 w-4" />
+                Secure checkout
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <button
                 onClick={closeCart}
-                className="w-full h-14 bg-white border-2 border-ink/10 hover:border-ink text-ink font-bold text-sm uppercase tracking-[0.14em] flex items-center justify-center rounded-full transition-all active:scale-[0.99]"
+                className="h-12 w-full rounded-full text-sm font-bold uppercase tracking-[0.14em] text-ink/70 transition-colors hover:bg-background hover:text-ink"
               >
-                Continue Shopping
+                Continue shopping
               </button>
+            </div>
+
+            <div className="mt-4 flex items-center justify-center gap-5 text-[11px] font-semibold text-ink/50">
+              <span className="inline-flex items-center gap-1.5"><ShieldCheck className="h-3.5 w-3.5 text-royal" /> 5-year warranty</span>
+              <span className="inline-flex items-center gap-1.5"><Sparkles className="h-3.5 w-3.5 text-saffron" /> Made in the UK</span>
             </div>
           </div>
         )}
