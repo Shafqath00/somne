@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { CartProvider } from "@/contexts/CartContext";
 import { AuthProvider } from "@/contexts/AuthContext";
@@ -40,6 +40,7 @@ const OrderTracking = lazy(() => import("./pages/PaymentPages/OrderTracking"));
 const BlogsPage = lazy(() => import("./pages/blogs/BlogsPage"));
 const BlogDetailPage = lazy(() => import("./pages/blogs/BlogDetailPage"));
 const AdminBlogManager = lazy(() => import("./pages/admin/AdminBlogManager"));
+const JellyLabsPage = lazy(() => import("./pages/jl"));
 import MaintenancePage from "./pages/MaintenancePage";
 
 // Configure React Query with sensible defaults
@@ -150,6 +151,10 @@ const App = () => {
                   <Route path="/blogs" element={<BlogsPage />} />
                   <Route path="/blogs/:category" element={<BlogsPage />} />
                   <Route path="/blogs/:category/:slug" element={<BlogDetailPage />} />
+
+                  {/* JellyLabs attribution page */}
+                  <Route path="/jl" element={<JellyLabsPage />} />
+                  <Route path="/built-by-jellylabs" element={<Navigate to="/jl" replace />} />
 
                   {/* Generic Category Routes - Must be after specific routes */}
                   <Route path="/:category" element={<CategoryPage />} />
