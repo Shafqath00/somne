@@ -10,6 +10,44 @@ import confetti from "canvas-confetti";
 import { getOrderBySession, OrderBySession } from "@/api/api";
 import { useCart } from "@/contexts/CartContext";
 
+// Pushes a GA4-style `purchase` event to GTM exactly once per order.
+// Guarded by sessionStorage so refreshes / revisits of /success don't double count.
+function pushPurchaseEvent(order: OrderBySession) {
+    if (order.paymentStatus !== "Paid" || order.total == null) return;
+
+    const transactionId = order.orderId;
+    const storageKey = `purchase_tracked_${transactionId}`;
+    try {
+        if (sessionStorage.getItem(storageKey)) return;
+        sessionStorage.setItem(storageKey, "1");
+    } catch {
+        // Storage unavailable: fall through, the hasFetched ref still prevents in-page repeats
+    }
+
+    const w = window as any;
+    w.dataLayer = w.dataLayer || [];
+    // Clear the previous ecommerce object so values never merge with earlier events
+    w.dataLayer.push({ ecommerce: null });
+    w.dataLayer.push({
+        event: "purchase",
+        ecommerce: {
+            transaction_id: transactionId,
+            order_number: order.orderNumber ? String(order.orderNumber) : undefined,
+            value: order.total, // after discounts, from Stripe amount_total
+            currency: (order.currency || "GBP").toUpperCase(),
+            is_test_order: !!order.isTestOrder,
+            num_items: order.items.reduce((n, i) => n + i.quantity, 0),
+            content_ids: order.items.map((i) => i.slug || i.productId),
+            items: order.items.map((i) => ({
+                item_id: i.slug || i.productId,
+                item_name: i.name,
+                price: i.price,
+                quantity: i.quantity,
+            })),
+        },
+    });
+}
+
 export default function PaymentSuccess() {
     const search = new URLSearchParams(useLocation().search);
     const sessionId = search.get("session_id");
@@ -51,6 +89,8 @@ export default function PaymentSuccess() {
                 hasFetched.current = true;
                 const orderData = await getOrderBySession(sessionId);
                 setOrder(orderData);
+
+                if (orderData) pushPurchaseEvent(orderData);
 
                 // Clear cart after successful payment
                 clearCart();
@@ -148,7 +188,7 @@ export default function PaymentSuccess() {
                                         ))}
                                         <div className="border-t border-border pt-2 flex justify-between font-medium">
                                             <span>Total</span>
-                                            <span className="font-display text-xl text-terracotta">{formatPrice(order.total)}</span>
+                                            <span className="font-display text-xl text-terracotta">{formatPrice(order.total ?? 0)}</span>
                                         </div>
                                     </div>
                                 </div>
