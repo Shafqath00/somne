@@ -282,9 +282,13 @@ export interface OrderBySession {
     orderReference: string;
     status: string;
     paymentStatus: string;
-    total: number;
+    total: number | null;
+    currency?: string;
+    isTestOrder?: boolean;
     itemCount: number;
     items: {
+        productId?: string;
+        slug?: string;
         name: string;
         quantity: number;
         price: number;
